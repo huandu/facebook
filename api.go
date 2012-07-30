@@ -13,7 +13,7 @@
 //     fmt.Println("my facebook id is", res["id"])
 //
 // Sample 2: Read a user object with a valid access token.
-//     res, _ := facebook.Api("/me/feed", facebook.GET, Params{
+//     res, _ := facebook.Api("/me/feed", facebook.GET, facebook.Params{
 //          "access_token": "a-valid-access-token",
 //     })
 //
