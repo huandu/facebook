@@ -31,3 +31,5 @@ type Params map[string]interface{}
 
 // Facebook api call result.
 type Result map[string]interface{}
+
+type BatchResult []interface{}

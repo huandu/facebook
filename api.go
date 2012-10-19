@@ -264,7 +264,19 @@ func Api(path string, method Method, params Params) (Result, error) {
 // Returns facebook graph api call result.
 // If facebook returns error in response, returns error details in res and set err.
 func (session *Session) Api(path string, method Method, params Params) (Result, error) {
-    return session.graph(path, method, params)
+    res, err := session.graph(path, method, params, false)
+    if res != nil {
+        return res.(map[string]interface{}), err
+    }
+    return nil, err
+}
+
+func (session *Session) BatchApi(params Params) (BatchResult, error) {
+    res, err := session.graph("/", "POST", params, true)
+    if res != nil {
+        return res.([]interface{}), err
+    }
+    return nil, err
 }
 
 // Gets current user id from access token.
@@ -317,7 +329,7 @@ func (session *Session) App() *App {
     return session.app
 }
 
-func (session *Session) graph(path string, method Method, params Params) (res Result, err error) {
+func (session *Session) graph(path string, method Method, params Params, batch bool) (res interface{}, err error) {
     var graphUrl string
 
     if params == nil {
@@ -349,8 +361,10 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
     }
 
     // facebook returns an error
-    if _, ok := res["error"]; ok {
-        err = fmt.Errorf("facebook returns an error")
+    if(!batch) {
+        if _, ok := res.(map[string]interface{})["error"]; ok {
+            err = fmt.Errorf("facebook returns an error")
+        }
     }
 
     return
@@ -373,13 +387,15 @@ func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
         return nil, fmt.Errorf("cannot reach facebook server. %v", err)
     }
 
-    if response.StatusCode >= 300 {
-        return nil, fmt.Errorf("facebook server response an HTTP error. code: %v", response.StatusCode)
-    }
-
     buf = &bytes.Buffer{}
     _, err = io.Copy(buf, response.Body)
     response.Body.Close()
+
+    if response.StatusCode >= 300 {
+        return nil, fmt.Errorf("facebook server response an HTTP error. code: %v, body: %s",
+            response.StatusCode, string(buf.Bytes()))
+    }
+
 
     if err != nil {
         return nil, fmt.Errorf("cannot read facebook response. %v", err)
