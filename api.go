@@ -55,11 +55,25 @@
 //     res, _ := session.Api("/me/feed", facebook.GET, nil)
 //     res.DecodeField("data.0", &feed) // then you can use feed.
 //
-// This library doesn't implement deprecated old-RESTFUL apis.
-// I won't write code for them unless someone asks me to do so.
+// Sample 5: Batch graph api request.
+//     params1 := Params{
+//         "method": facebook.GET,
+//         "relative_url": "huandu",
+//     }
+//     params2 := Params{
+//         "method": facebook.GET,
+//         "relative_url": uint64(100002828925788),
+//     }
+//     res, err := facebook.BatchApi(your_access_token, params1, params2)
+//     // res is a []Result. if err is nil, res[0] and res[1] are response to
+//     // params1 and params2 respectively.
 //
-// This library doesn't include any HTTP integration.
-// I will do it later.
+// This library doesn't implement deprecated old-RESTFUL apis.
+// I won't write code for them unless someone forces me to do so.
+//
+// It doesn't support any binary file upload. It's TBD.
+//
+// This library doesn't include any HTTP integration. I will do it later.
 package facebook
 
 import (
@@ -261,11 +275,8 @@ func Api(path string, method Method, params Params) (Result, error) {
 
 // Makes a batch facebook graph api call.
 //
-// It's a wrapper of Session.Api(). Only works for graph api that doesn't require
-// app id, app secret and access token. Can be called in multiple goroutines.
-//
-// If app id, app secret or access token is required in graph api, caller should use
-// New() to create a new facebook session through App instead.
+// BatchApi supports most kinds of batch calls defines in facebook batch api document,
+// except uploading binary data.
 func BatchApi(accessToken string, params ...Params) ([]Result, error) {
     return defaultSession.graphBatch(accessToken, params...)
 }
