@@ -250,13 +250,24 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
 
 // Makes a facebook graph api call.
 //
-// It's a wrapper of App.Api(). Only works for graph api that doesn't require
+// It's a wrapper of Session.Api(). Only works for graph api that doesn't require
 // app id, app secret and access token. Can be called in multiple goroutines.
 //
 // If app id, app secret or access token is required in graph api, caller should use
-// New() to create a new facebook instance instead.
+// New() to create a new facebook session through App instead.
 func Api(path string, method Method, params Params) (Result, error) {
     return defaultSession.Api(path, method, params)
+}
+
+// Makes a batch facebook graph api call.
+//
+// It's a wrapper of Session.Api(). Only works for graph api that doesn't require
+// app id, app secret and access token. Can be called in multiple goroutines.
+//
+// If app id, app secret or access token is required in graph api, caller should use
+// New() to create a new facebook session through App instead.
+func BatchApi(accessToken string, params ...Params) ([]Result, error) {
+    return defaultSession.graphBatch(accessToken, params...)
 }
 
 // Makes a facebook graph api call.
@@ -264,19 +275,21 @@ func Api(path string, method Method, params Params) (Result, error) {
 // Returns facebook graph api call result.
 // If facebook returns error in response, returns error details in res and set err.
 func (session *Session) Api(path string, method Method, params Params) (Result, error) {
-    res, err := session.graph(path, method, params, false)
+    res, err := session.graph(path, method, params)
+
     if res != nil {
-        return res.(map[string]interface{}), err
+        return res, err
     }
+
     return nil, err
 }
 
-func (session *Session) BatchApi(params Params) (BatchResult, error) {
-    res, err := session.graph("/", "POST", params, true)
-    if res != nil {
-        return res.([]interface{}), err
-    }
-    return nil, err
+// Makes a batch call. Each params represent a single facebook graph api call.
+// See https://developers.facebook.com/docs/reference/api/batch/ for batch call api details.
+//
+// Returns an array of batch call result on success.
+func (session *Session) BatchApi(params ...Params) ([]Result, error) {
+    return session.graphBatch(session.accessToken, params...)
 }
 
 // Gets current user id from access token.
@@ -329,8 +342,9 @@ func (session *Session) App() *App {
     return session.app
 }
 
-func (session *Session) graph(path string, method Method, params Params, batch bool) (res interface{}, err error) {
+func (session *Session) graph(path string, method Method, params Params) (res Result, err error) {
     var graphUrl string
+    var response []byte
 
     if params == nil {
         params = Params{}
@@ -345,7 +359,7 @@ func (session *Session) graph(path string, method Method, params Params, batch b
         graphUrl = getUrl("graph", path, nil)
     }
 
-    response, err := session.oauthRequest(graphUrl, params)
+    response, err = session.oauthRequest(graphUrl, params)
 
     // cannot get response from remote server
     if err != nil {
@@ -361,10 +375,40 @@ func (session *Session) graph(path string, method Method, params Params, batch b
     }
 
     // facebook returns an error
-    if(!batch) {
-        if _, ok := res.(map[string]interface{})["error"]; ok {
-            err = fmt.Errorf("facebook returns an error")
-        }
+    if _, ok := res["error"]; ok {
+        err = fmt.Errorf("facebook returns an error")
+    }
+
+    return
+}
+
+func (session *Session) graphBatch(accessToken string, params ...Params) (res []Result, err error) {
+    var batchParams = Params{"access_token": accessToken}
+    var batchJson []byte
+    var response []byte
+
+    // encode all params to a json array.
+    batchJson, err = json.Marshal(params)
+
+    if err != nil {
+        return
+    }
+
+    batchParams["batch"] = string(batchJson)
+
+    graphUrl := getUrl("graph", "", nil)
+    response, err = session.oauthRequest(graphUrl, batchParams)
+
+    if err != nil {
+        return
+    }
+
+    err = json.Unmarshal(response, &res)
+
+    if err != nil {
+        res = nil
+        err = fmt.Errorf("cannot format facebook batch response. %v", err)
+        return
     }
 
     return
@@ -387,15 +431,15 @@ func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
         return nil, fmt.Errorf("cannot reach facebook server. %v", err)
     }
 
-    buf = &bytes.Buffer{}
-    _, err = io.Copy(buf, response.Body)
-    response.Body.Close()
+    defer response.Body.Close()
 
     if response.StatusCode >= 300 {
         return nil, fmt.Errorf("facebook server response an HTTP error. code: %v, body: %s",
             response.StatusCode, string(buf.Bytes()))
     }
 
+    buf = &bytes.Buffer{}
+    _, err = io.Copy(buf, response.Body)
 
     if err != nil {
         return nil, fmt.Errorf("cannot read facebook response. %v", err)

@@ -17,7 +17,7 @@ const (
     FB_TEST_MY_USERNAME = "huan.du"
 
     // remeber to change it to a valid token to run test
-    //FB_TEST_VALID_ACCESS_TOKEN = "AAACZA38ZAD8CoBABo4ZA4l5bGDSneBx9omVlVMNpxErbV0cLF5vl5dVqtx8U8QOYdmD4TAvZAWSL4gMGe4zrMOgjMELqqZBdTeU5bJfj8ygZDZD"
+    //FB_TEST_VALID_ACCESS_TOKEN = "AAACEdEose0cBAEVR6GZAEcja9ZBIdmYrF4I7nAFFbYZAe9tdYEv6uZCHGPpPFcbNYo49ya6qmAChPUZBO2UYmotTdWiDZBMQZCGXm8lA9qjCQZDZD"
     FB_TEST_VALID_ACCESS_TOKEN = ""
 
     // remember to change it to a valid signed request to run test
@@ -66,6 +66,31 @@ func TestApiGetUserInfo(t *testing.T) {
 
     if err != nil {
         t.Errorf("cannot get my info. [e:%v]", err)
+        return
+    }
+
+    t.Logf("my info. %v", me)
+}
+
+func TestBatchApiGetInfo(t *testing.T) {
+    if FB_TEST_VALID_ACCESS_TOKEN == "" {
+        t.Logf("cannot call batch api without access token. skip this test.")
+        return
+    }
+
+    params1 := Params{
+        "method": GET,
+        "relative_url": FB_TEST_MY_USERNAME,
+    }
+    params2 := Params{
+        "method": GET,
+        "relative_url": uint64(100002828925788), // id of my another facebook id
+    }
+
+    me, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
+
+    if err != nil {
+        t.Errorf("cannot get batch result. [e:%v]", err)
         return
     }
 
