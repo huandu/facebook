@@ -79,11 +79,11 @@ func TestBatchApiGetInfo(t *testing.T) {
     }
 
     params1 := Params{
-        "method": GET,
+        "method":       GET,
         "relative_url": FB_TEST_MY_USERNAME,
     }
     params2 := Params{
-        "method": GET,
+        "method":       GET,
         "relative_url": uint64(100002828925788), // id of my another facebook id
     }
 
