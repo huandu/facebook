@@ -138,6 +138,8 @@ func (res Result) decode(v reflect.Value, fullName string) error {
     var name string
     var val interface{}
     var ok bool
+    var err error
+    var ret error
 
     num := v.Type().NumField()
 
@@ -147,15 +149,19 @@ func (res Result) decode(v reflect.Value, fullName string) error {
         val, ok = res[name]
 
         if !ok {
-            log.Printf("cannot find field '%v%v' in result.", fullName, name)
+            err = fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+        } else {
+            err = decodeField(val, field, fmt.Sprintf("%v%v", fullName, name))
         }
-
-        if err := decodeField(val, field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
+        if err != nil {
+            // Log each error
             log.Println(err)
+            // Return the lastest error
+            ret = err
         }
     }
 
-    return nil
+    return ret
 }
 
 func decodeField(val interface{}, field reflect.Value, fullName string) error {
