@@ -408,7 +408,7 @@ func decodeField(val interface{}, field reflect.Value, fullName string) error {
                 }
             }
         } else {
-            return fmt.Errorf("field '%v' is not a json array in result.")
+            return fmt.Errorf("field '%v' is not a json array in result.", fullName)
         }
 
     default:
