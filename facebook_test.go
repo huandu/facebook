@@ -61,6 +61,13 @@ type ParamsNestedStruct struct {
     CCC bool
 }
 
+type FieldTagStruct struct {
+    Field1 string `facebook:"field2"`
+    Required string `facebook:",required"`
+    Foo string `facebook:"bar,required"`
+    CanAbsent string
+}
+
 func TestApiGetUserInfo(t *testing.T) {
     me, err := Api(FB_TEST_MY_USERNAME, GET, nil)
 
@@ -324,4 +331,101 @@ func TestParamsEncode(t *testing.T) {
     }
 
     t.Logf("complex encode result is '%v'.", params.Encode())
+}
+
+func TestStructFieldTag(t *testing.T) {
+    strNormalField := `{
+        "field2": "hey",
+        "required": "my",
+        "bar": "dear"
+    }`
+    strMissingField2Field := `{
+        "field1": "hey",
+        "required": "my",
+        "bar": "dear"
+    }`
+    strMissingRequiredField := `{
+        "field1": "hey",
+        "bar": "dear",
+        "can_absent": "babe"
+    }`
+    strMissingBarField := `{
+        "field1": "hey",
+        "required": "my"
+    }`
+
+    var result Result
+    var value FieldTagStruct
+    var err error
+
+    err = json.Unmarshal([]byte(strNormalField), &result)
+
+    if err != nil {
+        t.Errorf("cannot unmarshal json string. [e:%v]", err)
+        return
+    }
+
+    err = result.Decode(&value)
+
+    if err != nil {
+        t.Errorf("cannot decode struct. [e:%v]", err)
+        return
+    }
+
+    result = Result{}
+    value = FieldTagStruct{}
+    err = json.Unmarshal([]byte(strMissingField2Field), &result)
+
+    if err != nil {
+        t.Errorf("cannot unmarshal json string. [e:%v]", err)
+        return
+    }
+
+    err = result.Decode(&value)
+
+    if err != nil {
+        t.Errorf("cannot decode struct. [e:%v]", err)
+        return
+    }
+
+    if value.Field1 != "" {
+        t.Errorf("value field1 should be kept unchanged. [field1:%v]", value.Field1)
+        return
+    }
+
+    result = Result{}
+    value = FieldTagStruct{}
+    err = json.Unmarshal([]byte(strMissingRequiredField), &result)
+
+    if err != nil {
+        t.Errorf("cannot unmarshal json string. [e:%v]", err)
+        return
+    }
+
+    err = result.Decode(&value)
+
+    if err == nil {
+        t.Errorf("should fail to decode struct.")
+        return
+    }
+
+    t.Logf("expected decode error. [e:%v]", err)
+
+    result = Result{}
+    value = FieldTagStruct{}
+    err = json.Unmarshal([]byte(strMissingBarField), &result)
+
+    if err != nil {
+        t.Errorf("cannot unmarshal json string. [e:%v]", err)
+        return
+    }
+
+    err = result.Decode(&value)
+
+    if err == nil {
+        t.Errorf("should fail to decode struct.")
+        return
+    }
+
+    t.Logf("expected decode error. [e:%v]", err)
 }

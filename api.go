@@ -41,9 +41,10 @@
 // Sample 4: Read graph api response.
 //     // define a facebook feed object.
 //     type FacebookFeed struct {
-//         Id, Story string
+//         Id string `facebook:",required"` // must exist
+//         Story string
 //         From *FacebookFeedFrom
-//         CreatedTime string
+//         CreatedTime string `facebook:"created_time"` // use customized field name
 //     }
 //
 //     type FacebookFeedFrom struct {

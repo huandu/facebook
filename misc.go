@@ -81,12 +81,30 @@ func (res Result) get(fields []string) interface{} {
 // It only decodes fields defined in the struct.
 //
 // As all facebook response fields are lower case strings,
-// it will convert all camel-case field names to lower case string.
+// Decode will convert all camel-case field names to lower case string.
 // e.g. field name "FooBar" will be converted to "foo_bar".
 // The side effect is that if a struct has 2 fields with only capital
 // differences, decoder will map these fields to a same result value.
 //
-// Returns error if v is not a struct or any v field name absents in res.
+// If a field is missing in the result, Decode keeps it unchanged by default.
+//
+// Decode can read struct field tag value to change default behavior.
+//
+// Examples:
+//
+//     type Foo struct {
+//         // "id" must exist in response. note the leading comma.
+//         Id string `facebook:",required"` 
+//
+//         // use "name" as field name in response.
+//         TheName string `facebook:"name"`
+//     }
+//     
+// To change default behavior, set a struct tag `facebook:",required"` to fields
+// should not be missing.
+//
+//
+// Returns error if v is not a struct or any required v field name absents in res.
 func (res Result) Decode(v interface{}) (err error) {
     defer func() {
         if r := recover(); r != nil {
@@ -134,20 +152,48 @@ func (res Result) decode(v reflect.Value, fullName string) error {
     }
 
     var field reflect.Value
-    var name string
+    var name, fbTag string
     var val interface{}
-    var ok bool
+    var ok, required bool
     var err error
 
-    num := v.Type().NumField()
+    vType := v.Type()
+    num := vType.NumField()
 
     for i := 0; i < num; i++ {
+        name = ""
+        required = false
         field = v.Field(i)
-        name = camelCaseToUnderScore(v.Type().Field(i).Name)
+        fbTag = vType.Field(i).Tag.Get("facebook")
+
+        // parse struct field tag
+        if fbTag != "" {
+            index := strings.IndexRune(fbTag, ',')
+
+            if index == -1 {
+                name = fbTag
+            } else {
+                name = fbTag[:index]
+
+                if fbTag[index:] == ",required" {
+                    required = true
+                }
+            }
+        }
+
+        if name == "" {
+            name = camelCaseToUnderScore(v.Type().Field(i).Name)
+        }
+
         val, ok = res[name]
 
         if !ok {
-            return fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+            // check whether the field is required. if so, report error.
+            if required {
+                return fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+            }
+
+            continue
         }
 
         if err = decodeField(val, field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
