@@ -10,6 +10,7 @@ import (
     "bytes"
     "encoding/json"
     "fmt"
+    "log"
     "net/url"
     "reflect"
     "runtime"
@@ -138,6 +139,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
     var val interface{}
     var ok bool
     var err error
+    var ret error
 
     num := v.Type().NumField()
 
@@ -147,15 +149,19 @@ func (res Result) decode(v reflect.Value, fullName string) error {
         val, ok = res[name]
 
         if !ok {
-            return fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+            err = fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+        } else {
+            err = decodeField(val, field, fmt.Sprintf("%v%v", fullName, name))
         }
-
-        if err = decodeField(val, field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
-            return err
+        if err != nil {
+            // Log each error
+            log.Println(err)
+            // Return the lastest error
+            ret = err
         }
     }
 
-    return nil
+    return ret
 }
 
 func decodeField(val interface{}, field reflect.Value, fullName string) error {
