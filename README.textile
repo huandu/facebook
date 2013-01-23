@@ -1,17 +1,17 @@
 h1. A Facebook Graph API Client In Go
 
-This library perfectly supports most graph API with very handy methods.
+This library perfectly supports most graph API with very intuitive methods.
 
 Here is a quick tutorial.
 
 <pre>
 import (
     "fmt"
-    "github.com/huandu/facebook"
+    fb "github.com/huandu/facebook"
 )
 
 func main() {
-    res, _ := facebook.Api("/538744468", facebook.GET, facebook.Params{
+    res, _ := fb.Get("/538744468", fb.Params{
         "fields": "username",
     })
     fmt.Println("here is my facebook username:", res["username"])

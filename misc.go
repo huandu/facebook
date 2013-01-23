@@ -103,7 +103,6 @@ func (res Result) get(fields []string) interface{} {
 // To change default behavior, set a struct tag `facebook:",required"` to fields
 // should not be missing.
 //
-//
 // Returns error if v is not a struct or any required v field name absents in res.
 func (res Result) Decode(v interface{}) (err error) {
     defer func() {

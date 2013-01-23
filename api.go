@@ -6,14 +6,13 @@
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
 // A facebook graph api client in go. Simple but powerful.
-// You can just use the Api() for most work.
 //
 // Sample 1: Read a user object without access token.
-//     res, _ := facebook.Api("/huandu", facebook.GET, nil)
+//     res, _ := facebook.Get("/huandu", nil)
 //     fmt.Println("my facebook id is", res["id"])
 //
 // Sample 2: Read a user object with a valid access token.
-//     res, _ := facebook.Api("/me/feed", facebook.GET, facebook.Params{
+//     res, _ := facebook.Get("/me/feed", facebook.Params{
 //          "access_token": "a-valid-access-token",
 //     })
 //
@@ -33,7 +32,7 @@
 //     seesion := globalApp.Session(token)
 //
 //     // use session to send api request with your access token.
-//     res, _ := session.Api("/me/feed", facebook.GET, nil)
+//     res, _ := session.Get("/me/feed", nil)
 //
 //     // validate access token. err is nil if token is valid.
 //     _, err := session.User()
@@ -53,7 +52,7 @@
 //
 //     // create a feed object direct from graph api result.
 //     var feed FacebookFeed
-//     res, _ := session.Api("/me/feed", facebook.GET, nil)
+//     res, _ := session.Get("/me/feed", nil)
 //     res.DecodeField("data.0", &feed) // then you can use feed.
 //
 // Sample 5: Batch graph api request.
@@ -73,8 +72,6 @@
 // I won't write code for them unless someone forces me to do so.
 //
 // It doesn't support any binary file upload. It's TBD.
-//
-// This library doesn't include any HTTP integration. I will do it later.
 package facebook
 
 import (
@@ -272,6 +269,21 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
 // New() to create a new facebook session through App instead.
 func Api(path string, method Method, params Params) (Result, error) {
     return defaultSession.Api(path, method, params)
+}
+
+// Get is a short hand of Api(path, GET, params).
+func Get(path string, params Params) (Result, error) {
+    return Api(path, GET, params)
+}
+
+// Post is a short hand of Api(path, GET, params).
+func Post(path string, params Params) (Result, error) {
+    return Api(path, POST, params)
+}
+
+// Delete is a short hand of Api(path, GET, params).
+func Delete(path string, params Params) (Result, error) {
+    return Api(path, DELETE, params)
 }
 
 // Makes a batch facebook graph api call.
