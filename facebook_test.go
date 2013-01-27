@@ -4,6 +4,7 @@
 // Copyright 2012, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
+
 package facebook
 
 import (
@@ -62,9 +63,9 @@ type ParamsNestedStruct struct {
 }
 
 type FieldTagStruct struct {
-    Field1 string `facebook:"field2"`
-    Required string `facebook:",required"`
-    Foo string `facebook:"bar,required"`
+    Field1    string `facebook:"field2"`
+    Required  string `facebook:",required"`
+    Foo       string `facebook:"bar,required"`
     CanAbsent string
 }
 

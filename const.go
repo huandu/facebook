@@ -4,6 +4,7 @@
 // Copyright 2012, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
+
 package facebook
 
 import (
