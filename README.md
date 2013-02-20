@@ -7,6 +7,8 @@ Quick Tutorial
 ---------------
 
 ```go
+  package main
+
   import (
       "fmt"
       fb "github.com/huandu/facebook"
