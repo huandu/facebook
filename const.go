@@ -19,6 +19,7 @@ const (
 
 var (
     // Maps aliases to Facebook domains.
+    // Copied from Facebook PHP SDK.
     domainMap = map[string]string{
         "api":         "https://api.facebook.com/",
         "api_video":   "https://api-video.facebook.com/",

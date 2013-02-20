@@ -13,6 +13,8 @@ type App struct {
     AppSecret string // facebook app secret
 }
 
+// Holds a facebook session with an access token.
+// Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
     accessToken string // facebook access token. can be empty.
     app         *App
