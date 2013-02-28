@@ -5,14 +5,12 @@
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
-// A facebook graph api client purely in Go. Simple but powerful.
+// A Facebook Graph API library purely in Go. Simple but powerful.
 //
-// The library design is highly influenced by facebook official js/php sdk,
-// especially the design of the method Api() and its shorthands (Get/Post/Delete).
-// So, this library should look familiar to one who has experience in
-// official sdk.
+// Library design is highly influenced by facebook official php/js SDK.
+// So, it should look familiar to one who has experience in official sdk.
 //
-// Here is a list of common scenarios while using this library.
+// To get start, here is a list of common scenarios for you.
 //
 // Scenario 1: Read a user object without access token.
 //     res, _ := facebook.Get("/huandu", nil)
@@ -60,7 +58,7 @@
 //     // create a feed object direct from graph api result.
 //     var feed FacebookFeed
 //     res, _ := session.Get("/me/feed", nil)
-//     res.DecodeField("data.0", &feed) // then you can use feed.
+//     res.DecodeField("data.0", &feed) // read latest feed
 //
 // Scenario 5: Batch graph api request.
 //     params1 := Params{
@@ -83,11 +81,24 @@ package facebook
 
 // Makes a facebook graph api call.
 //
-// It's a wrapper of Session.Api(). Only works for graph api that doesn't require
-// app id, app secret and access token. Can be called in multiple goroutines.
+// Method can be GET, POST, DELETE or PUT.
 //
-// If app id, app secret or access token is required in graph api, caller should use
-// New() to create a new facebook session through App instead.
+// Params represents query strings in this call.
+// Keys and values in params will be encoded for URL automatically. So there is
+// no need to encode keys or values in params manually. Params can be nil.
+//
+// If you want to get
+//     https://graph.facebook.com/huandu?fields=name,username
+// Api should be called as following
+//     Api("/huandu", GET, Params{"fields": "name,username"})
+// or in a simplified way
+//     Get("/huandu", Params{"fields": "name,username"})
+//
+// Api is a wrapper of Session.Api(). It's designed for graph api that doesn't require
+// app id, app secret and access token. It can be called in multiple goroutines.
+//
+// If app id, app secret or access token is required in graph api, caller should
+// create a new facebook session through App instance instead.
 func Api(path string, method Method, params Params) (Result, error) {
     return defaultSession.Api(path, method, params)
 }
@@ -107,12 +118,49 @@ func Delete(path string, params Params) (Result, error) {
     return Api(path, DELETE, params)
 }
 
+// Put is a short hand of Api(path, PUT, params).
+func Put(path string, params Params) (Result, error) {
+    return Api(path, PUT, params)
+}
+
 // Makes a batch facebook graph api call.
 //
 // BatchApi supports most kinds of batch calls defines in facebook batch api document,
-// except uploading binary data.
+// except uploading binary data. Use Batch to do so.
 //
 // See https://developers.facebook.com/docs/reference/api/batch/ to learn more about Batch Requests.
 func BatchApi(accessToken string, params ...Params) ([]Result, error) {
-    return defaultSession.graphBatch(accessToken, params...)
+    return Batch(Params{"access_token": accessToken}, params...)
+}
+
+// Makes a batch facebook graph api call.
+// Batch is designed for more advanced usage including uploading binary files.
+//
+// An uploading files sample
+//     // equivalent to following curl command (borrowed from facebook docs)
+//     //     curl \
+//     //         -F 'access_token=…' \
+//     //         -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
+//     //         -F 'file1=@cat.gif' \
+//     //         -F 'file2=@dog.jpg' \
+//     //         https://graph.facebook.com
+//     Batch(Params{
+//         "access_token": "the-access-token",
+//         "file1": File("cat.gif"),
+//         "file2": File("dog.jpg"),
+//     }, Params{
+//         "method": "POST",
+//         "relative_url": "me/photos",
+//         "body": "message=My cat photo",
+//         "attached_files": "file1",
+//     }, Params{
+//         "method": "POST",
+//         "relative_url": "me/photos",
+//         "body": "message=My dog photo",
+//         "attached_files": "file2",
+//     })
+//
+// See https://developers.facebook.com/docs/reference/api/batch/ to learn more about Batch Requests.
+func Batch(batchParams Params, params ...Params) ([]Result, error) {
+    return defaultSession.Batch(batchParams, params...)
 }

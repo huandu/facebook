@@ -8,6 +8,8 @@
 package facebook
 
 import (
+    "io"
+    "os"
     "bytes"
     "encoding/json"
     "fmt"
@@ -17,6 +19,7 @@ import (
     "strconv"
     "strings"
     "unicode"
+    "mime/multipart"
 )
 
 // Gets a field.
@@ -202,6 +205,37 @@ func (res Result) decode(v reflect.Value, fullName string) error {
     }
 
     return nil
+}
+
+// Checks if Result is a Graph API error.
+// Returns nil if Result is not an error.
+//
+// The returned error can be converted to Error by type assertion.
+//     err := res.Err()
+//     if err != nil {
+//         if e, ok := err.(*Error); ok {
+//             // read more details in e.Message, e.Code and e.Type
+//         }
+//     }
+//
+// For more information about Graph API Errors, see
+// https://developers.facebook.com/docs/reference/api/errors/
+func (res Result) Err() error {
+    var err Error
+    e := res.DecodeField("error", &err)
+
+    // no "error" in result. result is not an error.
+    if e != nil {
+        return nil
+    }
+
+    // code may be missing in error.
+    // assign a non-zero value to it.
+    if err.Code == 0 {
+        err.Code = ERROR_CODE_UNKNOWN
+    }
+
+    return &err
 }
 
 func decodeField(val interface{}, field reflect.Value, fullName string) error {
@@ -494,6 +528,17 @@ func makeParams(value reflect.Value) (params Params) {
         value = value.Elem()
     }
 
+    // only map with string keys can be converted to Params
+    if value.Kind() == reflect.Map && value.Type().Key().Kind() == reflect.String {
+        params = Params{}
+
+        for _, key := range value.MapKeys() {
+            params[key.String()] = value.MapIndex(key).Interface()
+        }
+
+        return
+    }
+
     if value.Kind() != reflect.Struct {
         return
     }
@@ -515,9 +560,6 @@ func makeParams(value reflect.Value) (params Params) {
             params = nil
             return
 
-        case reflect.Struct:
-            params[name] = makeParams(field)
-
         default:
             params[name] = field.Interface()
         }
@@ -530,33 +572,132 @@ func makeParams(value reflect.Value) (params Params) {
 // If map value is not a string, Encode uses json.Marshal() to convert value to string.
 //
 // Encode will panic if Params contains values that cannot be marshalled to json string.
-func (params Params) Encode() string {
+func (params Params) Encode(writer io.Writer) (mime string, err error) {
     if params == nil || len(params) == 0 {
-        return ""
+        mime = _MIME_FORM_URLENCODED
+        return
     }
 
-    buf := &bytes.Buffer{}
+    // check whether params contains any binary data.
+    hasBinary := false
+
+    for _, v := range params {
+        typ := reflect.TypeOf(v)
+
+        if typ == typeOfPointerToBinaryData || typ == typeOfPointerToBinaryFile {
+            hasBinary = true
+            break
+        }
+    }
+
+    if hasBinary {
+        return params.encodeMultipartForm(writer)
+    }
+
+    return params.encodeFormUrlEncoded(writer)
+}
+
+func (params Params) encodeFormUrlEncoded(writer io.Writer) (mime string, err error) {
+    var jsonStr []byte
+    written := false
 
     for k, v := range params {
-        buf.WriteString(url.QueryEscape(k))
-        buf.WriteRune('=')
-
-        if reflect.TypeOf(v).Kind() == reflect.String {
-            buf.WriteString(url.QueryEscape(fmt.Sprint(v)))
-        } else {
-            jsonStr, err := json.Marshal(v)
-
-            if err != nil {
-                panic(err)
-            }
-
-            buf.WriteString(url.QueryEscape(string(jsonStr)))
+        if written {
+            io.WriteString(writer, "&")
         }
 
-        buf.WriteRune('&')
+        io.WriteString(writer, url.QueryEscape(k))
+        io.WriteString(writer, "=")
+
+        if reflect.TypeOf(v).Kind() == reflect.String {
+            io.WriteString(writer, url.QueryEscape(reflect.ValueOf(v).String()))
+        } else {
+            jsonStr, err = json.Marshal(v)
+
+            if err != nil {
+                return
+            }
+
+            io.WriteString(writer, url.QueryEscape(string(jsonStr)))
+        }
+
+        written = true
     }
 
-    return buf.String()[:buf.Len()-1]
+    mime = _MIME_FORM_URLENCODED
+    return
+}
+
+func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err error) {
+    w := multipart.NewWriter(writer)
+    defer func() {
+        w.Close()
+        mime = w.FormDataContentType()
+    }()
+
+    for k, v := range params {
+        switch value := v.(type) {
+            case *BinaryData:
+                var dst io.Writer
+                dst, err = w.CreateFormFile(k, value.Filename)
+
+                if err != nil {
+                    return
+                }
+
+                _, err = io.Copy(dst, value.Source)
+
+                if err != nil {
+                    return
+                }
+
+            case *BinaryFile:
+                var dst io.Writer
+                var file *os.File
+
+                dst, err = w.CreateFormFile(k, value.Filename)
+
+                if err != nil {
+                    return
+                }
+
+                file, err = os.Open(value.Path)
+
+                if err != nil {
+                    return
+                }
+
+                _, err = io.Copy(dst, file)
+
+                if err != nil {
+                    return
+                }
+
+            default:
+                var dst io.Writer
+                var jsonStr []byte
+
+                dst, err = w.CreateFormField(k)
+
+                if reflect.TypeOf(v).Kind() == reflect.String {
+                    io.WriteString(dst, reflect.ValueOf(v).String())
+                } else {
+                    jsonStr, err = json.Marshal(v)
+
+                    if err != nil {
+                        return
+                    }
+
+                    _, err = dst.Write(jsonStr)
+
+                    if err != nil {
+                        return
+                    }
+                }
+        }
+    }
+
+    return
 }
 
 func camelCaseToUnderScore(name string) string {
@@ -565,11 +706,10 @@ func camelCaseToUnderScore(name string) string {
     }
 
     buf := &bytes.Buffer{}
-    notBeginning := false
 
     for _, r := range name {
         if unicode.IsUpper(r) {
-            if notBeginning {
+            if buf.Len() != 0 {
                 buf.WriteRune('_')
             }
 
@@ -577,9 +717,28 @@ func camelCaseToUnderScore(name string) string {
         } else {
             buf.WriteRune(r)
         }
-
-        notBeginning = true
     }
 
     return buf.String()
+}
+
+// Returns error string.
+func (e *Error) Error() string {
+    return e.Message
+}
+
+// Creates a new binary data holder.
+func Data(filename string, source io.Reader) *BinaryData {
+    return &BinaryData{
+        Filename: filename,
+        Source: source,
+    }
+}
+
+// Creates a binary file holder.
+func File(filename, path string) *BinaryFile {
+    return &BinaryFile{
+        Filename: filename,
+        Path: path,
+    }
 }

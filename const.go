@@ -9,12 +9,21 @@ package facebook
 
 import (
     "regexp"
+    "reflect"
 )
 
+// Facebook graph api methods.
 const (
     GET    Method = "GET"
     POST   Method = "POST"
     DELETE Method = "DELETE"
+    PUT Method = "PUT"
+)
+
+const (
+    ERROR_CODE_UNKNOWN = -1 // unknown facebook graph api error code.
+
+    _MIME_FORM_URLENCODED = "application/x-www-form-urlencoded"
 )
 
 var (
@@ -34,4 +43,7 @@ var (
 
     // default facebook session.
     defaultSession = Session{}
+
+    typeOfPointerToBinaryData = reflect.TypeOf(&BinaryData{})
+    typeOfPointerToBinaryFile = reflect.TypeOf(&BinaryFile{})
 )
