@@ -41,20 +41,20 @@ type Result map[string]interface{}
 
 // Facebook API error.
 type Error struct {
-    Message string
-    Type string
-    Code int
+    Message      string
+    Type         string
+    Code         int
     ErrorSubcode int // subcode for authentication related errors.
 }
 
 // Binary data.
 type BinaryData struct {
-    Filename string // filename used in multipart form writer.
-    Source io.Reader // file data source.
+    Filename string    // filename used in multipart form writer.
+    Source   io.Reader // file data source.
 }
 
 // Binary file.
 type BinaryFile struct {
     Filename string // filename used in multipart form writer.
-    Path string // path to file. must be readable.
+    Path     string // path to file. must be readable.
 }

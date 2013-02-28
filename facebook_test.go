@@ -9,8 +9,8 @@ package facebook
 
 import (
     "bytes"
-    "encoding/json"
     "encoding/base64"
+    "encoding/json"
     "testing"
 )
 
@@ -20,16 +20,15 @@ const (
     FB_TEST_MY_USERNAME = "huan.du"
 
     // remeber to change it to a valid token to run test
-    FB_TEST_VALID_ACCESS_TOKEN = "AAACZA38ZAD8CoBAKPVuUG2ztNHenFQFZCB1hEaKGZAzijtSsKlNrq6YvQLytDmD3mdU5AM8zVQVQirYSYqkxunqmDksoHRwbYnIdbZCEcaSzBDAXgpZCmi"
-    //FB_TEST_VALID_ACCESS_TOKEN = ""
+    //FB_TEST_VALID_ACCESS_TOKEN = "AAACZA38ZAD8CoBAKPVuUG2ztNHenFQFZCB1hEaKGZAzijtSsKlNrq6YvQLytDmD3mdU5AM8zVQVQirYSYqkxunqmDksoHRwbYnIdbZCEcaSzBDAXgpZCmi"
+    FB_TEST_VALID_ACCESS_TOKEN = ""
 
     // remember to change it to a valid signed request to run test
     //FB_TEST_VALID_SIGNED_REQUEST = "ZAxP-ILRQBOwKKxCBMNlGmVraiowV7WFNg761OYBNGc.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNDM0OTg0MDAsImlzc3VlZF9hdCI6MTM0MzQ5MzI2NSwib2F1dGhfdG9rZW4iOiJBQUFDWkEzOFpBRDhDb0JBRFpCcmZ5TFpDanBNUVczdThVTWZmRldSWkNpZGw5Tkx4a1BsY2tTcXZaQnpzTW9OWkF2bVk2RUd2NG1hUUFaQ0t2VlpBWkJ5VXA5a0FCU2x6THFJejlvZTdOdHBzdzhyQVpEWkQiLCJ1c2VyIjp7ImNvdW50cnkiOiJ1cyIsImxvY2FsZSI6ImVuX1VTIiwiYWdlIjp7Im1pbiI6MjF9fSwidXNlcl9pZCI6IjUzODc0NDQ2OCJ9"
     FB_TEST_VALID_SIGNED_REQUEST = ""
 
     // test binary file base64 value
-    FB_TEST_BINARY_JPG_FILE =
-        "/9j/4AAQSkZJRgABAQEASABIAAD/4gv4SUNDX1BST0ZJTEUAAQEAAAvoAAAAAAIAAABtbnRy" +
+    FB_TEST_BINARY_JPG_FILE = "/9j/4AAQSkZJRgABAQEASABIAAD/4gv4SUNDX1BST0ZJTEUAAQEAAAvoAAAAAAIAAABtbnRy" +
         "UkdCIFhZWiAH2QADABsAFQAkAB9hY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAA" +
         "9tYAAQAAAADTLQAAAAAp+D3er/JVrnhC+uTKgzkNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
         "AAAAAAAAABBkZXNjAAABRAAAAHliWFlaAAABwAAAABRiVFJDAAAB1AAACAxkbWRkAAAJ4AAA" +
@@ -256,7 +255,7 @@ func TestUploadingBinary(t *testing.T) {
 
     result, e := session.Api("/me/photos", POST, Params{
         "message": "Test photo from https://github.com/huandu/facebook",
-        "source": Data("my_profile.jpg", reader),
+        "source":  Data("my_profile.jpg", reader),
     })
 
     if e != nil {
@@ -302,14 +301,14 @@ func TestUploadBinaryWithBatch(t *testing.T) {
         "file1": Data("cat.jpg", reader1),
         "file2": Data("dog.jpg", reader2),
     }, Params{
-        "method": POST,
-        "relative_url": "me/photos",
-        "body": "message=My cat photo",
+        "method":         POST,
+        "relative_url":   "me/photos",
+        "body":           "message=My cat photo",
         "attached_files": "file1",
     }, Params{
-        "method": POST,
-        "relative_url": "me/photos",
-        "body": "message=My dog photo",
+        "method":         POST,
+        "relative_url":   "me/photos",
+        "body":           "message=My dog photo",
         "attached_files": "file2",
     })
 

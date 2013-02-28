@@ -8,8 +8,8 @@
 package facebook
 
 import (
-    "regexp"
     "reflect"
+    "regexp"
 )
 
 // Facebook graph api methods.
@@ -17,7 +17,7 @@ const (
     GET    Method = "GET"
     POST   Method = "POST"
     DELETE Method = "DELETE"
-    PUT Method = "PUT"
+    PUT    Method = "PUT"
 )
 
 const (

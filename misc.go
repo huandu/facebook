@@ -8,18 +8,18 @@
 package facebook
 
 import (
-    "io"
-    "os"
     "bytes"
     "encoding/json"
     "fmt"
+    "io"
+    "mime/multipart"
     "net/url"
+    "os"
     "reflect"
     "runtime"
     "strconv"
     "strings"
     "unicode"
-    "mime/multipart"
 )
 
 // Gets a field.
@@ -637,63 +637,63 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 
     for k, v := range params {
         switch value := v.(type) {
-            case *BinaryData:
-                var dst io.Writer
-                dst, err = w.CreateFormFile(k, value.Filename)
+        case *BinaryData:
+            var dst io.Writer
+            dst, err = w.CreateFormFile(k, value.Filename)
+
+            if err != nil {
+                return
+            }
+
+            _, err = io.Copy(dst, value.Source)
+
+            if err != nil {
+                return
+            }
+
+        case *BinaryFile:
+            var dst io.Writer
+            var file *os.File
+
+            dst, err = w.CreateFormFile(k, value.Filename)
+
+            if err != nil {
+                return
+            }
+
+            file, err = os.Open(value.Path)
+
+            if err != nil {
+                return
+            }
+
+            _, err = io.Copy(dst, file)
+
+            if err != nil {
+                return
+            }
+
+        default:
+            var dst io.Writer
+            var jsonStr []byte
+
+            dst, err = w.CreateFormField(k)
+
+            if reflect.TypeOf(v).Kind() == reflect.String {
+                io.WriteString(dst, reflect.ValueOf(v).String())
+            } else {
+                jsonStr, err = json.Marshal(v)
 
                 if err != nil {
                     return
                 }
 
-                _, err = io.Copy(dst, value.Source)
+                _, err = dst.Write(jsonStr)
 
                 if err != nil {
                     return
                 }
-
-            case *BinaryFile:
-                var dst io.Writer
-                var file *os.File
-
-                dst, err = w.CreateFormFile(k, value.Filename)
-
-                if err != nil {
-                    return
-                }
-
-                file, err = os.Open(value.Path)
-
-                if err != nil {
-                    return
-                }
-
-                _, err = io.Copy(dst, file)
-
-                if err != nil {
-                    return
-                }
-
-            default:
-                var dst io.Writer
-                var jsonStr []byte
-
-                dst, err = w.CreateFormField(k)
-
-                if reflect.TypeOf(v).Kind() == reflect.String {
-                    io.WriteString(dst, reflect.ValueOf(v).String())
-                } else {
-                    jsonStr, err = json.Marshal(v)
-
-                    if err != nil {
-                        return
-                    }
-
-                    _, err = dst.Write(jsonStr)
-
-                    if err != nil {
-                        return
-                    }
-                }
+            }
         }
     }
 
@@ -731,7 +731,7 @@ func (e *Error) Error() string {
 func Data(filename string, source io.Reader) *BinaryData {
     return &BinaryData{
         Filename: filename,
-        Source: source,
+        Source:   source,
     }
 }
 
@@ -739,6 +739,6 @@ func Data(filename string, source io.Reader) *BinaryData {
 func File(filename, path string) *BinaryFile {
     return &BinaryFile{
         Filename: filename,
-        Path: path,
+        Path:     path,
     }
 }

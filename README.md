@@ -1,7 +1,7 @@
 A Facebook Graph API Library In Go
 =================================
 
-This is a Go library supports Facebook Graph API and FQL. It's simple but powerful.
+This is a Go library fully supports Facebook Graph API and FQL. It's simple but powerful.
 
 Quick Tutorial
 ---------------

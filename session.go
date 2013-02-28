@@ -19,6 +19,8 @@ import (
 
 // Makes a facebook graph api call.
 //
+// If session access token is set, "access_token" in params will be set to the token value.
+//
 // Returns facebook graph api call result.
 // If facebook returns error in response, returns error details in res and set err.
 func (session *Session) Api(path string, method Method, params Params) (Result, error) {
@@ -38,6 +40,8 @@ func (session *Session) Api(path string, method Method, params Params) (Result, 
 //
 // See https://developers.facebook.com/docs/reference/api/batch/ for batch call api details.
 //
+// If session access token is set, the token will be used in batch api call.
+//
 // Returns an array of batch call result on success.
 func (session *Session) BatchApi(params ...Params) ([]Result, error) {
     return session.Batch(nil, params...)
@@ -45,6 +49,8 @@ func (session *Session) BatchApi(params ...Params) ([]Result, error) {
 
 // Makes a batch facebook graph api call.
 // Batch is designed for more advanced usage including uploading binary files.
+//
+// If session access token is set, "access_token" in batchParams will be set to the token value.
 //
 // See https://developers.facebook.com/docs/reference/api/batch/ for batch call api details.
 func (session *Session) Batch(batchParams Params, params ...Params) ([]Result, error) {
