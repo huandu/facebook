@@ -184,7 +184,7 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
 		return
 	}
 
-	token, err = app.ParseCode(token, "kostjazvankovichkksdsdssdsd")
+	token, err = app.ParseCode(token, "")
 
 	if err != nil {
 		return
