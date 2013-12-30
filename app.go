@@ -14,8 +14,8 @@ import (
     "encoding/json"
     "fmt"
     "net/url"
-    "strings"
     "strconv"
+    "strings"
 )
 
 // Creates a new App and sets app id and secret.
@@ -209,10 +209,10 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
     urlStr := getUrl("graph", "/oauth/client_code", nil)
 
     response, err = session.oauthRequest(urlStr, Params{
-        "client_id":         app.AppId,
-        "client_secret":     app.AppSecret,
-        "redirect_uri": app.RedirectUri,
-        "access_token": accessToken,
+        "client_id":     app.AppId,
+        "client_secret": app.AppSecret,
+        "redirect_uri":  app.RedirectUri,
+        "access_token":  accessToken,
     })
 
     if err != nil {
@@ -238,7 +238,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
     if !ok {
         err = fmt.Errorf("facebook doesn't return code in response")
     }
-    
+
     return
 }
 
