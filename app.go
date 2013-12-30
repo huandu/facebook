@@ -232,13 +232,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
         return
     }
 
-    var ok bool
-    code, ok = res.Get("code").(string)
-
-    if !ok {
-        err = fmt.Errorf("facebook doesn't return code in response")
-    }
-
+    err = res.DecodeField("code", &code)
     return
 }
 

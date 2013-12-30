@@ -28,6 +28,10 @@
 //     // create a global App var to hold your app id and secret.
 //     var globalApp = facebook.New("your-app-id", "your-app-secret")
 //
+//     // facebook asks for a valid redirect uri when parsing signed request.
+//     // it's a new enforced policy starting in late 2013.
+//     globalApp.RedirectUri = "http://your-site-canvas-url/"
+//
 //     // here comes a client with a facebook signed request string in query string.
 //     // creates a new session with signed request.
 //     session, _ := globalApp.SessionFromSignedRequest(signedRequest)
