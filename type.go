@@ -14,17 +14,13 @@ import (
 // Holds facebook application information.
 type App struct {
     // Facebook app id
-    AppId     string
+    AppId string
 
     // Facebook app secret
     AppSecret string
 
     // Facebook app redirect URI in the app's configuration.
     RedirectUri string
-
-    // An important per-client (not per-user) value that tracks clients and is used for security.
-    // It's optional.
-    MachineId string
 }
 
 // Holds a facebook session with an access token.

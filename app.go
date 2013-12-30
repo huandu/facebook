@@ -15,6 +15,7 @@ import (
     "fmt"
     "net/url"
     "strings"
+    "strconv"
 )
 
 // Creates a new App and sets app id and secret.
@@ -134,11 +135,110 @@ func (app *App) ParseCode(code string) (token string, err error) {
     err = json.Unmarshal(response, res)
 
     if err != nil {
-        err = fmt.Errorf("facebook returns an empty token.")
+        err = fmt.Errorf("facebook returns invalid result")
         return
     }
 
     err = res.Err()
+    return
+}
+
+// Exchange a short lived access token to a long lived access token.
+// Return new access token and its expires time.
+func (app *App) ExchangeToken(accessToken string) (token string, expires int, err error) {
+    if accessToken == "" {
+        err = fmt.Errorf("short lived accessToken is empty")
+        return
+    }
+
+    res := &Result{}
+    var response []byte
+    session := &Session{}
+    urlStr := getUrl("graph", "/oauth/access_token", nil)
+
+    response, err = session.oauthRequest(urlStr, Params{
+        "grant_type":        "fb_exchange_token",
+        "client_id":         app.AppId,
+        "client_secret":     app.AppSecret,
+        "fb_exchange_token": accessToken,
+    })
+
+    if err != nil {
+        return
+    }
+
+    var values url.Values
+    values, err = url.ParseQuery(string(response))
+
+    if err != nil {
+        err = fmt.Errorf("cannot parse facebook response. error is %v.", err)
+        return
+    }
+
+    token = values.Get("access_token")
+
+    // successfully get a new token.
+    if token != "" {
+        expiresStr := values.Get("expires")
+        expires, err = strconv.Atoi(expiresStr)
+        return
+    }
+
+    err = json.Unmarshal(response, res)
+
+    if err != nil {
+        err = fmt.Errorf("facebook returns invalid result")
+        return
+    }
+
+    err = res.Err()
+    return
+}
+
+// Get code from a long lived access token.
+// Return the code retrieved from facebook.
+func (app *App) GetCode(accessToken string) (code string, err error) {
+    if accessToken == "" {
+        err = fmt.Errorf("long lived accessToken is empty")
+        return
+    }
+
+    res := &Result{}
+    var response []byte
+    session := &Session{}
+    urlStr := getUrl("graph", "/oauth/client_code", nil)
+
+    response, err = session.oauthRequest(urlStr, Params{
+        "client_id":         app.AppId,
+        "client_secret":     app.AppSecret,
+        "redirect_uri": app.RedirectUri,
+        "access_token": accessToken,
+    })
+
+    if err != nil {
+        return
+    }
+
+    err = json.Unmarshal(response, res)
+
+    if err != nil {
+        err = fmt.Errorf("facebook returns invalid result")
+        return
+    }
+
+    err = res.Err()
+
+    if err != nil {
+        return
+    }
+
+    var ok bool
+    code, ok = res.Get("code").(string)
+
+    if !ok {
+        err = fmt.Errorf("facebook doesn't return code in response")
+    }
+    
     return
 }
 
