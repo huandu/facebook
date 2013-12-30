@@ -113,15 +113,15 @@ func (session *Session) Validate() (err error) {
 }
 
 // Inspect Session access token.
-// Returns  JSON array containing data about the inspected token.
+// Returns JSON array containing data about the inspected token.
 func (session *Session) Inspect() (result Result, err error) {
-
     if session.accessToken == "" {
         err = fmt.Errorf("access token is not set.")
         return
     }
 
     appAccessToken := session.App().AppAccessToken()
+
     if appAccessToken == "" {
         err = fmt.Errorf("app access token is not set.")
         return

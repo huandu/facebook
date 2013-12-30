@@ -94,7 +94,7 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 // Caller is responsible to store and check state if possible.
 //
 // Returns a valid access token exchanged from a code.
-func (app *App) ParseCode(code string, redirectUri string) (token string, err error) {
+func (app *App) ParseCode(code string) (token string, err error) {
     if code == "" {
         err = fmt.Errorf("code is empty")
         return
@@ -108,7 +108,7 @@ func (app *App) ParseCode(code string, redirectUri string) (token string, err er
     response, err = session.oauthRequest(urlStr, Params{
         "client_id":     app.AppId,
         "client_secret": app.AppSecret,
-        "redirect_uri":  redirectUri,
+        "redirect_uri":  app.RedirectUri,
         "code":          code,
     })
 
@@ -126,6 +126,7 @@ func (app *App) ParseCode(code string, redirectUri string) (token string, err er
 
     token = values.Get("access_token")
 
+    // successfully get a new token.
     if token != "" {
         return
     }
@@ -136,8 +137,8 @@ func (app *App) ParseCode(code string, redirectUri string) (token string, err er
         err = fmt.Errorf("facebook returns an empty token.")
         return
     }
-    err = res.Err()
 
+    err = res.Err()
     return
 }
 
@@ -184,7 +185,7 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
         return
     }
 
-    token, err = app.ParseCode(token, "")
+    token, err = app.ParseCode(token)
 
     if err != nil {
         return
