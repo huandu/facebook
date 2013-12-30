@@ -72,13 +72,13 @@ func (res Result) get(fields []string) interface{} {
         }
     }
 
-    res, ok = v.(Result)
+    res, ok = v.(map[string]interface{})
 
     if !ok {
         return nil
     }
 
-    return res.get(fields[1:])
+    return Result(res).get(fields[1:])
 }
 
 // Decodes full result to a struct.
