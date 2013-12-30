@@ -456,6 +456,18 @@ func TestResultDecode(t *testing.T) {
         t.Errorf("invalid array value. expected 56, actual %v", anInt)
         return
     }
+
+    err = result.DecodeField("nested_struct.int", &anInt)
+
+    if err != nil {
+        t.Errorf("cannot decode nested struct item. [e:%v]", err)
+        return
+    }
+
+    if anInt != 123 {
+        t.Errorf("invalid array value. expected 123, actual %v", anInt)
+        return
+    }
 }
 
 func TestParamsEncode(t *testing.T) {
