@@ -33,6 +33,26 @@ func (session *Session) Api(path string, method Method, params Params) (Result, 
     return nil, err
 }
 
+// Get is a short hand of Api(path, GET, params).
+func (session *Session) Get(path string, params Params) (Result, error) {
+    return session.Api(path, GET, params)
+}
+
+// Post is a short hand of Api(path, POST, params).
+func (session *Session) Post(path string, params Params) (Result, error) {
+    return session.Api(path, POST, params)
+}
+
+// Delete is a short hand of Api(path, DELETE, params).
+func (session *Session) Delete(path string, params Params) (Result, error) {
+    return session.Api(path, DELETE, params)
+}
+
+// Put is a short hand of Api(path, PUT, params).
+func (session *Session) Put(path string, params Params) (Result, error) {
+    return session.Api(path, PUT, params)
+}
+
 // Makes a batch call. Each params represent a single facebook graph api call.
 //
 // BatchApi supports most kinds of batch calls defines in facebook batch api document,
