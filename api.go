@@ -5,31 +5,34 @@
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
-// A Facebook Graph API library purely in Go. Simple but powerful.
+// This is a Go library fully supports Facebook Graph API with file upload,
+// batch request and FQL. It's simple but powerful.
 //
-// Library design is highly influenced by facebook official php/js SDK.
-// So, it should look familiar to one who has experience in official sdk.
+// Library design is highly influenced by facebook official PHP/JS SDK.
+// If you have used PHP/JS SDK, it should look familiar to you.
 //
-// To get start, here is a list of common scenarios for you.
+// Here is a list of common scenarios to help you to get started.
 //
-// Scenario 1: Read a user object without access token.
+// Scenario 1: Read a graph `user` object without access token.
 //     res, _ := facebook.Get("/huandu", nil)
 //     fmt.Println("my facebook id is", res["id"])
 //
-// Scenario 2: Read a user object with a valid access token.
+// Scenario 2: Read a graph `user` object with a valid access token.
 //     res, _ := facebook.Get("/me/feed", facebook.Params{
 //          "access_token": "a-valid-access-token",
 //     })
 //
-//     // read my last feed
+//     // read my last feed.
 //     fmt.Println("my latest feed story is:", res.Get("data.0.story"))
 //
-// Scenario 3: Use App and Session struct.
+// Scenario 3: Use App and Session struct. It's recommended to use them
+// in a production app.
 //     // create a global App var to hold your app id and secret.
 //     var globalApp = facebook.New("your-app-id", "your-app-secret")
 //
 //     // facebook asks for a valid redirect uri when parsing signed request.
 //     // it's a new enforced policy starting in late 2013.
+//     // it can be omitted in a mobile app server.
 //     globalApp.RedirectUri = "http://your-site-canvas-url/"
 //
 //     // here comes a client with a facebook signed request string in query string.
@@ -47,6 +50,7 @@
 //     err := session.Validate()
 //
 // Scenario 4: Read graph api response and decode result into a struct.
+// Struct tag definition is compatible with the definition in `encoding/json`.
 //     // define a facebook feed object.
 //     type FacebookFeed struct {
 //         Id string `facebook:",required"` // must exist
@@ -64,7 +68,7 @@
 //     res, _ := session.Get("/me/feed", nil)
 //     res.DecodeField("data.0", &feed) // read latest feed
 //
-// Scenario 5: Batch graph api request.
+// Scenario 5: Send a batch request.
 //     params1 := Params{
 //         "method": facebook.GET,
 //         "relative_url": "huandu",
@@ -77,8 +81,9 @@
 //     // res is a []Result. if err is nil, res[0] and res[1] are response to
 //     // params1 and params2 respectively.
 //
-// For more detailed documents, see doc for every public method. I've try my best to
-// provide enough information.
+// For more detailed documents, see doc in every public method. I've try my best to
+// provide enough information. Still not enough? Tell me or help me to improve
+// wording by sending me Pull Request.
 //
 // This library doesn't implement any deprecated old RESTful API. And it won't.
 package facebook
