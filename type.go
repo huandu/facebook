@@ -9,6 +9,7 @@ package facebook
 
 import (
     "io"
+    "net/http"
 )
 
 // Holds facebook application information.
@@ -26,6 +27,7 @@ type App struct {
 // Holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
+    httpClient  *http.Client
     accessToken string // facebook access token. can be empty.
     app         *App
     id          string
