@@ -13,7 +13,6 @@ import (
     "crypto/sha256"
     "encoding/json"
     "fmt"
-    "net/http"
     "net/url"
     "strconv"
     "strings"
@@ -242,16 +241,6 @@ func (app *App) Session(accessToken string) *Session {
     return &Session{
         accessToken: accessToken,
         app:         app,
-        httpClient:  http.DefaultClient,
-    }
-}
-
-// Creates a session based on current App setting, using a custom http client
-func (app *App) SessionHTTPClient(accessToken string, httpClient *http.Client) *Session {
-    return &Session{
-        accessToken: accessToken,
-        app:         app,
-        httpClient:  httpClient,
     }
 }
 
@@ -277,7 +266,6 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
             accessToken: token,
             app:         app,
             id:          id,
-            httpClient:  http.DefaultClient,
         }
         return
     }
@@ -301,7 +289,6 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
         accessToken: token,
         app:         app,
         id:          id,
-        httpClient:  http.DefaultClient,
     }
     return
 }

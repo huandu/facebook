@@ -13,6 +13,7 @@ import (
     "encoding/json"
     "fmt"
     "io"
+    "net/http"
     "strings"
 )
 
@@ -252,7 +253,12 @@ func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
         return nil, fmt.Errorf("cannot encode params. %v", err)
     }
 
-    response, err := session.httpClient.Post(url, mime, buf)
+    var response *http.Response
+    if session.HttpClient == nil {
+        response, err = http.DefaultClient.Post(url, mime, buf)
+    } else {
+        response, err = session.HttpClient.Post(url, mime, buf)
+    }
 
     if err != nil {
         return nil, fmt.Errorf("cannot reach facebook server. %v", err)
