@@ -24,10 +24,16 @@ type App struct {
     RedirectUri string
 }
 
+// An interface to send http request.
+// This interface is designed to be compatible with type `*http.Client`.
+type HttpClient interface {
+    Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
+}
+
 // Holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
-    HttpClient  *http.Client
+    HttpClient  HttpClient
     accessToken string // facebook access token. can be empty.
     app         *App
     id          string
