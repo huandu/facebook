@@ -3,7 +3,9 @@ A Facebook Graph API Library In Go
 
 [![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
 
-This is a Go library fully supports Facebook Graph API with file upload, batch request and FQL. It's simple but powerful.
+This is a Go library fully supports Facebook Graph API with file upload, batch request and FQL. It's simple yet powerful.
+
+It can be used in Google App Engine. See [document](http://godoc.org/github.com/huandu/facebook) for details.
 
 Quick Tutorial
 --------------

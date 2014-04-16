@@ -1,15 +1,15 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 // 
-// Copyright 2012, Huan Du
+// Copyright 2012-2014, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
 // This is a Go library fully supports Facebook Graph API with file upload,
-// batch request and FQL. It's simple but powerful.
+// batch request and FQL. It's simple yet powerful.
 //
 // Library design is highly influenced by facebook official PHP/JS SDK.
-// If you have used PHP/JS SDK, it should look familiar to you.
+// If you have used PHP/JS SDK before, it should look quite familiar.
 //
 // Here is a list of common scenarios to help you to get started.
 //
@@ -81,9 +81,26 @@
 //     // res is a []Result. if err is nil, res[0] and res[1] are response to
 //     // params1 and params2 respectively.
 //
-// For more detailed documents, see doc in every public method. I've try my best to
-// provide enough information. Still not enough? Tell me or help me to improve
-// wording by sending me Pull Request.
+// Scenario 6: Use it in Google App Engine with `appengine/urlfetch` package.
+//     import (
+//         "appengine"
+//         "appengine/urlfetch"
+//     )
+//
+//     // suppose it's the appengine context initialized somewhere.
+//     var context appengine.Context
+//
+//     // default Session object uses http.DefaultClient which is not supported
+//     // by appengine. we have to create a Session and assign it a special client.
+//     seesion := globalApp.Session("a-access-token")
+//     session.HttpClient = urlfetch.Client(context)
+//
+//     // now, session uses appengine http client now.
+//     res, err := session.Get("/me", nil)
+//
+// I've try my best to add enough information in every public method and type.
+// If you still have any question or suggestion, feel free to create an issue
+// or send pull request to me. Thank you.
 //
 // This library doesn't implement any deprecated old RESTful API. And it won't.
 package facebook
