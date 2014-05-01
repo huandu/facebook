@@ -102,7 +102,7 @@
 //     // this library uses default version by default.
 //     // change following global variable to specific a global default version.
 //     Version = "v2.0"
-
+//
 //     // now you will get an error as v2.0 api doesn't allow you to do so.
 //     Api("huan.du", GET, nil)
 //
