@@ -34,6 +34,8 @@ type HttpClient interface {
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
     HttpClient  HttpClient
+    Version     string // facebook versioning.
+
     accessToken string // facebook access token. can be empty.
     app         *App
     id          string

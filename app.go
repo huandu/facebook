@@ -104,7 +104,7 @@ func (app *App) ParseCode(code string) (token string, err error) {
     res := &Result{}
     var response []byte
     session := &Session{}
-    urlStr := getUrl("graph", "/oauth/access_token", nil)
+    urlStr := session.getUrl("graph", "/oauth/access_token", nil)
 
     response, err = session.oauthRequest(urlStr, Params{
         "client_id":     app.AppId,
@@ -154,7 +154,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
     res := &Result{}
     var response []byte
     session := &Session{}
-    urlStr := getUrl("graph", "/oauth/access_token", nil)
+    urlStr := session.getUrl("graph", "/oauth/access_token", nil)
 
     response, err = session.oauthRequest(urlStr, Params{
         "grant_type":        "fb_exchange_token",
@@ -206,7 +206,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
     res := &Result{}
     var response []byte
     session := &Session{}
-    urlStr := getUrl("graph", "/oauth/client_code", nil)
+    urlStr := session.getUrl("graph", "/oauth/client_code", nil)
 
     response, err = session.oauthRequest(urlStr, Params{
         "client_id":     app.AppId,

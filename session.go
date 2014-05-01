@@ -185,9 +185,9 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
     params["method"] = method
 
     if session.isVideoPost(path, method) {
-        graphUrl = getUrl("graph_video", path, nil)
+        graphUrl = session.getUrl("graph_video", path, nil)
     } else {
-        graphUrl = getUrl("graph", path, nil)
+        graphUrl = session.getUrl("graph", path, nil)
     }
 
     response, err = session.oauthRequest(graphUrl, params)
@@ -219,7 +219,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) (res []
 
     batchParams["batch"] = params
 
-    graphUrl := getUrl("graph", "", nil)
+    graphUrl := session.getUrl("graph", "", nil)
     response, err = session.oauthRequest(graphUrl, batchParams)
 
     if err != nil {
@@ -254,6 +254,7 @@ func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
     }
 
     var response *http.Response
+
     if session.HttpClient == nil {
         response, err = http.DefaultClient.Post(url, mime, buf)
     } else {
@@ -280,7 +281,7 @@ func (session *Session) isVideoPost(path string, method Method) bool {
     return method == POST && regexpIsVideoPost.MatchString(path)
 }
 
-func getUrl(name, path string, params Params) string {
+func (session *Session) getUrl(name, path string, params Params) string {
     offset := 0
 
     if path != "" && path[0] == '/' {
@@ -289,6 +290,18 @@ func getUrl(name, path string, params Params) string {
 
     buf := &bytes.Buffer{}
     buf.WriteString(domainMap[name])
+
+    // facebook versioning.
+    if session.Version == "" {
+        if Version != "" {
+            buf.WriteString(Version)
+            buf.WriteRune('/')
+        }
+    } else {
+        buf.WriteString(session.Version)
+        buf.WriteRune('/')
+    }
+
     buf.WriteString(string(path[offset:]))
 
     if params != nil {

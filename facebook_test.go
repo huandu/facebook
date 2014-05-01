@@ -20,7 +20,7 @@ const (
     FB_TEST_MY_USERNAME = "huan.du"
 
     // remeber to change it to a valid token to run test
-    //FB_TEST_VALID_ACCESS_TOKEN = "AAACZA38ZAD8CoBAKPVuUG2ztNHenFQFZCB1hEaKGZAzijtSsKlNrq6YvQLytDmD3mdU5AM8zVQVQirYSYqkxunqmDksoHRwbYnIdbZCEcaSzBDAXgpZCmi"
+    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAItCaMZAZCIMZAl1HWRDEDZAhLrce1X9IHzl6slmPSdMeZCyT45p71gsOuAVB5fZAcNUcrp6eZAXDguaFZAjNDbnfpY1m5f942cnI3ZAATOgJORWoDjRB6u7vb04ZC8oAu2A6kzKl1EfxrZBg4NhZAvINrYdv9F79dZCsOzTPJNQekczMz0rIvdBEpKwZD"
     FB_TEST_VALID_ACCESS_TOKEN = ""
 
     // remember to change it to a valid signed request to run test
@@ -170,29 +170,74 @@ func TestApiGetUserInfo(t *testing.T) {
     t.Logf("my info. %v", me)
 }
 
+func TestApiGetUserInfoV2(t *testing.T) {
+    Version = "v2.0"
+    defer func() {
+        Version = ""
+    }()
+
+    // It's not allowed to get user info by name. So I get "me" with access token instead.
+    if FB_TEST_VALID_ACCESS_TOKEN != "" {
+        me, err := Api("me", GET, Params{
+            "access_token": FB_TEST_VALID_ACCESS_TOKEN,
+        })
+
+        if err != nil {
+            t.Errorf("cannot get my info. [e:%v]", err)
+            return
+        }
+
+        if e := me.Err(); e != nil {
+            t.Errorf("facebook returns error. [e:%v]", e)
+            return
+        }
+
+        t.Logf("my info. %v", me)
+    }
+}
+
 func TestBatchApiGetInfo(t *testing.T) {
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
         t.Logf("cannot call batch api without access token. skip this test.")
         return
     }
 
-    params1 := Params{
-        "method":       GET,
-        "relative_url": FB_TEST_MY_USERNAME,
-    }
-    params2 := Params{
-        "method":       GET,
-        "relative_url": uint64(100002828925788), // id of my another facebook id
+    test := func(t *testing.T) {
+        params1 := Params{
+            "method":       GET,
+            "relative_url": FB_TEST_MY_USERNAME,
+        }
+        params2 := Params{
+            "method":       GET,
+            "relative_url": uint64(100002828925788), // id of my another facebook id
+        }
+
+        me, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
+
+        if err != nil {
+            t.Errorf("cannot get batch result. [e:%v]", err)
+            return
+        }
+
+        if Version == "" {
+            t.Log("use default facebook version.")
+        } else {
+            t.Logf("global facebook version: %v", Version)
+        }
+
+        t.Logf("my info. %v", me)
     }
 
-    me, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
+    // Use default Version.
+    Version = ""
+    test(t)
 
-    if err != nil {
-        t.Errorf("cannot get batch result. [e:%v]", err)
-        return
-    }
-
-    t.Logf("my info. %v", me)
+    // User "v2.0".
+    Version = "v2.0"
+    defer func() {
+        Version = ""
+    }()
+    test(t)
 }
 
 func TestApiParseSignedRequest(t *testing.T) {
@@ -220,25 +265,64 @@ func TestSession(t *testing.T) {
 
     session := &Session{}
     session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
-    id, err := session.User()
 
-    if err != nil {
-        t.Errorf("cannot get current user id. [e:%v]", err)
-        return
+    test := func(t *testing.T, session *Session) {
+        id, err := session.User()
+
+        if err != nil {
+            t.Errorf("cannot get current user id. [e:%v]", err)
+            return
+        }
+
+        t.Logf("current user id is %v", id)
+
+        result, e := session.Api("/me", GET, Params{
+            "fields": "id,email,website",
+        })
+
+        if e != nil {
+            t.Errorf("cannot get my extended info. [e:%v]", e)
+            return
+        }
+
+        if Version == "" {
+            t.Log("use default facebook version.")
+        } else {
+            t.Logf("global facebook version: %v", Version)
+        }
+
+        if session.Version == "" {
+            t.Log("use default session facebook version.")
+        } else {
+            t.Logf("session facebook version: %v", session.Version)
+        }
+
+        t.Logf("my extended info is: %v", result)
     }
 
-    t.Logf("current user id is %v", id)
+    // Default version.
+    test(t, session)
 
-    result, e := session.Api("/me", GET, Params{
-        "fields": "id,email,website",
-    })
+    // Global version overwrite default session version.
+    func() {
+        Version = "v2.0"
+        defer func() {
+            Version = ""
+        }()
 
-    if e != nil {
-        t.Errorf("cannot get my extended info. [e:%v]", e)
-        return
-    }
+        test(t, session)
+    }()
 
-    t.Logf("my extended info is: %v", result)
+    // Session version overwrite default version.
+    func() {
+        Version = "vx.y" // an invalid version.
+        session.Version = "v2.0"
+        defer func() {
+            Version = ""
+        }()
+
+        test(t, session)
+    }()
 }
 
 func TestUploadingBinary(t *testing.T) {
@@ -617,7 +701,7 @@ func TestStructFieldTag(t *testing.T) {
 }
 
 func TestGraphError(t *testing.T) {
-    res, err := Get("/huandu", Params{
+    res, err := Get("/me", Params{
         "access_token": "fake",
     })
 

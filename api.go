@@ -6,7 +6,7 @@
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
 // This is a Go library fully supports Facebook Graph API with file upload,
-// batch request and FQL. It's simple yet powerful.
+// batch request and FQL. It also supports Graph API 2.0 using the same methods.
 //
 // Library design is highly influenced by facebook official PHP/JS SDK.
 // If you have used PHP/JS SDK before, it should look quite familiar.
@@ -98,12 +98,31 @@
 //     // now, session uses appengine http client now.
 //     res, err := session.Get("/me", nil)
 //
+// Scenario 7: Select Graph API version. See https://developers.facebook.com/docs/apps/versions .
+//     // this library uses default version by default.
+//     // change following global variable to specific a global default version.
+//     Version = "v2.0"
+
+//     // now you will get an error as v2.0 api doesn't allow you to do so.
+//     Api("huan.du", GET, nil)
+//
+//     // you can also specify version per session.
+//     session := &Session{}
+//     session.Version = "v2.0" // overwrite global default.
+//
 // I've try my best to add enough information in every public method and type.
 // If you still have any question or suggestion, feel free to create an issue
 // or send pull request to me. Thank you.
 //
 // This library doesn't implement any deprecated old RESTful API. And it won't.
 package facebook
+
+var (
+    // Default facebook api version.
+    // It can be "v1.0" or "v2.0" or empty per facebook current document.
+    // See https://developers.facebook.com/docs/apps/versions for details.
+    Version string
+)
 
 // Makes a facebook graph api call.
 //
