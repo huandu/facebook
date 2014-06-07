@@ -6,7 +6,8 @@
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
 // This is a Go library fully supports Facebook Graph API with file upload,
-// batch request and FQL. It also supports Graph API 2.0 using the same methods.
+// batch request and FQL. It also supports Graph API 2.0 using the same set
+// of methods.
 //
 // Library design is highly influenced by facebook official PHP/JS SDK.
 // If you have used PHP/JS SDK before, it should look quite familiar.
@@ -18,9 +19,19 @@
 //     fmt.Println("my facebook id is", res["id"])
 //
 // Scenario 2: Read a graph `user` object with a valid access token.
-//     res, _ := facebook.Get("/me/feed", facebook.Params{
+//     res, err := facebook.Get("/me/feed", facebook.Params{
 //          "access_token": "a-valid-access-token",
 //     })
+//
+//     if err != nil {
+//         // err can be an facebook API error.
+//         // if so, the Error struct contains error details.
+//         if e, ok := err.(*Error); ok {
+//             fmt.Logf("facebook error. [message:%v] [type:%v] [code:%v] [subcode:%v]",
+//                 fbErr.Message, fbErr.Type, fbErr.Code, fbErr.ErrorSubcode)
+//             return
+//         }
+//     }
 //
 //     // read my last feed.
 //     fmt.Println("my latest feed story is:", res.Get("data.0.story"))
@@ -50,13 +61,31 @@
 //     err := session.Validate()
 //
 // Scenario 4: Read graph api response and decode result into a struct.
-// Struct tag definition is compatible with the definition in `encoding/json`.
+// 
+// As facebook Graph API always uses lower case words as keys in API response.
+// this library can convert go's camel-case-style struct field name to underscore-style
+// API key name.
+//
+// For instance, given we have following JSON response from facebook.
+//     {
+//         "foo_bar": "player"
+//     }
+//
+// We can use following struct to decode it.
+//     type Data struct {
+//         FooBar string  // "FooBar" => "foo_bar"
+//     }
+// 
+// Like `encoding/json` package, struct can have tag definitions, which is compatible with
+// the JSON package.
+//
+// Following is a full sample wrap up everything about struct decoding.
 //     // define a facebook feed object.
 //     type FacebookFeed struct {
-//         Id string `facebook:",required"` // must exist
+//         Id string `facebook:",required"`         // must exist
 //         Story string
-//         From *FacebookFeedFrom
-//         CreatedTime string `facebook:"created_time"` // use customized field name
+//         From *FacebookFeedFrom `facebook:"from"` // use customized field name
+//         CreatedTime string
 //     }
 //
 //     type FacebookFeedFrom struct {
@@ -81,7 +110,37 @@
 //     // res is a []Result. if err is nil, res[0] and res[1] are response to
 //     // params1 and params2 respectively.
 //
-// Scenario 6: Use it in Google App Engine with `appengine/urlfetch` package.
+// Scenario 6: Send FQL query.
+//     results, _ := FQL("SELECT username FROM page WHERE page_id = 20531316728")
+//     fmt.Println(results[0]["username"]) // print "facebook"
+//
+//     // most FQL query requires access token. create session to hold access token.
+//     session := &Session{}
+//     session.SetAccessToken("A-VALID-ACCESS-TOKEN")
+//     results, _ := session.FQL("SELECT username FROM page WHERE page_id = 20531316728")
+//     fmt.Println(results[0]["username"]) // print "facebook"
+//
+// Scenario 7: Make multi-FQL.
+//     res, _ := MultiFQL(Params{
+//         "query1": "SELECT username FROM page WHERE page_id = 20531316728",
+//         "query2": "SELECT uid FROM user WHERE uid = 538744468",
+//     })
+//     var query1, query2 []Result
+//
+//     // get response for query1 and query2.
+//     res.DecodeField("query1", &query1)
+//     res.DecodeField("query2", &query2)
+//
+//     // most FQL query requires access token. create session to hold access token.
+//     session := &Session{}
+//     session.SetAccessToken("A-VALID-ACCESS-TOKEN")
+//     res, _ := session.MultiFQL(Params{
+//         "query1": "...",
+//         "query2": "...",
+//     })
+//     // same as the sample without access token...
+//
+// Scenario 8: Use it in Google App Engine with `appengine/urlfetch` package.
 //     import (
 //         "appengine"
 //         "appengine/urlfetch"
@@ -98,7 +157,7 @@
 //     // now, session uses appengine http client now.
 //     res, err := session.Get("/me", nil)
 //
-// Scenario 7: Select Graph API version. See https://developers.facebook.com/docs/apps/versions .
+// Scenario 9: Select Graph API version. See https://developers.facebook.com/docs/apps/versions .
 //     // this library uses default version by default.
 //     // change following global variable to specific a global default version.
 //     Version = "v2.0"
@@ -173,7 +232,15 @@ func Put(path string, params Params) (Result, error) {
 // BatchApi supports most kinds of batch calls defines in facebook batch api document,
 // except uploading binary data. Use Batch to do so.
 //
-// See https://developers.facebook.com/docs/reference/api/batch/ to learn more about Batch Requests.
+// Note: API response is stored in "body" field of a Result.
+//     var res1, res2 Result
+//     results, _ := BatchApi(accessToken, Params{...}, Params{...})
+//
+//     // Get batch request response.
+//     results[0].DecodeField("body", &res1)
+//     results[1].DecodeField("body", &res2)
+//
+// Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func BatchApi(accessToken string, params ...Params) ([]Result, error) {
     return Batch(Params{"access_token": accessToken}, params...)
 }
@@ -205,7 +272,31 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //         "attached_files": "file2",
 //     })
 //
-// See https://developers.facebook.com/docs/reference/api/batch/ to learn more about Batch Requests.
+// Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func Batch(batchParams Params, params ...Params) ([]Result, error) {
     return defaultSession.Batch(batchParams, params...)
+}
+
+// Makes a FQL query.
+// Returns a slice of Result. If there is no query result, the result is nil.
+//
+// FQL can only make query without "access_token". For query requiring "access_token", create
+// Session and call its FQL method.
+//
+// Facebook document: https://developers.facebook.com/docs/technical-guides/fql#query
+func FQL(query string) ([]Result, error) {
+    return defaultSession.FQL(query)
+}
+
+// Makes a multi FQL query.
+// Returns a parsed Result. The key is the multi query key, and the value is the query result.
+//
+// MultiFQL can only make query without "access_token". For query requiring "access_token", create
+// Session and call its MultiFQL method.
+//
+// See Session.MultiFQL document for samples.
+//
+// Facebook document: https://developers.facebook.com/docs/technical-guides/fql#multi
+func MultiFQL(queries Params) (Result, error) {
+    return defaultSession.MultiFQL(queries)
 }

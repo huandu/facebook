@@ -42,7 +42,7 @@ var (
     regexpIsVideoPost = regexp.MustCompile(`/^(\/)(.+)(\/)(videos)$/`)
 
     // default facebook session.
-    defaultSession = Session{}
+    defaultSession = &Session{}
 
     typeOfPointerToBinaryData = reflect.TypeOf(&BinaryData{})
     typeOfPointerToBinaryFile = reflect.TypeOf(&BinaryFile{})

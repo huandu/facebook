@@ -1,11 +1,11 @@
-A Facebook Graph API Library In Go
+A Facebook Graph API SDK In Golang
 ==================================
 
 [![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
 
-This is a Go library fully supports Facebook Graph API with file upload, batch request and FQL. It also supports Graph API 2.0 using the same methods.
+This is a Go library fully supports Facebook Graph API (both 1.0 and 2.0) with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
 
-It can be used in Google App Engine. See [document](http://godoc.org/github.com/huandu/facebook) for details.
+See [full document](http://godoc.org/github.com/huandu/facebook) for details.
 
 Quick Tutorial
 --------------
@@ -44,11 +44,6 @@ Type of `res["username"]` is `interface{}`. This library provides several helpfu
     res.Decode(&user)
     fmt.Println("print username in struct:", user.Username)
 ```
-
-Full Document
--------------
-
-Read http://godoc.org/github.com/huandu/facebook or use `go doc`.
 
 Get It
 ------

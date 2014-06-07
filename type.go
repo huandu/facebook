@@ -27,6 +27,7 @@ type App struct {
 // An interface to send http request.
 // This interface is designed to be compatible with type `*http.Client`.
 type HttpClient interface {
+    Get(url string) (resp *http.Response, err error)
     Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
 }
 

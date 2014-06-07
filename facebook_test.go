@@ -20,7 +20,7 @@ const (
     FB_TEST_MY_USERNAME = "huan.du"
 
     // remeber to change it to a valid token to run test
-    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAItCaMZAZCIMZAl1HWRDEDZAhLrce1X9IHzl6slmPSdMeZCyT45p71gsOuAVB5fZAcNUcrp6eZAXDguaFZAjNDbnfpY1m5f942cnI3ZAATOgJORWoDjRB6u7vb04ZC8oAu2A6kzKl1EfxrZBg4NhZAvINrYdv9F79dZCsOzTPJNQekczMz0rIvdBEpKwZD"
+    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAAAaRiTpRDb1hjKTq7RGtZBmCasVfAcNHVGxSMpuuPI7rfZB1hFROZA49VgZBA9UkBOT27X5Hk4ZCdks8ltYyfoCq1FAu9E710tdbrPq9voJeW9x6ZCfKpn6ZCMgIFFcjz5ZBUkogH3BcvOR9o4dqqndpQpuvZAjuI0BZCAR0fVJe4DNeW72As0ZAoZD"
     FB_TEST_VALID_ACCESS_TOKEN = ""
 
     // remember to change it to a valid signed request to run test
@@ -158,13 +158,11 @@ func TestApiGetUserInfo(t *testing.T) {
     me, err := Api(FB_TEST_MY_USERNAME, GET, nil)
 
     if err != nil {
-        t.Errorf("cannot get my info. [e:%v]", err)
-        return
+        t.Fatalf("cannot get my info. [e:%v]", err)
     }
 
     if e := me.Err(); e != nil {
-        t.Errorf("facebook returns error. [e:%v]", e)
-        return
+        t.Fatalf("facebook returns error. [e:%v]", e)
     }
 
     t.Logf("my info. %v", me)
@@ -183,13 +181,11 @@ func TestApiGetUserInfoV2(t *testing.T) {
         })
 
         if err != nil {
-            t.Errorf("cannot get my info. [e:%v]", err)
-            return
+            t.Fatalf("cannot get my info. [e:%v]", err)
         }
 
         if e := me.Err(); e != nil {
-            t.Errorf("facebook returns error. [e:%v]", e)
-            return
+            t.Fatalf("facebook returns error. [e:%v]", e)
         }
 
         t.Logf("my info. %v", me)
@@ -198,8 +194,7 @@ func TestApiGetUserInfoV2(t *testing.T) {
 
 func TestBatchApiGetInfo(t *testing.T) {
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
-        t.Logf("cannot call batch api without access token. skip this test.")
-        return
+        t.Skipf("cannot call batch api without access token. skip this test.")
     }
 
     test := func(t *testing.T) {
@@ -215,8 +210,7 @@ func TestBatchApiGetInfo(t *testing.T) {
         me, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
 
         if err != nil {
-            t.Errorf("cannot get batch result. [e:%v]", err)
-            return
+            t.Fatalf("cannot get batch result. [e:%v]", err)
         }
 
         if Version == "" {
@@ -250,8 +244,7 @@ func TestApiParseSignedRequest(t *testing.T) {
     res, err := app.ParseSignedRequest(FB_TEST_VALID_SIGNED_REQUEST)
 
     if err != nil {
-        t.Errorf("cannot parse signed request. [e:%v]", err)
-        return
+        t.Fatalf("cannot parse signed request. [e:%v]", err)
     }
 
     t.Logf("signed request is '%v'.", res)
@@ -259,8 +252,7 @@ func TestApiParseSignedRequest(t *testing.T) {
 
 func TestSession(t *testing.T) {
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
-        t.Logf("skip this case as we don't have a valid access token.")
-        return
+        t.Skipf("skip this case as we don't have a valid access token.")
     }
 
     session := &Session{}
@@ -270,8 +262,7 @@ func TestSession(t *testing.T) {
         id, err := session.User()
 
         if err != nil {
-            t.Errorf("cannot get current user id. [e:%v]", err)
-            return
+            t.Fatalf("cannot get current user id. [e:%v]", err)
         }
 
         t.Logf("current user id is %v", id)
@@ -281,8 +272,7 @@ func TestSession(t *testing.T) {
         })
 
         if e != nil {
-            t.Errorf("cannot get my extended info. [e:%v]", e)
-            return
+            t.Fatalf("cannot get my extended info. [e:%v]", e)
         }
 
         if Version == "" {
@@ -327,8 +317,7 @@ func TestSession(t *testing.T) {
 
 func TestUploadingBinary(t *testing.T) {
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
-        t.Logf("skip this case as we don't have a valid access token.")
-        return
+        t.Skipf("skip this case as we don't have a valid access token.")
     }
 
     buf := bytes.NewBufferString(FB_TEST_BINARY_JPG_FILE)
@@ -343,16 +332,14 @@ func TestUploadingBinary(t *testing.T) {
     })
 
     if e != nil {
-        t.Errorf("cannot create photo on my timeline. [e:%v]", e)
-        return
+        t.Fatalf("cannot create photo on my timeline. [e:%v]", e)
     }
 
     var id string
     e = result.DecodeField("id", &id)
 
     if e != nil {
-        t.Errorf("facebook should return photo id on success. [e:%v]", e)
-        return
+        t.Fatalf("facebook should return photo id on success. [e:%v]", e)
     }
 
     t.Logf("newly created photo id is %v", id)
@@ -360,8 +347,7 @@ func TestUploadingBinary(t *testing.T) {
 
 func TestUploadBinaryWithBatch(t *testing.T) {
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
-        t.Logf("skip this case as we don't have a valid access token.")
-        return
+        t.Skipf("skip this case as we don't have a valid access token.")
     }
 
     buf1 := bytes.NewBufferString(FB_TEST_BINARY_JPG_FILE)
@@ -397,11 +383,122 @@ func TestUploadBinaryWithBatch(t *testing.T) {
     })
 
     if e != nil {
-        t.Errorf("cannot create photo on my timeline. [e:%v]", e)
-        return
+        t.Fatalf("cannot create photo on my timeline. [e:%v]", e)
     }
 
     t.Logf("batch call result. [result:%v]", result)
+}
+
+func TestSimpleFQL(t *testing.T) {
+    defer func() {
+        Version = ""
+    }()
+
+    test := func(t *testing.T, session *Session) {
+        me, err := session.FQL("SELECT name FROM user WHERE uid = 538744468")
+
+        if err != nil {
+            t.Fatalf("cannot get my info. [e:%v]", err)
+        }
+
+        if len(me) != 1 {
+            t.Fatalf("expect to get only 1 result. [len:%v]", len(me))
+        }
+
+        t.Logf("my name. %v", me[0]["name"])
+    }
+
+    // v2.0 api doesn't allow me to query user without access token.
+    Version = "v1.0"
+    test(t, defaultSession)
+
+    if FB_TEST_VALID_ACCESS_TOKEN == "" {
+        t.Skipf("skip this case as we don't have a valid access token.")
+    }
+
+    Version = "v2.0"
+    session := &Session{}
+    session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
+    test(t, session)
+}
+
+func TestMultiFQL(t *testing.T) {
+    defer func() {
+        Version = ""
+    }()
+
+    test := func(t *testing.T, session *Session) {
+        res, err := session.MultiFQL(Params{
+            "query1": "SELECT username FROM page WHERE page_id = 20531316728",
+            "query2": "SELECT uid FROM user WHERE uid = 538744468",
+        })
+
+        if err != nil {
+            t.Fatalf("cannot get my info. [e:%v]", err)
+        }
+
+        if err = res.Err(); err != nil {
+            t.Fatalf("fail to parse facebook api error. [e:%v]", err)
+        }
+
+        var query1, query2 []Result
+
+        err = res.DecodeField("query1", &query1)
+
+        if err != nil {
+            t.Fatalf("cannot get result of query1. [e:%v]", err)
+        }
+
+        if len(query1) != 1 {
+            t.Fatalf("expect to get only 1 result in query1. [len:%v]", len(query1))
+        }
+
+        err = res.DecodeField("query2", &query2)
+
+        if err != nil {
+            t.Fatalf("cannot get result of query2. [e:%v]", err)
+        }
+
+        if len(query2) != 1 {
+            t.Fatalf("expect to get only 1 result in query2. [len:%v]", len(query2))
+        }
+
+        var username string
+        var uid int64
+
+        err = query1[0].DecodeField("username", &username)
+
+        if err != nil {
+            t.Fatalf("cannot decode username from query1. [e:%v]", err)
+        }
+
+        if username != "facebook" {
+            t.Fatalf("username is expected to be \"facebook\". [username:%v]", username)
+        }
+
+        err = query2[0].DecodeField("uid", &uid)
+
+        if err != nil {
+            t.Fatalf("cannot decode username from query2. [e:%v]", err)
+        }
+
+        if uid != 538744468 {
+            t.Fatalf("username is expected to be \"facebook\". [username:%v]", username)
+        }
+    }
+
+    // v2.0 api doesn't allow me to query user without access token.
+    Version = "v1.0"
+    test(t, defaultSession)
+
+    if FB_TEST_VALID_ACCESS_TOKEN == "" {
+        t.Skipf("skip this case as we don't have a valid access token.")
+    }
+
+    Version = "v2.0"
+    session := &Session{}
+    session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
+    test(t, session)
 }
 
 func TestResultDecode(t *testing.T) {
@@ -486,29 +583,25 @@ func TestResultDecode(t *testing.T) {
     err = json.Unmarshal([]byte(strNormal), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&normal)
 
     if err != nil {
-        t.Errorf("cannot decode normal struct. [e:%v]", err)
-        return
+        t.Fatalf("cannot decode normal struct. [e:%v]", err)
     }
 
     err = json.Unmarshal([]byte(strOverflow), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&withError)
 
     if err == nil {
-        t.Errorf("struct should be overflow")
-        return
+        t.Fatalf("struct should be overflow")
     }
 
     t.Logf("overflow struct. e:%v", err)
@@ -516,15 +609,13 @@ func TestResultDecode(t *testing.T) {
     err = json.Unmarshal([]byte(strMissAField), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&withError)
 
     if err == nil {
-        t.Errorf("a field in struct should absent in json map.")
-        return
+        t.Fatalf("a field in struct should absent in json map.")
     }
 
     t.Logf("miss-a-field struct. e:%v", err)
@@ -532,25 +623,21 @@ func TestResultDecode(t *testing.T) {
     err = result.DecodeField("array_of_int.2", &anInt)
 
     if err != nil {
-        t.Errorf("cannot decode array item. [e:%v]", err)
-        return
+        t.Fatalf("cannot decode array item. [e:%v]", err)
     }
 
     if anInt != 56 {
-        t.Errorf("invalid array value. expected 56, actual %v", anInt)
-        return
+        t.Fatalf("invalid array value. expected 56, actual %v", anInt)
     }
 
     err = result.DecodeField("nested_struct.int", &anInt)
 
     if err != nil {
-        t.Errorf("cannot decode nested struct item. [e:%v]", err)
-        return
+        t.Fatalf("cannot decode nested struct item. [e:%v]", err)
     }
 
     if anInt != 123 {
-        t.Errorf("invalid array value. expected 123, actual %v", anInt)
-        return
+        t.Fatalf("invalid array value. expected 123, actual %v", anInt)
     }
 }
 
@@ -559,8 +646,7 @@ func TestParamsEncode(t *testing.T) {
     buf := &bytes.Buffer{}
 
     if mime, err := params.Encode(buf); err != nil || mime != _MIME_FORM_URLENCODED || buf.Len() != 0 {
-        t.Errorf("empty params must encode to an empty string. actual is [e:%v] [str:%v] [mime:%v]", err, buf.String(), mime)
-        return
+        t.Fatalf("empty params must encode to an empty string. actual is [e:%v] [str:%v] [mime:%v]", err, buf.String(), mime)
     }
 
     buf.Reset()
@@ -569,8 +655,7 @@ func TestParamsEncode(t *testing.T) {
     expectedEncoding := "need_escape=%26%3D%2B"
 
     if mime, err := params.Encode(buf); err != nil || mime != _MIME_FORM_URLENCODED || buf.String() != expectedEncoding {
-        t.Errorf("wrong params encode result. expected is '%v'. actual is '%v'. [e:%v] [mime:%v]", expectedEncoding, buf.String(), err, mime)
-        return
+        t.Fatalf("wrong params encode result. expected is '%v'. actual is '%v'. [e:%v] [mime:%v]", expectedEncoding, buf.String(), err, mime)
     }
 
     buf.Reset()
@@ -595,8 +680,7 @@ func TestParamsEncode(t *testing.T) {
     */
 
     if params == nil {
-        t.Errorf("make params error.")
-        return
+        t.Fatalf("make params error.")
     }
 
     mime, err := params.Encode(buf)
@@ -631,15 +715,13 @@ func TestStructFieldTag(t *testing.T) {
     err = json.Unmarshal([]byte(strNormalField), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&value)
 
     if err != nil {
-        t.Errorf("cannot decode struct. [e:%v]", err)
-        return
+        t.Fatalf("cannot decode struct. [e:%v]", err)
     }
 
     result = Result{}
@@ -647,20 +729,17 @@ func TestStructFieldTag(t *testing.T) {
     err = json.Unmarshal([]byte(strMissingField2Field), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&value)
 
     if err != nil {
-        t.Errorf("cannot decode struct. [e:%v]", err)
-        return
+        t.Fatalf("cannot decode struct. [e:%v]", err)
     }
 
     if value.Field1 != "" {
-        t.Errorf("value field1 should be kept unchanged. [field1:%v]", value.Field1)
-        return
+        t.Fatalf("value field1 should be kept unchanged. [field1:%v]", value.Field1)
     }
 
     result = Result{}
@@ -668,15 +747,13 @@ func TestStructFieldTag(t *testing.T) {
     err = json.Unmarshal([]byte(strMissingRequiredField), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&value)
 
     if err == nil {
-        t.Errorf("should fail to decode struct.")
-        return
+        t.Fatalf("should fail to decode struct.")
     }
 
     t.Logf("expected decode error. [e:%v]", err)
@@ -686,18 +763,143 @@ func TestStructFieldTag(t *testing.T) {
     err = json.Unmarshal([]byte(strMissingBarField), &result)
 
     if err != nil {
-        t.Errorf("cannot unmarshal json string. [e:%v]", err)
-        return
+        t.Fatalf("cannot unmarshal json string. [e:%v]", err)
     }
 
     err = result.Decode(&value)
 
     if err == nil {
-        t.Errorf("should fail to decode struct.")
-        return
+        t.Fatalf("should fail to decode struct.")
     }
 
     t.Logf("expected decode error. [e:%v]", err)
+}
+
+func TestDecodeField(t *testing.T) {
+    jsonStr := `{
+        "int": 1234,
+        "array": ["abcd", "efgh"],
+        "map": {
+            "key1": 5678,
+            "nested_map": {
+                "key2": "ijkl",
+                "key3": [{
+                    "key4": "mnop"
+                }, {
+                    "key5": 9012
+                }]
+            }
+        }
+    }`
+
+    var result Result
+    var err error
+    var anInt int
+    var aString string
+    var aSlice []string
+    var subResults []Result
+
+    err = json.Unmarshal([]byte(jsonStr), &result)
+
+    if err != nil {
+        t.Fatalf("invalid json string. [e:%v]", err)
+    }
+
+    err = result.DecodeField("int", &anInt)
+
+    if err != nil {
+        t.Fatalf("cannot decode int field. [e:%v]", err)
+    }
+
+    if anInt != 1234 {
+        t.Fatalf("expected int value is 1234. [int:%v]", anInt)
+    }
+
+    err = result.DecodeField("array.0", &aString)
+
+    if err != nil {
+        t.Fatalf("cannot decode array.0 field. [e:%v]", err)
+    }
+
+    if aString != "abcd" {
+        t.Fatalf("expected array.0 value is \"abcd\". [string:%v]", aString)
+    }
+
+    err = result.DecodeField("array.1", &aString)
+
+    if err != nil {
+        t.Fatalf("cannot decode array.1 field. [e:%v]", err)
+    }
+
+    if aString != "efgh" {
+        t.Fatalf("expected array.1 value is \"abcd\". [string:%v]", aString)
+    }
+
+    err = result.DecodeField("array.2", &aString)
+
+    if err == nil {
+        t.Fatalf("array.2 doesn't exist. expect an error.")
+    }
+
+    err = result.DecodeField("map.key1", &anInt)
+
+    if err != nil {
+        t.Fatalf("cannot decode map.key1 field. [e:%v]", err)
+    }
+
+    if anInt != 5678 {
+        t.Fatalf("expected map.key1 value is 5678. [int:%v]", anInt)
+    }
+
+    err = result.DecodeField("map.nested_map.key2", &aString)
+
+    if err != nil {
+        t.Fatalf("cannot decode map.nested_map.key2 field. [e:%v]", err)
+    }
+
+    if aString != "ijkl" {
+        t.Fatalf("expected map.nested_map.key2 value is \"ijkl\". [string:%v]", aString)
+    }
+
+    err = result.DecodeField("array", &aSlice)
+
+    if err != nil {
+        t.Fatalf("cannot decode array field. [e:%v]", err)
+    }
+
+    if len(aSlice) != 2 || aSlice[0] != "abcd" || aSlice[1] != "efgh" {
+        t.Fatalf("expected array value is [\"abcd\", \"efgh\"]. [slice:%v]", aSlice)
+    }
+
+    err = result.DecodeField("map.nested_map.key3", &subResults)
+
+    if err != nil {
+        t.Fatalf("cannot decode map.nested_map.key3 field. [e:%v]", err)
+    }
+
+    if len(subResults) != 2 {
+        t.Fatalf("expected sub results len is 2. [len:%v] [results:%v]", subResults)
+    }
+
+    err = subResults[0].DecodeField("key4", &aString)
+
+    if err != nil {
+        t.Fatalf("cannot decode key4 field in sub result. [e:%v]", err)
+    }
+
+    if aString != "mnop" {
+        t.Fatalf("expected map.nested_map.key2 value is \"mnop\". [string:%v]", aString)
+    }
+
+    err = subResults[1].DecodeField("key5", &anInt)
+
+    if err != nil {
+        t.Fatalf("cannot decode key5 field. [e:%v]", err)
+    }
+
+    if anInt != 9012 {
+        t.Fatalf("expected key5 value is 9012. [int:%v]", anInt)
+    }
 }
 
 func TestGraphError(t *testing.T) {
@@ -706,15 +908,13 @@ func TestGraphError(t *testing.T) {
     })
 
     if err == nil {
-        t.Errorf("facebook should return error for bad access token. [res:%v]", res)
-        return
+        t.Fatalf("facebook should return error for bad access token. [res:%v]", res)
     }
 
     fbErr, ok := err.(*Error)
 
     if !ok {
-        t.Errorf("error must be a *Error. [e:%v]", err)
-        return
+        t.Fatalf("error must be a *Error. [e:%v]", err)
     }
 
     t.Logf("facebook error. [e:%v] [message:%v] [type:%v] [code:%v] [subcode:%v]", err, fbErr.Message, fbErr.Type, fbErr.Code, fbErr.ErrorSubcode)

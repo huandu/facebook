@@ -24,13 +24,7 @@ import (
 // Returns facebook graph api call result.
 // If facebook returns error in response, returns error details in res and set err.
 func (session *Session) Api(path string, method Method, params Params) (Result, error) {
-    res, err := session.graph(path, method, params)
-
-    if res != nil {
-        return res, err
-    }
-
-    return nil, err
+    return session.graph(path, method, params)
 }
 
 // Get is a short hand of Api(path, GET, params).
@@ -56,13 +50,13 @@ func (session *Session) Put(path string, params Params) (Result, error) {
 // Makes a batch call. Each params represent a single facebook graph api call.
 //
 // BatchApi supports most kinds of batch calls defines in facebook batch api document,
-// except uploading binary data. Use Batch to do so.
-//
-// See https://developers.facebook.com/docs/reference/api/batch/ for batch call api details.
+// except uploading binary data. Use Batch to upload binary data.
 //
 // If session access token is set, the token will be used in batch api call.
 //
 // Returns an array of batch call result on success.
+//
+// Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func (session *Session) BatchApi(params ...Params) ([]Result, error) {
     return session.Batch(nil, params...)
 }
@@ -72,9 +66,124 @@ func (session *Session) BatchApi(params ...Params) ([]Result, error) {
 //
 // If session access token is set, "access_token" in batchParams will be set to the token value.
 //
-// See https://developers.facebook.com/docs/reference/api/batch/ for batch call api details.
+// Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func (session *Session) Batch(batchParams Params, params ...Params) ([]Result, error) {
     return session.graphBatch(batchParams, params...)
+}
+
+// Makes a FQL query.
+// Returns a slice of Result. If there is no query result, the result is nil.
+//
+// Facebook document: https://developers.facebook.com/docs/technical-guides/fql#query
+func (session *Session) FQL(query string) ([]Result, error) {
+    res, err := session.graphFQL(Params{
+        "q": query,
+    })
+
+    if err != nil {
+        return nil, err
+    }
+
+    // query result is stored in "data" field.
+    var data []Result
+    err = res.DecodeField("data", &data)
+
+    if err != nil {
+        return nil, err
+    }
+
+    return data, nil
+}
+
+// Makes a multi FQL query.
+// Returns a parsed Result. The key is the multi query key, and the value is the query result.
+//
+// Here is a multi-query sample.
+//
+//     res, _ := session.MultiFQL(Params{
+//         "query1": "SELECT name FROM user WHERE uid = me()",
+//         "query2": "SELECT uid1, uid2 FROM friend WHERE uid1 = me()",
+//     })
+//
+//     // Get query results from response.
+//     var query1, query2 []Result
+//     res.DecodeField("query1", &query1)
+//     res.DecodeField("query2", &query2)
+//
+// Facebook document: https://developers.facebook.com/docs/technical-guides/fql#multi
+func (session *Session) MultiFQL(queries Params) (Result, error) {
+    res, err := session.graphFQL(Params{
+        "q": queries,
+    })
+
+    if err != nil {
+        return res, err
+    }
+
+    // query result is stored in "data" field.
+    var data []Result
+    err = res.DecodeField("data", &data)
+
+    if err != nil {
+        return nil, err
+    }
+
+    if data == nil {
+        return nil, fmt.Errorf("multi-fql result is not found.")
+    }
+
+    // Multi-fql data structure is:
+    //     {
+    //         "data": [
+    //             {
+    //                 "name": "query1",
+    //                 "fql_result_set": [
+    //                     {...}, {...}, ...
+    //                 ]
+    //             },
+    //             {
+    //                 "name": "query2",
+    //                 "fql_result_set": [
+    //                     {...}, {...}, ...
+    //                 ]
+    //             },
+    //             ...
+    //         ]
+    //     }
+    //
+    // Parse the structure to following go map.
+    //     {
+    //         "query1": [
+    //             // Come from field "fql_result_set".
+    //             {...}, {...}, ...
+    //         ],
+    //         "query2": [
+    //             {...}, {...}, ...
+    //         ],
+    //         ...
+    //     }
+    var name string
+    var apiResponse interface{}
+    var ok bool
+    result := Result{}
+
+    for k, v := range data {
+        err = v.DecodeField("name", &name)
+
+        if err != nil {
+            return nil, fmt.Errorf("missing required field 'name' in multi-query data.%v. %v", k, err)
+        }
+
+        apiResponse, ok = v["fql_result_set"]
+
+        if !ok {
+            return nil, fmt.Errorf("missing required field 'fql_result_set' in multi-query data.%v.", k)
+        }
+
+        result[name] = apiResponse
+    }
+
+    return result, nil
 }
 
 // Gets current user id from access token.
@@ -181,9 +290,13 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
         params = Params{}
     }
 
+    // always format as json.
+    params["format"] = "json"
+
     // overwrite method as we always use post
     params["method"] = method
 
+    // get graph api url.
     if session.isVideoPost(path, method) {
         graphUrl = session.getUrl("graph_video", path, nil)
     } else {
@@ -234,6 +347,66 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) (res []
         return
     }
 
+    return
+}
+
+func (session *Session) graphFQL(params Params) (res Result, err error) {
+    if params == nil {
+        params = Params{}
+    }
+
+    // add access_token if it's set.
+    if _, ok := params["access_token"]; !ok && session.accessToken != "" {
+        params["access_token"] = session.accessToken
+    }
+
+    // encode url.
+    buf := &bytes.Buffer{}
+    buf.WriteString(domainMap["graph"])
+    buf.WriteString("fql?")
+    _, err = params.Encode(buf)
+
+    if err != nil {
+        return nil, fmt.Errorf("cannot encode params. %v", err)
+    }
+
+    // it seems facebook disallow POST to /fql. always use GET for FQL.
+    var response *http.Response
+
+    if session.HttpClient == nil {
+        response, err = http.DefaultClient.Get(buf.String())
+    } else {
+        response, err = session.HttpClient.Get(buf.String())
+    }
+
+    if err != nil {
+        return nil, fmt.Errorf("cannot reach facebook server. %v", err)
+    }
+
+    defer response.Body.Close()
+
+    buf = &bytes.Buffer{}
+    _, err = io.Copy(buf, response.Body)
+
+    if err != nil {
+        return nil, fmt.Errorf("cannot read facebook response. %v", err)
+    }
+
+    // cannot get response from remote server
+    if err != nil {
+        return
+    }
+
+    err = json.Unmarshal(buf.Bytes(), &res)
+
+    if err != nil {
+        res = nil
+        err = fmt.Errorf("cannot format facebook response. %v", err)
+        return
+    }
+
+    // facebook may return an error
+    err = res.Err()
     return
 }
 
