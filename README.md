@@ -45,17 +45,10 @@ res.Decode(&user)
 fmt.Println("print username in struct:", user.Username)
 ```
 
-### Read a graph `user` object without access token ###
-
-```go
-res, _ := facebook.Get("/huandu", nil)
-fmt.Println("my facebook id is", res["id"])
-```
-
 ### Read a graph `user` object with a valid access token ###
 
 ```go
-res, err := facebook.Get("/me/feed", facebook.Params{
+res, err := fb.Get("/me/feed", fb.Params{
      "access_token": "a-valid-access-token",
 })
 
@@ -79,7 +72,7 @@ It's recommended to use `App` and `Session` in a production app.
 
 ```go
 // create a global App var to hold your app id and secret.
-var globalApp = facebook.New("your-app-id", "your-app-secret")
+var globalApp = fb.New("your-app-id", "your-app-secret")
 
 // facebook asks for a valid redirect uri when parsing signed request.
 // it's a new enforced policy starting in late 2013.
@@ -148,14 +141,14 @@ res.DecodeField("data.0", &feed) // read latest feed
 
 ```go
 params1 := Params{
-    "method": facebook.GET,
+    "method": fb.GET,
     "relative_url": "huandu",
 }
 params2 := Params{
-    "method": facebook.GET,
+    "method": fb.GET,
     "relative_url": uint64(100002828925788),
 }
-res, err := facebook.BatchApi(your_access_token, params1, params2)
+res, err := fb.BatchApi(your_access_token, params1, params2)
 
 // res is a []Result. if err is nil, res[0] and res[1] are response to
 // params1 and params2 respectively.
@@ -168,7 +161,7 @@ results, _ := FQL("SELECT username FROM page WHERE page_id = 20531316728")
 fmt.Println(results[0]["username"]) // print "facebook"
 
 // most FQL query requires access token. create session to hold access token.
-session := &Session{}
+session := &fb.Session{}
 session.SetAccessToken("A-VALID-ACCESS-TOKEN")
 results, _ := session.FQL("SELECT username FROM page WHERE page_id = 20531316728")
 fmt.Println(results[0]["username"]) // print "facebook"
@@ -177,7 +170,7 @@ fmt.Println(results[0]["username"]) // print "facebook"
 ### Make multi-FQL ###
 
 ```go
-res, _ := MultiFQL(Params{
+res, _ := fb.MultiFQL(Params{
     "query1": "SELECT username FROM page WHERE page_id = 20531316728",
     "query2": "SELECT uid FROM user WHERE uid = 538744468",
 })
@@ -188,7 +181,7 @@ res.DecodeField("query1", &query1)
 res.DecodeField("query2", &query2)
 
 // most FQL query requires access token. create session to hold access token.
-session := &Session{}
+session := &fb.Session{}
 session.SetAccessToken("A-VALID-ACCESS-TOKEN")
 res, _ := session.MultiFQL(Params{
     "query1": "...",
@@ -226,7 +219,7 @@ See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to
 ```go
 // this library uses default version by default.
 // change following global variable to specific a global default version.
-Version = "v2.0"
+fb.Version = "v2.0"
 
 // now you will get an error as v2.0 api doesn't allow you to do so.
 Api("huan.du", GET, nil)
