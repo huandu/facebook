@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
-// 
-// Copyright 2012, Huan Du
+//
+// Copyright 2012 - 2014, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -98,12 +98,12 @@ func (res Result) get(fields []string) interface{} {
 //
 //     type Foo struct {
 //         // "id" must exist in response. note the leading comma.
-//         Id string `facebook:",required"` 
+//         Id string `facebook:",required"`
 //
 //         // use "name" as field name in response.
 //         TheName string `facebook:"name"`
 //     }
-//     
+//
 // To change default behavior, set a struct tag `facebook:",required"` to fields
 // should not be missing.
 //
@@ -125,7 +125,7 @@ func (res Result) Decode(v interface{}) (err error) {
 
 // Decodes a field of result to any type, including struct.
 // Field name format is defined in Result.Get().
-// 
+//
 // More details about decoding struct see Result.Decode().
 func (res Result) DecodeField(field string, v interface{}) error {
     f := res.Get(field)

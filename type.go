@@ -1,6 +1,6 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
-// 
+//
 // Copyright 2012 - 2014, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
@@ -34,8 +34,8 @@ type HttpClient interface {
 // Holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
-    HttpClient  HttpClient
-    Version     string // facebook versioning.
+    HttpClient HttpClient
+    Version    string // facebook versioning.
 
     accessToken string // facebook access token. can be empty.
     app         *App
@@ -47,7 +47,7 @@ type Session struct {
 type Method string
 
 // Api params.
-// 
+//
 // For general uses, just use Params as a ordinary map.
 //
 // For advanced uses, use MakeParams to create Params from any struct.
