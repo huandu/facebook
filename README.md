@@ -40,6 +40,7 @@ fmt.Println("alternative way to get username:", username)
 type User struct {
     Username string
 }
+
 var user User
 res.Decode(&user)
 fmt.Println("print username in struct:", user.Username)
@@ -100,8 +101,6 @@ res, _ := session.Get("/me/feed", nil)
 Some Graph API responses use a special JSON structure to provide paging information. Use `Result.Paging()` to navigate in the result.
 
 ```go
-session := &Session{}
-session.SetAccessToken("a-valid-access-token")
 res, _ := session.Get("/me/home", nil)
 
 // create a paging structure.
@@ -178,7 +177,7 @@ res, err := fb.BatchApi(your_access_token, params1, params2)
 ### Send FQL query ###
 
 ```go
-results, _ := FQL("SELECT username FROM page WHERE page_id = 20531316728")
+results, _ := fb.FQL("SELECT username FROM page WHERE page_id = 20531316728")
 fmt.Println(results[0]["username"]) // print "facebook"
 
 // most FQL query requires access token. create session to hold access token.
@@ -244,10 +243,10 @@ See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to
 fb.Version = "v2.0"
 
 // now you will get an error as v2.0 api doesn't allow you to do so.
-Api("huan.du", GET, nil)
+fb.Api("huan.du", GET, nil)
 
 // you can also specify version per session.
-session := &Session{}
+session := &fb.Session{}
 session.Version = "v2.0" // overwrite global default.
 ```
 
@@ -256,7 +255,7 @@ session.Version = "v2.0" // overwrite global default.
 Facebook can verify Graph API Calls with `appsecret_proof`. It's a feature to make your Graph API call more secure. See [Securing Graph API Requests](https://developers.facebook.com/docs/graph-api/securing-requests) to know more about it.
 
 ```go
-globalApp := New("your-app-id", "your-app-secret")
+globalApp := fb.New("your-app-id", "your-app-secret")
 
 // enable "appsecret_proof" for all sessions created by this app.
 globalApp.EnableAppsecretProof = true
