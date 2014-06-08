@@ -20,7 +20,7 @@ const (
     FB_TEST_MY_USERNAME = "huan.du"
 
     // remeber to change it to a valid token to run test
-    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAAAaRiTpRDb1hjKTq7RGtZBmCasVfAcNHVGxSMpuuPI7rfZB1hFROZA49VgZBA9UkBOT27X5Hk4ZCdks8ltYyfoCq1FAu9E710tdbrPq9voJeW9x6ZCfKpn6ZCMgIFFcjz5ZBUkogH3BcvOR9o4dqqndpQpuvZAjuI0BZCAR0fVJe4DNeW72As0ZAoZD"
+    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAJMser8vHtVkpdvkMV3CBnKevL8j8Cfila7HRcds6UlmiSyvhH8DKprbFgIEmQA4iNh2R45fxAJ9gKuxHfAc32NPNLZCS5jIJFZC1raXAMnUaYAdDCRYOkdygn9IZBUY8XZBAlUwoNSsWjkg2Mj5NlHZAZCEM4vkDDn64BfJ6bmXhEry4hRn8ZD"
     FB_TEST_VALID_ACCESS_TOKEN = ""
 
     // remember to change it to a valid signed request to run test
@@ -313,6 +313,21 @@ func TestSession(t *testing.T) {
 
         test(t, session)
     }()
+
+    // Session with appsecret proof enabled.
+    if FB_TEST_VALID_ACCESS_TOKEN != "" {
+        app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
+        app.EnableAppsecretProof = true
+        session := app.Session(FB_TEST_VALID_ACCESS_TOKEN)
+
+        _, e := session.Api("/me", GET, Params{
+            "fields": "id",
+        })
+
+        if e != nil {
+            t.Fatalf("cannot get my info with proof. [e:%v]", e)
+        }
+    }
 }
 
 func TestUploadingBinary(t *testing.T) {
@@ -413,7 +428,7 @@ func TestSimpleFQL(t *testing.T) {
     test(t, defaultSession)
 
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
-        t.Skipf("skip this case as we don't have a valid access token.")
+        return
     }
 
     Version = "v2.0"
@@ -492,7 +507,7 @@ func TestMultiFQL(t *testing.T) {
     test(t, defaultSession)
 
     if FB_TEST_VALID_ACCESS_TOKEN == "" {
-        t.Skipf("skip this case as we don't have a valid access token.")
+        return
     }
 
     Version = "v2.0"

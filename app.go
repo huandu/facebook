@@ -106,7 +106,7 @@ func (app *App) ParseCode(code string) (token string, err error) {
     session := &Session{}
     urlStr := session.getUrl("graph", "/oauth/access_token", nil)
 
-    response, err = session.oauthRequest(urlStr, Params{
+    response, err = session.makeRequest(urlStr, Params{
         "client_id":     app.AppId,
         "client_secret": app.AppSecret,
         "redirect_uri":  app.RedirectUri,
@@ -156,7 +156,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
     session := &Session{}
     urlStr := session.getUrl("graph", "/oauth/access_token", nil)
 
-    response, err = session.oauthRequest(urlStr, Params{
+    response, err = session.makeRequest(urlStr, Params{
         "grant_type":        "fb_exchange_token",
         "client_id":         app.AppId,
         "client_secret":     app.AppSecret,
@@ -208,7 +208,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
     session := &Session{}
     urlStr := session.getUrl("graph", "/oauth/client_code", nil)
 
-    response, err = session.oauthRequest(urlStr, Params{
+    response, err = session.makeRequest(urlStr, Params{
         "client_id":     app.AppId,
         "client_secret": app.AppSecret,
         "redirect_uri":  app.RedirectUri,
@@ -239,8 +239,9 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 // Creates a session based on current App setting.
 func (app *App) Session(accessToken string) *Session {
     return &Session{
-        accessToken: accessToken,
-        app:         app,
+        accessToken:          accessToken,
+        app:                  app,
+        enableAppsecretProof: app.EnableAppsecretProof,
     }
 }
 
@@ -263,9 +264,10 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
 
     if err == nil {
         session = &Session{
-            accessToken: token,
-            app:         app,
-            id:          id,
+            accessToken:          token,
+            app:                  app,
+            id:                   id,
+            enableAppsecretProof: app.EnableAppsecretProof,
         }
         return
     }
@@ -286,9 +288,10 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
     }
 
     session = &Session{
-        accessToken: token,
-        app:         app,
-        id:          id,
+        accessToken:          token,
+        app:                  app,
+        id:                   id,
+        enableAppsecretProof: app.EnableAppsecretProof,
     }
     return
 }

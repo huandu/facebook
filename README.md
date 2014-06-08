@@ -57,9 +57,11 @@ if err != nil {
     // if so, the Error struct contains error details.
     if e, ok := err.(*Error); ok {
         fmt.Logf("facebook error. [message:%v] [type:%v] [code:%v] [subcode:%v]",
-            fbErr.Message, fbErr.Type, fbErr.Code, fbErr.ErrorSubcode)
+            e.Message, e.Type, e.Code, e.ErrorSubcode)
         return
     }
+
+    return
 }
 
 // read my last feed.
@@ -76,27 +78,26 @@ var globalApp = fb.New("your-app-id", "your-app-secret")
 
 // facebook asks for a valid redirect uri when parsing signed request.
 // it's a new enforced policy starting in late 2013.
-// it can be omitted in a mobile app server.
-globalApp.RedirectUri = "http://your-site-canvas-url/"
+globalApp.RedirectUri = "http://your.site/canvas/url/"
 
 // here comes a client with a facebook signed request string in query string.
 // creates a new session with signed request.
 session, _ := globalApp.SessionFromSignedRequest(signedRequest)
 
-// or, you just get a valid access token in other way.
-// creates a session directly.
+// if you can get a valid access token in other way.
+// creates a session directly with the token.
 seesion := globalApp.Session(token)
-
-// use session to send api request with your access token.
-res, _ := session.Get("/me/feed", nil)
 
 // validate access token. err is nil if token is valid.
 err := session.Validate()
+
+// use session to send api request with your access token.
+res, _ := session.Get("/me/feed", nil)
 ```
 
 ### Read graph api response and decode result into a struct ###
 
-As facebook Graph API always uses lower case words as keys in API response. This library can convert go's camel-case-style struct field name to underscore-style API key name.
+As facebook Graph API always uses lower case words as keys in API response. This library can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
 
 For instance, given we have following JSON response from facebook.
 
@@ -114,16 +115,16 @@ type Data struct {
 }
 ```
 
-Like `encoding/json` package, struct can have tag definitions, which is compatible with the JSON package.
+Like `encoding/json` package, struct can have tag definitions. Tags can be used to mark a field as required in API response and/or map field to a specific key name.
 
 Following is a full sample wrap up everything about struct decoding.
 
 ```go
 // define a facebook feed object.
 type FacebookFeed struct {
-    Id string `facebook:",required"`         // must exist
+    Id string `facebook:",required"`             // this field must exist in response
     Story string
-    From *FacebookFeedFrom `facebook:"from"` // use customized field name
+    FeedFrom *FacebookFeedFrom `facebook:"from"` // use customized field name "from"
     CreatedTime string
 }
 
@@ -204,8 +205,8 @@ import (
 // suppose it's the appengine context initialized somewhere.
 var context appengine.Context
 
-// default Session object uses http.DefaultClient which is not supported
-// by appengine. we have to create a Session and assign it a special client.
+// default Session object uses http.DefaultClient which is not allowed to use
+// in appengine. we have to create a Session and assign it a special client.
 seesion := globalApp.Session("a-access-token")
 session.HttpClient = urlfetch.Client(context)
 
@@ -214,10 +215,11 @@ res, err := session.Get("/me", nil)
 ```
 
 ### Select Graph API version ###
+
 See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand facebook versioning strategy.
 
 ```go
-// this library uses default version by default.
+// this library uses default version which is controlled by facebook app setting.
 // change following global variable to specific a global default version.
 fb.Version = "v2.0"
 
@@ -229,7 +231,31 @@ session := &Session{}
 session.Version = "v2.0" // overwrite global default.
 ```
 
+### Enable `appsecret_proof` ###
+
+Facebook can verify Graph API Calls with `appsecret_proof`. It's a feature to make your Graph API call more secure. See [Securing Graph API Requests](https://developers.facebook.com/docs/graph-api/securing-requests) to know more about it.
+
+```go
+globalApp := New("your-app-id", "your-app-secret")
+
+// enable "appsecret_proof" for all sessions created by this app.
+globalApp.EnableAppsecretProof = true
+
+// all your calls in this session are secured.
+session := globalApp.Session("a-valid-access-token")
+session.Get("/me", nil)
+
+// it's also possible to enable/disable this feature per session.
+session.EnableAppsecretProof(false)
+```
+
+### Need more samples? ###
+
 I've try my best to add enough information in every public method and type. If you still have any question or suggestion, feel free to create an issue or send pull request to me. Thank you.
+
+## TODO ##
+
+1. Subscriptions.
 
 ## Get It ##
 

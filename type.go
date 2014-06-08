@@ -22,6 +22,10 @@ type App struct {
 
     // Facebook app redirect URI in the app's configuration.
     RedirectUri string
+
+    // Enable appsecret proof in every API call to facebook.
+    // Facebook document: https://developers.facebook.com/docs/graph-api/securing-requests
+    EnableAppsecretProof bool
 }
 
 // An interface to send http request.
@@ -40,6 +44,9 @@ type Session struct {
     accessToken string // facebook access token. can be empty.
     app         *App
     id          string
+
+    enableAppsecretProof bool   // add "appsecret_proof" parameter in every facebook API call.
+    appsecretProof       string // pre-calculated "appsecret_proof" value.
 }
 
 // Api HTTP method.

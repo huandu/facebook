@@ -9,7 +9,10 @@ package facebook
 
 import (
     "bytes"
+    "crypto/hmac"
+    "crypto/sha256"
     "encoding/base64"
+    "encoding/hex"
     "encoding/json"
     "fmt"
     "io"
@@ -274,7 +277,45 @@ func (session *Session) SetAccessToken(token string) {
     if token != session.accessToken {
         session.id = ""
         session.accessToken = token
+        session.appsecretProof = ""
     }
+}
+
+// Check appsecret proof is enabled or not.
+func (session *Session) AppsecretProof() string {
+    if !session.enableAppsecretProof {
+        return ""
+    }
+
+    if session.accessToken == "" || session.app == nil {
+        return ""
+    }
+
+    if session.appsecretProof == "" {
+        hash := hmac.New(sha256.New, []byte(session.app.AppSecret))
+        hash.Write([]byte(session.accessToken))
+        session.appsecretProof = hex.EncodeToString(hash.Sum(nil))
+    }
+
+    return session.appsecretProof
+}
+
+// Enable or disable appsecret proof status.
+// Returns error if there is no App associasted with this Session.
+func (session *Session) EnableAppsecretProof(enabled bool) error {
+    if session.app == nil {
+        return fmt.Errorf("cannot change appsecret proof status without an associated App.")
+    }
+
+    if session.enableAppsecretProof != enabled {
+        session.enableAppsecretProof = enabled
+
+        // reset pre-calculated proof here to give caller a way to do so in some rare case,
+        // e.g. associated app's secret is changed.
+        session.appsecretProof = ""
+    }
+
+    return nil
 }
 
 // Gets associated App.
@@ -303,7 +344,7 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
         graphUrl = session.getUrl("graph", path, nil)
     }
 
-    response, err = session.oauthRequest(graphUrl, params)
+    response, err = session.makeRequest(graphUrl, params)
 
     // cannot get response from remote server
     if err != nil {
@@ -333,7 +374,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) (res []
     batchParams["batch"] = params
 
     graphUrl := session.getUrl("graph", "", nil)
-    response, err = session.oauthRequest(graphUrl, batchParams)
+    response, err = session.makeRequest(graphUrl, batchParams)
 
     if err != nil {
         return
@@ -355,10 +396,7 @@ func (session *Session) graphFQL(params Params) (res Result, err error) {
         params = Params{}
     }
 
-    // add access_token if it's set.
-    if _, ok := params["access_token"]; !ok && session.accessToken != "" {
-        params["access_token"] = session.accessToken
-    }
+    session.prepareParams(params)
 
     // encode url.
     buf := &bytes.Buffer{}
@@ -410,15 +448,19 @@ func (session *Session) graphFQL(params Params) (res Result, err error) {
     return
 }
 
-func (session *Session) oauthRequest(url string, params Params) ([]byte, error) {
+func (session *Session) prepareParams(params Params) {
     if _, ok := params["access_token"]; !ok && session.accessToken != "" {
         params["access_token"] = session.accessToken
     }
 
-    return session.makeRequest(url, params)
+    if session.enableAppsecretProof && session.accessToken != "" && session.app != nil {
+        params["appsecret_proof"] = session.AppsecretProof()
+    }
 }
 
 func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
+    session.prepareParams(params)
+
     buf := &bytes.Buffer{}
     mime, err := params.Encode(buf)
 
