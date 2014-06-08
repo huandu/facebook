@@ -101,12 +101,11 @@ func (app *App) ParseCode(code string) (token string, err error) {
         return
     }
 
-    res := &Result{}
     var response []byte
     session := &Session{}
     urlStr := session.getUrl("graph", "/oauth/access_token", nil)
 
-    response, err = session.makeRequest(urlStr, Params{
+    response, err = session.sendPostRequest(urlStr, Params{
         "client_id":     app.AppId,
         "client_secret": app.AppSecret,
         "redirect_uri":  app.RedirectUri,
@@ -132,14 +131,7 @@ func (app *App) ParseCode(code string) (token string, err error) {
         return
     }
 
-    err = json.Unmarshal(response, res)
-
-    if err != nil {
-        err = fmt.Errorf("facebook returns invalid result")
-        return
-    }
-
-    err = res.Err()
+    _, err = MakeResult(response)
     return
 }
 
@@ -151,12 +143,11 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
         return
     }
 
-    res := &Result{}
     var response []byte
     session := &Session{}
     urlStr := session.getUrl("graph", "/oauth/access_token", nil)
 
-    response, err = session.makeRequest(urlStr, Params{
+    response, err = session.sendPostRequest(urlStr, Params{
         "grant_type":        "fb_exchange_token",
         "client_id":         app.AppId,
         "client_secret":     app.AppSecret,
@@ -184,14 +175,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
         return
     }
 
-    err = json.Unmarshal(response, res)
-
-    if err != nil {
-        err = fmt.Errorf("facebook returns invalid result")
-        return
-    }
-
-    err = res.Err()
+    _, err = MakeResult(response)
     return
 }
 
@@ -203,12 +187,12 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
         return
     }
 
-    res := &Result{}
+    var res Result
     var response []byte
     session := &Session{}
     urlStr := session.getUrl("graph", "/oauth/client_code", nil)
 
-    response, err = session.makeRequest(urlStr, Params{
+    response, err = session.sendPostRequest(urlStr, Params{
         "client_id":     app.AppId,
         "client_secret": app.AppSecret,
         "redirect_uri":  app.RedirectUri,
@@ -219,14 +203,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
         return
     }
 
-    err = json.Unmarshal(response, res)
-
-    if err != nil {
-        err = fmt.Errorf("facebook returns invalid result")
-        return
-    }
-
-    err = res.Err()
+    res, err = MakeResult(response)
 
     if err != nil {
         return

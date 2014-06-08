@@ -20,7 +20,7 @@ const (
     FB_TEST_MY_USERNAME = "huan.du"
 
     // remeber to change it to a valid token to run test
-    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAJMser8vHtVkpdvkMV3CBnKevL8j8Cfila7HRcds6UlmiSyvhH8DKprbFgIEmQA4iNh2R45fxAJ9gKuxHfAc32NPNLZCS5jIJFZC1raXAMnUaYAdDCRYOkdygn9IZBUY8XZBAlUwoNSsWjkg2Mj5NlHZAZCEM4vkDDn64BfJ6bmXhEry4hRn8ZD"
+    //FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAAUM6yYglTAO9l6WjhzSe485PbxD7BRLlX4YxyD848nB25DO1yztTSQtnZBbCkojywRu8JZAesftkU5mPpm2EJSgHWq130GX7nMrZAdJmYzhXXKl7b0BKV7Nu9D4BeM0TWMccdTIUnzjfQzr22bQOSbHUy804TAVopKunBlE54mQ9y5oG8ZD"
     FB_TEST_VALID_ACCESS_TOKEN = ""
 
     // remember to change it to a valid signed request to run test
@@ -933,4 +933,67 @@ func TestGraphError(t *testing.T) {
     }
 
     t.Logf("facebook error. [e:%v] [message:%v] [type:%v] [code:%v] [subcode:%v]", err, fbErr.Message, fbErr.Type, fbErr.Code, fbErr.ErrorSubcode)
+}
+
+func TestPagingResult(t *testing.T) {
+    if FB_TEST_VALID_ACCESS_TOKEN == "" {
+        t.Skipf("skip this case as we don't have a valid access token.")
+    }
+
+    session := &Session{}
+    session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
+    res, err := session.Get("/me/home", Params{
+        "limit": 2,
+    })
+
+    if err != nil {
+        t.Fatalf("cannot get my home post. [e:%v]", err)
+    }
+
+    paging, err := res.Paging(session)
+
+    if err != nil {
+        t.Fatalf("cannot get paging information. [e:%v]", err)
+    }
+
+    data := paging.Data()
+
+    if len(data) != 2 {
+        t.Fatalf("expect to have only 2 post. [len:%v]", len(data))
+    }
+
+    t.Logf("result: %v", res)
+    t.Logf("previous: %v", paging.previous)
+
+    noMore, err := paging.Previous()
+
+    if err != nil {
+        t.Fatalf("cannot get paging information. [e:%v]", err)
+    }
+
+    if !noMore {
+        t.Fatalf("should have no more post. %v", *paging.paging.Paging)
+    }
+
+    noMore, err = paging.Next()
+
+    if err != nil {
+        t.Fatalf("cannot get paging information. [e:%v]", err)
+    }
+
+    data = paging.Data()
+
+    if len(data) != 2 {
+        t.Fatalf("expect to have only 2 post. [len:%v]", len(data))
+    }
+
+    noMore, err = paging.Next()
+
+    if err != nil {
+        t.Fatalf("cannot get paging information. [e:%v]", err)
+    }
+
+    if len(paging.Data()) != 2 {
+        t.Fatalf("expect to have only 2 post. [len:%v]", len(paging.Data()))
+    }
 }

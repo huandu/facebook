@@ -189,6 +189,21 @@ func (session *Session) MultiFQL(queries Params) (Result, error) {
     return result, nil
 }
 
+// Makes an arbitrary HTTP request.
+// It expects server responses a facebook Graph API response.
+//     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
+//     res, err := session.Request(request)
+//     fmt.Println(res["gender"])  // get "male"
+func (session *Session) Request(request *http.Request) (Result, error) {
+    response, err := session.sendRequest(request)
+
+    if err != nil {
+        return nil, err
+    }
+
+    return MakeResult(response)
+}
+
 // Gets current user id from access token.
 //
 // Returns error if access token is not set or invalid.
@@ -344,23 +359,14 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
         graphUrl = session.getUrl("graph", path, nil)
     }
 
-    response, err = session.makeRequest(graphUrl, params)
+    response, err = session.sendPostRequest(graphUrl, params)
 
     // cannot get response from remote server
     if err != nil {
         return
     }
 
-    err = json.Unmarshal(response, &res)
-
-    if err != nil {
-        res = nil
-        err = fmt.Errorf("cannot format facebook response. %v", err)
-        return
-    }
-
-    // facebook may return an error
-    err = res.Err()
+    res, err = MakeResult(response)
     return
 }
 
@@ -374,7 +380,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) (res []
     batchParams["batch"] = params
 
     graphUrl := session.getUrl("graph", "", nil)
-    response, err = session.makeRequest(graphUrl, batchParams)
+    response, err = session.sendPostRequest(graphUrl, batchParams)
 
     if err != nil {
         return
@@ -408,34 +414,17 @@ func (session *Session) graphFQL(params Params) (res Result, err error) {
         return nil, fmt.Errorf("cannot encode params. %v", err)
     }
 
+    var response []byte
+
     // it seems facebook disallow POST to /fql. always use GET for FQL.
-    var response *http.Response
-
-    if session.HttpClient == nil {
-        response, err = http.DefaultClient.Get(buf.String())
-    } else {
-        response, err = session.HttpClient.Get(buf.String())
-    }
-
-    if err != nil {
-        return nil, fmt.Errorf("cannot reach facebook server. %v", err)
-    }
-
-    defer response.Body.Close()
-
-    buf = &bytes.Buffer{}
-    _, err = io.Copy(buf, response.Body)
-
-    if err != nil {
-        return nil, fmt.Errorf("cannot read facebook response. %v", err)
-    }
+    response, err = session.sendGetRequest(buf.String())
 
     // cannot get response from remote server
     if err != nil {
         return
     }
 
-    err = json.Unmarshal(buf.Bytes(), &res)
+    err = json.Unmarshal(response, &res)
 
     if err != nil {
         res = nil
@@ -458,22 +447,49 @@ func (session *Session) prepareParams(params Params) {
     }
 }
 
-func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
+func (session *Session) sendGetRequest(url string) ([]byte, error) {
+    var request *http.Request
+    var err error
+
+    request, err = http.NewRequest("GET", url, nil)
+
+    if err != nil {
+        return nil, err
+    }
+
+    return session.sendRequest(request)
+}
+
+func (session *Session) sendPostRequest(url string, params Params) ([]byte, error) {
     session.prepareParams(params)
 
     buf := &bytes.Buffer{}
     mime, err := params.Encode(buf)
 
     if err != nil {
-        return nil, fmt.Errorf("cannot encode params. %v", err)
+        return nil, fmt.Errorf("cannot encode POST params. %v", err)
     }
 
+    var request *http.Request
+
+    request, err = http.NewRequest("POST", url, buf)
+
+    if err != nil {
+        return nil, err
+    }
+
+    request.Header.Set("Content-Type", mime)
+    return session.sendRequest(request)
+}
+
+func (session *Session) sendRequest(request *http.Request) ([]byte, error) {
     var response *http.Response
+    var err error
 
     if session.HttpClient == nil {
-        response, err = http.DefaultClient.Post(url, mime, buf)
+        response, err = http.DefaultClient.Do(request)
     } else {
-        response, err = session.HttpClient.Post(url, mime, buf)
+        response, err = session.HttpClient.Do(request)
     }
 
     if err != nil {
@@ -482,7 +498,7 @@ func (session *Session) makeRequest(url string, params Params) ([]byte, error) {
 
     defer response.Body.Close()
 
-    buf = &bytes.Buffer{}
+    buf := &bytes.Buffer{}
     _, err = io.Copy(buf, response.Body)
 
     if err != nil {

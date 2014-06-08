@@ -16,6 +16,10 @@
 // This library doesn't implement any deprecated old RESTful API. And it won't.
 package facebook
 
+import (
+    "net/http"
+)
+
 var (
     // Default facebook api version.
     // It can be "v1.0" or "v2.0" or empty per facebook current document.
@@ -139,4 +143,13 @@ func FQL(query string) ([]Result, error) {
 // Facebook document: https://developers.facebook.com/docs/technical-guides/fql#multi
 func MultiFQL(queries Params) (Result, error) {
     return defaultSession.MultiFQL(queries)
+}
+
+// Makes an arbitrary HTTP request.
+// It expects server responses a facebook Graph API response.
+//     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
+//     res, err := Request(request)
+//     fmt.Println(res["gender"])  // get "male"
+func Request(request *http.Request) (Result, error) {
+    return defaultSession.Request(request)
 }

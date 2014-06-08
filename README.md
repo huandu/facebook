@@ -95,6 +95,26 @@ err := session.Validate()
 res, _ := session.Get("/me/feed", nil)
 ```
 
+### Use `paging` field in response. ###
+
+Some Graph API responses use a special JSON structure to provide paging information. Use `Result.Paging()` to navigate in the result.
+
+```go
+session := &Session{}
+session.SetAccessToken("a-valid-access-token")
+res, _ := session.Get("/me/home", nil)
+
+// create a paging structure.
+paging, _ := res.Paging(session)
+
+// get current results.
+results := paging.Data()
+
+// get next page.
+noMore, err := paging.Next()
+results = paging.Data()
+```
+
 ### Read graph api response and decode result into a struct ###
 
 As facebook Graph API always uses lower case words as keys in API response. This library can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
@@ -255,7 +275,7 @@ I've try my best to add enough information in every public method and type. If y
 
 ## TODO ##
 
-1. Subscriptions.
+1. Real-time update subscriptions.
 
 ## Get It ##
 

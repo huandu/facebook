@@ -31,6 +31,7 @@ type App struct {
 // An interface to send http request.
 // This interface is designed to be compatible with type `*http.Client`.
 type HttpClient interface {
+    Do(req *http.Request) (resp *http.Response, err error)
     Get(url string) (resp *http.Response, err error)
     Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
 }
@@ -49,19 +50,27 @@ type Session struct {
     appsecretProof       string // pre-calculated "appsecret_proof" value.
 }
 
-// Api HTTP method.
+// API HTTP method.
 // Can be GET, POST or DELETE.
 type Method string
 
-// Api params.
+// API params.
 //
 // For general uses, just use Params as a ordinary map.
 //
 // For advanced uses, use MakeParams to create Params from any struct.
 type Params map[string]interface{}
 
-// Facebook api call result.
+// Facebook API call result.
 type Result map[string]interface{}
+
+// Represents facebook API call result with paging information.
+type PagingResult struct {
+    session  *Session
+    paging   pagingData
+    previous string
+    next     string
+}
 
 // Facebook API error.
 type Error struct {
