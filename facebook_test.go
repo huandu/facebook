@@ -154,6 +154,14 @@ type FieldTagStruct struct {
     CanAbsent string
 }
 
+type MessageTag struct {
+    Id   string
+    Name string
+    Type string
+}
+
+type MessageTags map[string][]*MessageTag
+
 func TestApiGetUserInfo(t *testing.T) {
     me, err := Api(FB_TEST_MY_USERNAME, GET, nil)
 
@@ -488,7 +496,7 @@ func TestMultiFQL(t *testing.T) {
         }
 
         if username != "facebook" {
-            t.Fatalf("username is expected to be \"facebook\". [username:%v]", username)
+            t.Fatalf("username is expected to be 'facebook'. [username:%v]", username)
         }
 
         err = query2[0].DecodeField("uid", &uid)
@@ -498,7 +506,7 @@ func TestMultiFQL(t *testing.T) {
         }
 
         if uid != 538744468 {
-            t.Fatalf("username is expected to be \"facebook\". [username:%v]", username)
+            t.Fatalf("username is expected to be 'facebook'. [username:%v]", username)
         }
     }
 
@@ -804,6 +812,20 @@ func TestDecodeField(t *testing.T) {
                     "key5": 9012
                 }]
             }
+        },
+        "message_tags": {
+            "2": [
+                {
+                    "id": "4838901",
+                    "name": "Foo Bar",
+                    "type": "page"
+                },
+                {
+                    "id": "293450302",
+                    "name": "Player Rocks",
+                    "type": "page"
+                }
+            ]
         }
     }`
 
@@ -837,7 +859,7 @@ func TestDecodeField(t *testing.T) {
     }
 
     if aString != "abcd" {
-        t.Fatalf("expected array.0 value is \"abcd\". [string:%v]", aString)
+        t.Fatalf("expected array.0 value is 'abcd'. [string:%v]", aString)
     }
 
     err = result.DecodeField("array.1", &aString)
@@ -847,7 +869,7 @@ func TestDecodeField(t *testing.T) {
     }
 
     if aString != "efgh" {
-        t.Fatalf("expected array.1 value is \"abcd\". [string:%v]", aString)
+        t.Fatalf("expected array.1 value is 'abcd'. [string:%v]", aString)
     }
 
     err = result.DecodeField("array.2", &aString)
@@ -873,7 +895,7 @@ func TestDecodeField(t *testing.T) {
     }
 
     if aString != "ijkl" {
-        t.Fatalf("expected map.nested_map.key2 value is \"ijkl\". [string:%v]", aString)
+        t.Fatalf("expected map.nested_map.key2 value is 'ijkl'. [string:%v]", aString)
     }
 
     err = result.DecodeField("array", &aSlice)
@@ -883,7 +905,7 @@ func TestDecodeField(t *testing.T) {
     }
 
     if len(aSlice) != 2 || aSlice[0] != "abcd" || aSlice[1] != "efgh" {
-        t.Fatalf("expected array value is [\"abcd\", \"efgh\"]. [slice:%v]", aSlice)
+        t.Fatalf("expected array value is ['abcd', 'efgh']. [slice:%v]", aSlice)
     }
 
     err = result.DecodeField("map.nested_map.key3", &subResults)
@@ -903,7 +925,7 @@ func TestDecodeField(t *testing.T) {
     }
 
     if aString != "mnop" {
-        t.Fatalf("expected map.nested_map.key2 value is \"mnop\". [string:%v]", aString)
+        t.Fatalf("expected map.nested_map.key2 value is 'mnop'. [string:%v]", aString)
     }
 
     err = subResults[1].DecodeField("key5", &anInt)
@@ -914,6 +936,33 @@ func TestDecodeField(t *testing.T) {
 
     if anInt != 9012 {
         t.Fatalf("expected key5 value is 9012. [int:%v]", anInt)
+    }
+
+    err = result.DecodeField("message_tags.2.0.id", &aString)
+
+    if err != nil {
+        t.Fatalf("cannot decode message_tags.2.0.id field. [e:%v]", err)
+    }
+
+    if aString != "4838901" {
+        t.Fatalf("expected message_tags.2.0.id value is '4838901'. [string:%v]", aString)
+    }
+
+    var messageTags MessageTags
+    err = result.DecodeField("message_tags", &messageTags)
+
+    if err != nil {
+        t.Fatalf("cannot decode message_tags field. [e:%v]", err)
+    }
+
+    if len(messageTags) != 1 {
+        t.Fatalf("expect messageTags have only 1 element. [len:%v]", len(messageTags))
+    }
+
+    aString = messageTags["2"][1].Id
+
+    if aString != "293450302" {
+        t.Fatalf("expect messageTags.2.1.id value is '293450302'. [value:%v]", aString)
     }
 }
 

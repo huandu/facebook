@@ -49,8 +49,6 @@ func (res Result) Get(field string) interface{} {
 }
 
 func (res Result) get(fields []string) interface{} {
-    var arr []interface{}
-
     v, ok := res[fields[0]]
 
     if !ok || v == nil {
@@ -61,32 +59,55 @@ func (res Result) get(fields []string) interface{} {
         return v
     }
 
-    for arr, ok = v.([]interface{}); ok; arr, ok = v.([]interface{}) {
-        fields = fields[1:]
-        n, err := strconv.ParseUint(fields[0], 10, 0)
+    value := getValueField(reflect.ValueOf(v), fields[1:])
 
-        if err != nil {
-            return nil
-        }
-
-        if n >= uint64(len(arr)) {
-            return nil
-        }
-
-        v = arr[n]
-
-        if len(fields) == 1 {
-            return v
-        }
-    }
-
-    res, ok = v.(map[string]interface{})
-
-    if !ok {
+    if !value.IsValid() {
         return nil
     }
 
-    return Result(res).get(fields[1:])
+    return value.Interface()
+}
+
+func getValueField(value reflect.Value, fields []string) reflect.Value {
+    valueType := value.Type()
+    kind := valueType.Kind()
+    field := fields[0]
+
+    switch kind {
+    case reflect.Array, reflect.Slice:
+        // field must be a number.
+        n, err := strconv.ParseUint(field, 10, 0)
+
+        if err != nil {
+            return reflect.Value{}
+        }
+
+        if n >= uint64(value.Len()) {
+            return reflect.Value{}
+        }
+
+        // work around a reflect package pitfall.
+        value = reflect.ValueOf(value.Index(int(n)).Interface())
+
+    case reflect.Map:
+        v := value.MapIndex(reflect.ValueOf(field))
+
+        if !v.IsValid() {
+            return v
+        }
+
+        // get real value type.
+        value = reflect.ValueOf(v.Interface())
+
+    default:
+        return reflect.Value{}
+    }
+
+    if len(fields) == 1 {
+        return value
+    }
+
+    return getValueField(value, fields[1:])
 }
 
 // Decodes full result to a struct.
