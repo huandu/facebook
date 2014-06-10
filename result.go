@@ -142,7 +142,54 @@ func (res Result) DecodeField(field string, v interface{}) error {
         return fmt.Errorf("field '%v' doesn't exist in result.", field)
     }
 
-    return decodeField(f, reflect.ValueOf(v), field)
+    return decodeField(reflect.ValueOf(f), reflect.ValueOf(v), field)
+}
+
+// Checks if Result is a Graph API error.
+// Returns nil if Result is not an error.
+//
+// The returned error can be converted to Error by type assertion.
+//     err := res.Err()
+//     if err != nil {
+//         if e, ok := err.(*Error); ok {
+//             // read more details in e.Message, e.Code and e.Type
+//         }
+//     }
+//
+// For more information about Graph API Errors, see
+// https://developers.facebook.com/docs/reference/api/errors/
+func (res Result) Err() error {
+    var err Error
+    e := res.DecodeField("error", &err)
+
+    // no "error" in result. result is not an error.
+    if e != nil {
+        return nil
+    }
+
+    // code may be missing in error.
+    // assign a non-zero value to it.
+    if err.Code == 0 {
+        err.Code = ERROR_CODE_UNKNOWN
+    }
+
+    return &err
+}
+
+// Creates a PagingResult for this Result.
+// Returns error if the Result cannot be used for paging.
+//
+// Facebook uses following JSON structure to response paging information.
+// If "data" doesn't present in Result, Paging will return error.
+//     {
+//         "data": [...],
+//         "paging": {
+//             "previous": "https://graph.facebook.com/...",
+//             "next": "https://graph.facebook.com/..."
+//         }
+//     }
+func (res Result) Paging(session *Session) (*PagingResult, error) {
+    return newPagingResult(session, res)
 }
 
 func (res Result) decode(v reflect.Value, fullName string) error {
@@ -207,7 +254,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
             continue
         }
 
-        if err = decodeField(val, field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
+        if err = decodeField(reflect.ValueOf(val), field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
             return err
         }
     }
@@ -215,54 +262,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
     return nil
 }
 
-// Checks if Result is a Graph API error.
-// Returns nil if Result is not an error.
-//
-// The returned error can be converted to Error by type assertion.
-//     err := res.Err()
-//     if err != nil {
-//         if e, ok := err.(*Error); ok {
-//             // read more details in e.Message, e.Code and e.Type
-//         }
-//     }
-//
-// For more information about Graph API Errors, see
-// https://developers.facebook.com/docs/reference/api/errors/
-func (res Result) Err() error {
-    var err Error
-    e := res.DecodeField("error", &err)
-
-    // no "error" in result. result is not an error.
-    if e != nil {
-        return nil
-    }
-
-    // code may be missing in error.
-    // assign a non-zero value to it.
-    if err.Code == 0 {
-        err.Code = ERROR_CODE_UNKNOWN
-    }
-
-    return &err
-}
-
-// Creates a PagingResult for this Result.
-// Returns error if the Result cannot be used for paging.
-//
-// Facebook uses following JSON structure to response paging information.
-// If "data" doesn't present in Result, Paging will return error.
-//     {
-//         "data": [...],
-//         "paging": {
-//             "previous": "https://graph.facebook.com/...",
-//             "next": "https://graph.facebook.com/..."
-//         }
-//     }
-func (res Result) Paging(session *Session) (*PagingResult, error) {
-    return newPagingResult(session, res)
-}
-
-func decodeField(val interface{}, field reflect.Value, fullName string) error {
+func decodeField(val reflect.Value, field reflect.Value, fullName string) error {
     if field.Kind() == reflect.Ptr {
         if field.IsNil() {
             field.Set(reflect.New(field.Type().Elem()))
@@ -276,243 +276,501 @@ func decodeField(val interface{}, field reflect.Value, fullName string) error {
     }
 
     kind := field.Kind()
+    valType := val.Type()
 
     switch kind {
     case reflect.Bool:
-        if b, ok := val.(bool); ok {
-            field.SetBool(b)
+        if valType.Kind() == reflect.Bool {
+            field.SetBool(val.Bool())
         } else {
             return fmt.Errorf("field '%v' is not a bool in result.", fullName)
         }
 
     case reflect.Int8:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
             if n < -128 || n > 127 {
                 return fmt.Errorf("field '%v' value exceeds the range of int8.", fullName)
             }
 
             field.SetInt(int64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 127 {
+                return fmt.Errorf("field '%v' value exceeds the range of int8.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < -128 || n > 127 {
+                return fmt.Errorf("field '%v' value exceeds the range of int8.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Int16:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
             if n < -32768 || n > 32767 {
                 return fmt.Errorf("field '%v' value exceeds the range of int16.", fullName)
             }
 
             field.SetInt(int64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 32767 {
+                return fmt.Errorf("field '%v' value exceeds the range of int16.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < -32768 || n > 32767 {
+                return fmt.Errorf("field '%v' value exceeds the range of int16.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Int32:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
             if n < -2147483648 || n > 2147483647 {
                 return fmt.Errorf("field '%v' value exceeds the range of int32.", fullName)
             }
 
             field.SetInt(int64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 2147483647 {
+                return fmt.Errorf("field '%v' value exceeds the range of int32.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < -2147483648 || n > 2147483647 {
+                return fmt.Errorf("field '%v' value exceeds the range of int32.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Int64:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+            field.SetInt(n)
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 9223372036854775807 {
+                return fmt.Errorf("field '%v' value exceeds the range of int64.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
             if n < -9223372036854775808 || n > 9223372036854775807 {
                 return fmt.Errorf("field '%v' value exceeds the range of int64.", fullName)
             }
 
             field.SetInt(int64(n))
-        } else {
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Int:
-        if n, ok := val.(float64); ok {
-            if n < -9223372036854775808 || n > 9223372036854775807 {
+        bits := field.Type().Bits()
+
+        var min, max int64
+
+        if bits == 32 {
+            min = -2147483648
+            max = 2147483647
+        } else if bits == 64 {
+            min = -9223372036854775808
+            max = 9223372036854775807
+        }
+
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
+            if n < min || n > max {
                 return fmt.Errorf("field '%v' value exceeds the range of int.", fullName)
             }
 
             field.SetInt(int64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > uint64(max) {
+                return fmt.Errorf("field '%v' value exceeds the range of int.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < float64(min) || n > float64(max) {
+                return fmt.Errorf("field '%v' value exceeds the range of int.", fullName)
+            }
+
+            field.SetInt(int64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Uint8:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
             if n < 0 || n > 0xFF {
                 return fmt.Errorf("field '%v' value exceeds the range of uint8.", fullName)
             }
 
             field.SetUint(uint64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 0xFF {
+                return fmt.Errorf("field '%v' value exceeds the range of uint8.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < 0 || n > 0xFF {
+                return fmt.Errorf("field '%v' value exceeds the range of uint8.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Uint16:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
             if n < 0 || n > 0xFFFF {
                 return fmt.Errorf("field '%v' value exceeds the range of uint16.", fullName)
             }
 
             field.SetUint(uint64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 0xFFFF {
+                return fmt.Errorf("field '%v' value exceeds the range of uint16.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < 0 || n > 0xFFFF {
+                return fmt.Errorf("field '%v' value exceeds the range of uint16.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Uint32:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
             if n < 0 || n > 0xFFFFFFFF {
                 return fmt.Errorf("field '%v' value exceeds the range of uint32.", fullName)
             }
 
             field.SetUint(uint64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > 0xFFFFFFFF {
+                return fmt.Errorf("field '%v' value exceeds the range of uint32.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < 0 || n > 0xFFFFFFFF {
+                return fmt.Errorf("field '%v' value exceeds the range of uint32.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Uint64:
-        if n, ok := val.(float64); ok {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
+            if n < 0 {
+                return fmt.Errorf("field '%v' value exceeds the range of uint64.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+            field.SetUint(n)
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
             if n < 0 || n > 0xFFFFFFFFFFFFFFFF {
                 return fmt.Errorf("field '%v' value exceeds the range of uint64.", fullName)
             }
 
             field.SetUint(uint64(n))
-        } else {
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Uint:
-        if n, ok := val.(float64); ok {
-            if n < 0 || n > 0xFFFFFFFFFFFFFFFF {
+        bits := field.Type().Bits()
+
+        var max uint64
+
+        if bits == 32 {
+            max = 0xFFFFFFFF
+        } else if bits == 64 {
+            max = 0xFFFFFFFFFFFFFFFF
+        }
+
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+
+            if n < 0 || uint64(n) > max {
                 return fmt.Errorf("field '%v' value exceeds the range of uint.", fullName)
             }
 
             field.SetUint(uint64(n))
-        } else {
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+
+            if n > max {
+                return fmt.Errorf("field '%v' value exceeds the range of uint.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+
+            if n < 0 || n > float64(max) {
+                return fmt.Errorf("field '%v' value exceeds the range of uint.", fullName)
+            }
+
+            field.SetUint(uint64(n))
+
+        default:
             return fmt.Errorf("field '%v' is not an integer in result.", fullName)
         }
 
     case reflect.Float32, reflect.Float64:
-        if f, ok := val.(float64); ok {
-            field.SetFloat(f)
-        } else {
+        switch valType.Kind() {
+        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+            n := val.Int()
+            field.SetFloat(float64(n))
+
+        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+            n := val.Uint()
+            field.SetFloat(float64(n))
+
+        case reflect.Float32, reflect.Float64:
+            n := val.Float()
+            field.SetFloat(n)
+
+        default:
             return fmt.Errorf("field '%v' is not a float in result.", fullName)
         }
 
     case reflect.String:
-        if s, ok := val.(string); ok {
-            field.SetString(s)
-        } else {
+        if valType.Kind() != reflect.String {
             return fmt.Errorf("field '%v' is not a string in result.", fullName)
         }
 
+        field.SetString(val.String())
+
     case reflect.Struct:
-        if r, ok := val.(map[string]interface{}); ok {
-            if err := Result(r).decode(field, fullName); err != nil {
-                return err
-            }
-        } else {
+        if valType.Kind() != reflect.Map || valType.Key().Kind() != reflect.String {
             return fmt.Errorf("field '%v' is not a json object in result.", fullName)
+        }
+
+        // safe convert val to Result. type assertion doesn't work in this case.
+        var r Result
+        reflect.ValueOf(&r).Elem().Set(val)
+
+        if err := r.decode(field, fullName); err != nil {
+            return err
         }
 
     case reflect.Map:
-        if m, ok := val.(map[string]interface{}); ok {
-            // map key must be string
-            if field.Type().Key().Kind() != reflect.String {
-                return fmt.Errorf("field '%v' in struct is a map with non-string key type. it's not allowed.", fullName)
-            }
-
-            var needAddr bool
-            valueType := field.Type().Elem()
-
-            // shortcut for map of interface
-            if valueType.Kind() == reflect.Interface {
-                field.Set(reflect.ValueOf(m))
-                break
-            }
-
-            if field.IsNil() {
-                field.Set(reflect.MakeMap(field.Type()))
-            }
-
-            if valueType.Kind() == reflect.Ptr {
-                valueType = valueType.Elem()
-                needAddr = true
-            }
-
-            for key, value := range m {
-                v := reflect.New(valueType)
-
-                if err := decodeField(value, v, fmt.Sprintf("%v.%v", fullName, key)); err != nil {
-                    return err
-                }
-
-                if needAddr {
-                    field.SetMapIndex(reflect.ValueOf(key), v)
-                } else {
-                    field.SetMapIndex(reflect.ValueOf(key), v.Elem())
-                }
-            }
-        } else {
+        if valType.Kind() != reflect.Map || valType.Key().Kind() != reflect.String {
             return fmt.Errorf("field '%v' is not a json object in result.", fullName)
         }
 
+        // map key must be string
+        if field.Type().Key().Kind() != reflect.String {
+            return fmt.Errorf("field '%v' in struct is a map with non-string key type. it's not allowed.", fullName)
+        }
+
+        var needAddr bool
+        valueType := field.Type().Elem()
+
+        // shortcut for map[string]interface{}.
+        if valueType.Kind() == reflect.Interface {
+            field.Set(val)
+            break
+        }
+
+        if field.IsNil() {
+            field.Set(reflect.MakeMap(field.Type()))
+        }
+
+        if valueType.Kind() == reflect.Ptr {
+            valueType = valueType.Elem()
+            needAddr = true
+        }
+
+        for _, key := range val.MapKeys() {
+            // val.MapIndex(key) returns a Value with wrong type.
+            // use following trick to get correct Value.
+            value := reflect.ValueOf(val.MapIndex(key).Interface())
+            newValue := reflect.New(valueType)
+
+            if err := decodeField(value, newValue, fmt.Sprintf("%v.%v", fullName, key)); err != nil {
+                return err
+            }
+
+            if needAddr {
+                field.SetMapIndex(key, newValue)
+            } else {
+                field.SetMapIndex(key, newValue.Elem())
+            }
+        }
+
     case reflect.Slice, reflect.Array:
-        if a, ok := val.([]interface{}); ok {
-            if kind == reflect.Array {
-                if field.Len() < len(a) {
-                    return fmt.Errorf("cannot copy all field '%v' values to struct. expected len is %v. actual len is %v.",
-                        fullName, field.Len(), len(a))
-                }
-            }
-
-            var slc reflect.Value
-            var needAddr bool
-            valueType := field.Type().Elem()
-
-            // shortcut for array of interface
-            if valueType.Kind() == reflect.Interface {
-                if kind == reflect.Array {
-                    for i := 0; i < len(a); i++ {
-                        field.Index(i).Set(reflect.ValueOf(a[i]))
-                    }
-                } else { // kind is slice
-                    field.Set(reflect.ValueOf(a))
-                }
-
-                break
-            }
-
-            if kind == reflect.Array {
-                slc = field.Slice(0, len(a))
-            } else { // kind is slice
-                slc = reflect.MakeSlice(field.Type(), len(a), len(a))
-                field.Set(slc)
-            }
-
-            if valueType.Kind() == reflect.Ptr {
-                needAddr = true
-                valueType = valueType.Elem()
-            }
-
-            for i := 0; i < len(a); i++ {
-                v := reflect.New(valueType)
-
-                if err := decodeField(a[i], v, fmt.Sprintf("%v.%v", fullName, i)); err != nil {
-                    return err
-                }
-
-                if needAddr {
-                    slc.Index(i).Set(v)
-                } else {
-                    slc.Index(i).Set(v.Elem())
-                }
-            }
-        } else {
+        if valType.Kind() != reflect.Slice && valType.Kind() != reflect.Array {
             return fmt.Errorf("field '%v' is not a json array in result.", fullName)
+        }
+
+        valLen := val.Len()
+
+        if kind == reflect.Array {
+            if field.Len() < valLen {
+                return fmt.Errorf("cannot copy all field '%v' values to struct. expected len is %v. actual len is %v.",
+                    fullName, field.Len(), valLen)
+            }
+        }
+
+        var slc reflect.Value
+        var needAddr bool
+
+        valueType := field.Type().Elem()
+
+        // shortcut for array of interface
+        if valueType.Kind() == reflect.Interface {
+            if kind == reflect.Array {
+                for i := 0; i < valLen; i++ {
+                    field.Index(i).Set(val.Index(i))
+                }
+            } else { // kind is slice
+                field.Set(val)
+            }
+
+            break
+        }
+
+        if kind == reflect.Array {
+            slc = field.Slice(0, valLen)
+        } else {
+            // kind is slice
+            slc = reflect.MakeSlice(field.Type(), valLen, valLen)
+            field.Set(slc)
+        }
+
+        if valueType.Kind() == reflect.Ptr {
+            needAddr = true
+            valueType = valueType.Elem()
+        }
+
+        for i := 0; i < valLen; i++ {
+            // val.Index(i) returns a Value with wrong type.
+            // use following trick to get correct Value.
+            valIndexValue := reflect.ValueOf(val.Index(i).Interface())
+            newValue := reflect.New(valueType)
+
+            if err := decodeField(valIndexValue, newValue, fmt.Sprintf("%v.%v", fullName, i)); err != nil {
+                return err
+            }
+
+            if needAddr {
+                slc.Index(i).Set(newValue)
+            } else {
+                slc.Index(i).Set(newValue.Elem())
+            }
         }
 
     default:
