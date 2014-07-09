@@ -84,7 +84,7 @@ var items []map[string]interface{}
 err := res.DecodeField("data", &items)
 
 if err != nil {
-    fmt.Errorf("An error has happened %v", err)
+    fmt.Logf("An error has happened %v", err)
 }
 
 for _, item := range items {
