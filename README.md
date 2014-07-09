@@ -79,7 +79,7 @@ res, _ := fb.Get("/search", fb.Params{
         "q":            "nightlife,singapore",
     })
 
-var items []interface{}
+var items []map[string]interface{}
 
 err := res.DecodeField("data", &items)
 
@@ -88,7 +88,7 @@ if err != nil {
 }
 
 for _, item := range items {
-    fmt.Println(item.(map[string]interface{})["id"])
+    fmt.Println(item["id"])
 }
 
 ```
