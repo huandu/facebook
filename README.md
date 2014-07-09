@@ -69,7 +69,7 @@ if err != nil {
 fmt.Println("my latest feed story is:", res.Get("data.0.story"))
 ```
 
-### Read a graph `search` for page and decoding slice `[]interface{}` data result
+### Read a graph `search` for page and decode data `[]interface{}`
 
 ```go
 
