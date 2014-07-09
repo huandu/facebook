@@ -69,6 +69,30 @@ if err != nil {
 fmt.Println("my latest feed story is:", res.Get("data.0.story"))
 ```
 
+### Read a graph search for pages and decoding slice data result.
+
+```go
+
+res, _ := fb.Get("/search", fb.Params{
+        "access_token": "a-valid-access-token",
+        "type":         "page",
+        "q":            "nightlife,singapore",
+    })
+
+var items []interface{}
+
+err := res.DecodeField("data", &items)
+
+if err != nil {
+    fmt.Errorf("An error has happened %v", err)
+}
+
+for _, item := range items {
+    fmt.Println(item.(map[string]interface{})["id"])
+}
+
+```
+
 ### Use `App` and `Session` ###
 
 It's recommended to use `App` and `Session` in a production app.
