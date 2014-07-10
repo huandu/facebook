@@ -79,18 +79,18 @@ res, _ := fb.Get("/search", fb.Params{
         "q":            "nightlife,singapore",
     })
 
-var items []map[string]interface{}
+var items []fb.Result
 
 err := res.DecodeField("data", &items)
 
 if err != nil {
     fmt.Logf("An error has happened %v", err)
+    return
 }
 
 for _, item := range items {
     fmt.Println(item["id"])
 }
-
 ```
 
 ### Use `App` and `Session` ###
