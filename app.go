@@ -170,8 +170,10 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 
     // successfully get a new token.
     if token != "" {
-        expiresStr := values.Get("expires")
-        expires, err = strconv.Atoi(expiresStr)
+        if _, ok := values["expires"]; ok {
+            expiresStr := values.Get("expires")
+            expires, err = strconv.Atoi(expiresStr)
+        }
         return
     }
 
