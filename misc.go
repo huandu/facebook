@@ -41,16 +41,23 @@ func (e *Error) Error() string {
 }
 
 // Creates a new binary data holder.
-func Data(filename string, source io.Reader) *BinaryData {
-    return &BinaryData{
+func Data(filename string, source io.Reader) *binaryData {
+    return &binaryData{
         Filename: filename,
         Source:   source,
     }
 }
 
 // Creates a binary file holder.
-func File(filename, path string) *BinaryFile {
-    return &BinaryFile{
+func File(filename, path string) *binaryFile {
+    return &binaryFile{
+        Filename: filename,
+    }
+}
+
+// Creates a binary file holder and specific a different path for reading.
+func FileAlias(filename, path string) *binaryFile {
+    return &binaryFile{
         Filename: filename,
         Path:     path,
     }

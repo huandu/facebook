@@ -156,7 +156,7 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 
     for k, v := range params {
         switch value := v.(type) {
-        case *BinaryData:
+        case *binaryData:
             var dst io.Writer
             dst, err = w.CreateFormFile(k, value.Filename)
 
@@ -170,9 +170,10 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
                 return
             }
 
-        case *BinaryFile:
+        case *binaryFile:
             var dst io.Writer
             var file *os.File
+            var path string
 
             dst, err = w.CreateFormFile(k, value.Filename)
 
@@ -180,7 +181,13 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
                 return
             }
 
-            file, err = os.Open(value.Path)
+            if value.Path == "" {
+                path = value.Filename
+            } else {
+                path = value.Path
+            }
+
+            file, err = os.Open(path)
 
             if err != nil {
                 return

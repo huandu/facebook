@@ -44,6 +44,6 @@ var (
     // default facebook session.
     defaultSession = &Session{}
 
-    typeOfPointerToBinaryData = reflect.TypeOf(&BinaryData{})
-    typeOfPointerToBinaryFile = reflect.TypeOf(&BinaryFile{})
+    typeOfPointerToBinaryData = reflect.TypeOf(&binaryData{})
+    typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
 )
