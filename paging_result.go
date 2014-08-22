@@ -109,7 +109,7 @@ func (pr *PagingResult) navigate(url *string) (noMore bool, err error) {
 		return
 	}
 
-	res, err = Request(request)
+	res, err = pr.session.Request(request)
 
 	if err != nil {
 		return
