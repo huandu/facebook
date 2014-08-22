@@ -17,14 +17,14 @@
 package facebook
 
 import (
-    "net/http"
+	"net/http"
 )
 
 var (
-    // Default facebook api version.
-    // It can be "v1.0" or "v2.0" or empty per facebook current document.
-    // See https://developers.facebook.com/docs/apps/versions for details.
-    Version string
+	// Default facebook api version.
+	// It can be "v1.0" or "v2.0" or empty per facebook current document.
+	// See https://developers.facebook.com/docs/apps/versions for details.
+	Version string
 )
 
 // Makes a facebook graph api call.
@@ -48,27 +48,27 @@ var (
 // If app id, app secret or access token is required in graph api, caller should
 // create a new facebook session through App instance instead.
 func Api(path string, method Method, params Params) (Result, error) {
-    return defaultSession.Api(path, method, params)
+	return defaultSession.Api(path, method, params)
 }
 
 // Get is a short hand of Api(path, GET, params).
 func Get(path string, params Params) (Result, error) {
-    return Api(path, GET, params)
+	return Api(path, GET, params)
 }
 
 // Post is a short hand of Api(path, POST, params).
 func Post(path string, params Params) (Result, error) {
-    return Api(path, POST, params)
+	return Api(path, POST, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
 func Delete(path string, params Params) (Result, error) {
-    return Api(path, DELETE, params)
+	return Api(path, DELETE, params)
 }
 
 // Put is a short hand of Api(path, PUT, params).
 func Put(path string, params Params) (Result, error) {
-    return Api(path, PUT, params)
+	return Api(path, PUT, params)
 }
 
 // Makes a batch facebook graph api call.
@@ -86,7 +86,7 @@ func Put(path string, params Params) (Result, error) {
 //
 // Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func BatchApi(accessToken string, params ...Params) ([]Result, error) {
-    return Batch(Params{"access_token": accessToken}, params...)
+	return Batch(Params{"access_token": accessToken}, params...)
 }
 
 // Makes a batch facebook graph api call.
@@ -118,7 +118,7 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //
 // Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func Batch(batchParams Params, params ...Params) ([]Result, error) {
-    return defaultSession.Batch(batchParams, params...)
+	return defaultSession.Batch(batchParams, params...)
 }
 
 // Makes a FQL query.
@@ -129,7 +129,7 @@ func Batch(batchParams Params, params ...Params) ([]Result, error) {
 //
 // Facebook document: https://developers.facebook.com/docs/technical-guides/fql#query
 func FQL(query string) ([]Result, error) {
-    return defaultSession.FQL(query)
+	return defaultSession.FQL(query)
 }
 
 // Makes a multi FQL query.
@@ -142,7 +142,7 @@ func FQL(query string) ([]Result, error) {
 //
 // Facebook document: https://developers.facebook.com/docs/technical-guides/fql#multi
 func MultiFQL(queries Params) (Result, error) {
-    return defaultSession.MultiFQL(queries)
+	return defaultSession.MultiFQL(queries)
 }
 
 // Makes an arbitrary HTTP request.
@@ -151,5 +151,5 @@ func MultiFQL(queries Params) (Result, error) {
 //     res, err := Request(request)
 //     fmt.Println(res["gender"])  // get "male"
 func Request(request *http.Request) (Result, error) {
-    return defaultSession.Request(request)
+	return defaultSession.Request(request)
 }
