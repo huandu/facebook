@@ -72,7 +72,6 @@ fmt.Println("my latest feed story is:", res.Get("data.0.story"))
 ### Read a graph `search` for page and decode slice of maps
 
 ```go
-
 res, _ := fb.Get("/search", fb.Params{
         "access_token": "a-valid-access-token",
         "type":         "page",
@@ -95,7 +94,7 @@ for _, item := range items {
 
 ### Use `App` and `Session` ###
 
-It's recommended to use `App` and `Session` in a production app.
+It's recommended to use `App` and `Session` in a production app. They provide more controls over all API calls. They can also make your code clear and concise.
 
 ```go
 // create a global App var to hold your app id and secret.
@@ -122,7 +121,7 @@ res, _ := session.Get("/me/feed", nil)
 
 ### Use `paging` field in response. ###
 
-Some Graph API responses use a special JSON structure to provide paging information. Use `Result.Paging()` to navigate in the result.
+Some Graph API responses use a special JSON structure to provide paging information. Use `Result.Paging()` to walk through all data in such results.
 
 ```go
 res, _ := session.Get("/me/home", nil)

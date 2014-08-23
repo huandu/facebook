@@ -33,10 +33,12 @@ func MakeResult(jsonBytes []byte) (Result, error) {
 // Gets a field.
 //
 // Field can be a dot separated string.
-// It means, if field name is "a.b.c", gets field value res["a"]["b"]["c"].
+// If field name is "a.b.c", it will try to return value of res["a"]["b"]["c"].
 //
 // To access array items, use index value in field.
 // For instance, field "a.0.c" means to read res["a"][0]["c"].
+//
+// It doesn't work with Result which has a key contains dot. Use GetField in this case.
 //
 // Returns nil if field doesn't exist.
 func (res Result) Get(field string) interface{} {
@@ -50,8 +52,8 @@ func (res Result) Get(field string) interface{} {
 
 // Gets a field.
 //
-// Args are treated as what keys to access in the result
-// It means, if args are "a","b","c", gets field value res["a"]["b"]["c"].
+// Arguments are treated as keys to access value in Result.
+// If arguments are "a","b","c", it will try to return value of res["a"]["b"]["c"].
 //
 // To access array items, use index value as a string.
 // For instance, args of "a", "0", "c" means to read res["a"][0]["c"].
