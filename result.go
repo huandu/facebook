@@ -48,6 +48,23 @@ func (res Result) Get(field string) interface{} {
 	return res.get(f)
 }
 
+// Gets a field.
+//
+// Args are treated as what keys to access in the result
+// It means, if args are "a","b","c", gets field value res["a"]["b"]["c"].
+//
+// To access array items, use index value as a string.
+// For instance, args of "a", "0", "c" means to read res["a"][0]["c"].
+//
+// Returns nil if field doesn't exist.
+func (res Result) GetField(fields ...string) interface{} {
+	if len(fields) == 0 {
+		return res
+	}
+
+	return res.get(fields)
+}
+
 func (res Result) get(fields []string) interface{} {
 	v, ok := res[fields[0]]
 
