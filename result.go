@@ -9,6 +9,7 @@ package facebook
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -19,15 +20,34 @@ import (
 // Makes a Result from facebook Graph API response.
 func MakeResult(jsonBytes []byte) (Result, error) {
 	var res Result
+	var rawErr error
 	err := json.Unmarshal(jsonBytes, &res)
 
 	if err != nil {
-		err = fmt.Errorf("cannot format facebook response. %v", err)
-		return nil, err
+		res, rawErr = makeNonJsonResult(jsonBytes)
+		if rawErr == nil {
+			return res, nil
+		} else {
+			err = fmt.Errorf("cannot format facebook response. %v", err)
+			return nil, err
+		}
 	}
 
 	// facebook may return an error
 	return res, res.Err()
+}
+
+func makeNonJsonResult(rawBytes []byte) (Result, error) {
+	res := make(Result)
+
+	if string(rawBytes) == "true" {
+		res["success"] = string(rawBytes)
+	} else {
+		err := errors.New("no known matching raw return result")
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // Gets a field.
