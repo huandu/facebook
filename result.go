@@ -8,6 +8,7 @@
 package facebook
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -19,6 +20,11 @@ import (
 // Makes a Result from facebook Graph API response.
 func MakeResult(jsonBytes []byte) (Result, error) {
 	var res Result
+
+	if bytes.Equal(jsonBytes, facebookSuccessJsonBytes) {
+		return res, nil
+	}
+
 	err := json.Unmarshal(jsonBytes, &res)
 
 	if err != nil {

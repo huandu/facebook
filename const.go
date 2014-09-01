@@ -46,4 +46,6 @@ var (
 
 	typeOfPointerToBinaryData = reflect.TypeOf(&binaryData{})
 	typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
+
+	facebookSuccessJsonBytes = []byte("true")
 )
