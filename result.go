@@ -22,7 +22,7 @@ func MakeResult(jsonBytes []byte) (Result, error) {
 	var res Result
 
 	if bytes.Equal(jsonBytes, facebookSuccessJsonBytes) {
-		return res, nil
+		return Result{}, nil
 	}
 
 	err := json.Unmarshal(jsonBytes, &res)
