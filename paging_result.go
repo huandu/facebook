@@ -115,6 +115,10 @@ func (pr *PagingResult) navigate(url *string) (noMore bool, err error) {
 		return
 	}
 
+	if pr.paging.Paging != nil {
+		pr.paging.Paging.Next = ""
+		pr.paging.Paging.Previous = ""
+	}
 	paging := &pr.paging
 	err = res.Decode(paging)
 
