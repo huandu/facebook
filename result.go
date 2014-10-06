@@ -309,7 +309,9 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 }
 
 func decodeField(val reflect.Value, field reflect.Value, fullName string) error {
+	fieldIsPtr := false
 	if field.Kind() == reflect.Ptr {
+		fieldIsPtr = true
 		if field.IsNil() {
 			field.Set(reflect.New(field.Type().Elem()))
 		}
@@ -319,6 +321,10 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 	if !field.CanSet() {
 		return fmt.Errorf("field '%v' cannot be decoded. make sure the output value is able to be set.", fullName)
+	}
+
+	if fieldIsPtr && !val.IsValid() {
+		return nil
 	}
 
 	kind := field.Kind()
