@@ -162,6 +162,10 @@ type MessageTag struct {
 
 type MessageTags map[string][]*MessageTag
 
+type NullStruct struct {
+	Null *int
+}
+
 func TestApiGetUserInfo(t *testing.T) {
 	me, err := Api(FB_TEST_MY_USERNAME, GET, nil)
 
@@ -826,6 +830,9 @@ func TestDecodeField(t *testing.T) {
                     "type": "page"
                 }
             ]
+        },
+        "nullStruct": {
+        	"null": null
         }
     }`
 
@@ -835,6 +842,9 @@ func TestDecodeField(t *testing.T) {
 	var aString string
 	var aSlice []string
 	var subResults []Result
+	var aNull NullStruct = NullStruct{
+		Null: &anInt,
+	}
 
 	err = json.Unmarshal([]byte(jsonStr), &result)
 
@@ -963,6 +973,16 @@ func TestDecodeField(t *testing.T) {
 
 	if aString != "293450302" {
 		t.Fatalf("expect messageTags.2.1.id value is '293450302'. [value:%v]", aString)
+	}
+
+	err = result.DecodeField("nullStruct", &aNull)
+
+	if err != nil {
+		t.Fatalf("cannot decode nullStruct field. [e:%v]", err)
+	}
+
+	if aNull.Null != nil {
+		t.Fatalf("expect aNull.Null is reset to nil.")
 	}
 }
 
