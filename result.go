@@ -25,7 +25,15 @@ func MakeResult(jsonBytes []byte) (Result, error) {
 		return Result{}, nil
 	}
 
-	err := json.Unmarshal(jsonBytes, &res)
+	jsonReader := bytes.NewReader(jsonBytes)
+	dec := json.NewDecoder(jsonReader)
+
+	// issue #19
+	// app_scoped user_id in a post-Facebook graph 2.0 would exceeds 2^53.
+	// use Number instead of float64 to avoid precision lost.
+	dec.UseNumber()
+
+	err := dec.Decode(&res)
 
 	if err != nil {
 		err = fmt.Errorf("cannot format facebook response. %v", err)
@@ -374,6 +382,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 			field.SetInt(int64(n))
 
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseInt(val.String(), 10, 8)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid int8.", fullName)
+			}
+
+			field.SetInt(n)
+
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
 		}
@@ -406,6 +428,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			}
 
 			field.SetInt(int64(n))
+
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseInt(val.String(), 10, 16)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid int16.", fullName)
+			}
+
+			field.SetInt(n)
 
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
@@ -440,6 +476,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 			field.SetInt(int64(n))
 
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseInt(val.String(), 10, 32)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid int32.", fullName)
+			}
+
+			field.SetInt(n)
+
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
 		}
@@ -467,6 +517,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			}
 
 			field.SetInt(int64(n))
+
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseInt(val.String(), 10, 64)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid int64.", fullName)
+			}
+
+			field.SetInt(n)
 
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
@@ -513,6 +577,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 			field.SetInt(int64(n))
 
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseInt(val.String(), 10, bits)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid int%v.", fullName, bits)
+			}
+
+			field.SetInt(n)
+
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
 		}
@@ -545,6 +623,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			}
 
 			field.SetUint(uint64(n))
+
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseUint(val.String(), 10, 8)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid uint8.", fullName)
+			}
+
+			field.SetUint(n)
 
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
@@ -579,6 +671,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 			field.SetUint(uint64(n))
 
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseUint(val.String(), 10, 16)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid uint16.", fullName)
+			}
+
+			field.SetUint(n)
+
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
 		}
@@ -612,6 +718,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 			field.SetUint(uint64(n))
 
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseUint(val.String(), 10, 32)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid uint32.", fullName)
+			}
+
+			field.SetUint(n)
+
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
 		}
@@ -639,6 +759,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			}
 
 			field.SetUint(uint64(n))
+
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseUint(val.String(), 10, 64)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid uint64.", fullName)
+			}
+
+			field.SetUint(n)
 
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
@@ -683,6 +817,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 			field.SetUint(uint64(n))
 
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseUint(val.String(), 10, bits)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' value is not a valid uint%v.", fullName, bits)
+			}
+
+			field.SetUint(n)
+
 		default:
 			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
 		}
@@ -699,6 +847,20 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 		case reflect.Float32, reflect.Float64:
 			n := val.Float()
+			field.SetFloat(n)
+
+		case reflect.String:
+			// only json.Number is allowed to be used as number.
+			if val.Type() != typeOfJSONNumber {
+				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+			}
+
+			n, err := strconv.ParseFloat(val.String(), 64)
+
+			if err != nil {
+				return fmt.Errorf("field '%v' is not a valid float64.", fullName)
+			}
+
 			field.SetFloat(n)
 
 		default:

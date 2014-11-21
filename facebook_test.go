@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -1064,5 +1065,90 @@ func TestPagingResult(t *testing.T) {
 
 	if len(paging.Data()) != 2 {
 		t.Fatalf("expect to have only 2 post. [len:%v]", len(paging.Data()))
+	}
+}
+
+func TestDecodeLargeInteger(t *testing.T) {
+	bigIntegers := []int64{
+		1<<53 - 2,
+		1<<53 - 1,
+		1 << 53,
+		1<<53 + 1,
+		1<<53 + 2,
+
+		1<<54 - 2,
+		1<<54 - 1,
+		1 << 54,
+		1<<54 + 1,
+		1<<54 + 2,
+
+		1<<60 - 2,
+		1<<60 - 1,
+		1 << 60,
+		1<<60 + 1,
+		1<<60 + 2,
+
+		1<<63 - 2,
+		1<<63 - 1,
+
+		-(1<<53 - 2),
+		-(1<<53 - 1),
+		-(1 << 53),
+		-(1<<53 + 1),
+		-(1<<53 + 2),
+
+		-(1<<54 - 2),
+		-(1<<54 - 1),
+		-(1 << 54),
+		-(1<<54 + 1),
+		-(1<<54 + 2),
+
+		-(1<<60 - 2),
+		-(1<<60 - 1),
+		-(1 << 60),
+		-(1<<60 + 1),
+		-(1<<60 + 2),
+
+		-(1<<53 - 2),
+		-(1<<63 - 1),
+		-(1 << 63),
+	}
+	jsonStr := `{
+		"integers": [%v]
+	}`
+
+	buf := &bytes.Buffer{}
+
+	for _, v := range bigIntegers {
+		buf.WriteString(fmt.Sprintf("%v", v))
+		buf.WriteRune(',')
+	}
+
+	buf.WriteRune('0')
+	json := fmt.Sprintf(jsonStr, buf.String())
+
+	res, err := MakeResult([]byte(json))
+
+	if err != nil {
+		t.Fatalf("cannot make result on test json string. [e:%v]", err)
+	}
+
+	var actualIntegers []int64
+	err = res.DecodeField("integers", &actualIntegers)
+
+	if err != nil {
+		t.Fatalf("cannot decode integers from json. [e:%v]", err)
+	}
+
+	if len(actualIntegers) != len(bigIntegers)+1 {
+		t.Fatalf("count of decoded integers is not correct. [expected:%v] [actual:%v]", len(bigIntegers)+1, len(actualIntegers))
+	}
+
+	for k, _ := range bigIntegers {
+		if bigIntegers[k] != actualIntegers[k] {
+			t.Logf("expected integers: %v", bigIntegers)
+			t.Logf("actual integers:   %v", actualIntegers)
+			t.Fatalf("a decoded integer is not expected. [expected:%v] [actual:%v]", bigIntegers[k], actualIntegers[k])
+		}
 	}
 }

@@ -8,6 +8,7 @@
 package facebook
 
 import (
+	"encoding/json"
 	"reflect"
 	"regexp"
 )
@@ -46,6 +47,7 @@ var (
 
 	typeOfPointerToBinaryData = reflect.TypeOf(&binaryData{})
 	typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
+	typeOfJSONNumber          = reflect.TypeOf(json.Number(""))
 
 	facebookSuccessJsonBytes = []byte("true")
 )
