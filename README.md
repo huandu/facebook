@@ -295,6 +295,10 @@ session.EnableAppsecretProof(false)
 
 I've try my best to add enough information in every public method and type. If you still have any question or suggestion, feel free to create an issue or send pull request to me. Thank you.
 
+## Change Log ##
+
+See CHANGELOG.md.
+
 ## TODO ##
 
 1. Real-time update subscriptions.
