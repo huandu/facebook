@@ -1048,10 +1048,10 @@ func TestPagingResultDecode(t *testing.T) {
 		t.Fatalf("expect id to be '1'. [id:%v]", friends.Friends[0].Id)
 	}
 	if friends.Friends[1].Name != "friend 2" {
-		t.Fatalf("expect name to be 'friend 2'. [name:%v]", friends.Friends[0].Name)
+		t.Fatalf("expect name to be 'friend 2'. [name:%v]", friends.Friends[1].Name)
 	}
 	if friends.Friends[1].Id != "2" {
-		t.Fatalf("expect id to be '2'. [id:%v]", friends.Friends[0].Id)
+		t.Fatalf("expect id to be '2'. [id:%v]", friends.Friends[1].Id)
 	}
 }
 
