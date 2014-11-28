@@ -31,6 +31,7 @@ func newPagingResult(session *Session, res Result) (*PagingResult, error) {
 
 	pr := &PagingResult{
 		session: session,
+		result:  res,
 	}
 	paging := &pr.paging
 	err := res.Decode(paging)
@@ -50,6 +51,11 @@ func newPagingResult(session *Session, res Result) (*PagingResult, error) {
 // Get current data.
 func (pr *PagingResult) Data() []Result {
 	return pr.paging.Data
+}
+
+// Decodes the current full result to a struct. See Result#Decode.
+func (pr *PagingResult) Decode(v interface{}) (err error) {
+	return pr.result.Decode(v)
 }
 
 // Read previous page.
@@ -126,6 +132,7 @@ func (pr *PagingResult) navigate(url *string) (noMore bool, err error) {
 		return
 	}
 
+	pr.result = res
 	if paging.Paging == nil || len(paging.Data) == 0 {
 		*url = ""
 		noMore = true

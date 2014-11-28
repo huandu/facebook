@@ -1005,6 +1005,56 @@ func TestGraphError(t *testing.T) {
 	t.Logf("facebook error. [e:%v] [message:%v] [type:%v] [code:%v] [subcode:%v]", err, fbErr.Message, fbErr.Type, fbErr.Code, fbErr.ErrorSubcode)
 }
 
+type FacebookFriend struct {
+	Id   string `facebook:",required"`
+	Name string `facebook:",required"`
+}
+
+type FacebookFriends struct {
+	Friends []FacebookFriend `facebook:"data,required"`
+}
+
+func TestPagingResultDecode(t *testing.T) {
+	res := Result{
+		"data": []interface{}{
+			map[string]interface{}{
+				"name": "friend 1",
+				"id":   "1",
+			},
+			map[string]interface{}{
+				"name": "friend 2",
+				"id":   "2",
+			},
+		},
+		"paging": map[string]interface{}{
+			"next": "https://graph.facebook.com/...",
+		},
+	}
+	paging, err := newPagingResult(nil, res)
+	if err != nil {
+		t.Fatalf("cannot create paging result. [e:%v]", err)
+	}
+	var friends FacebookFriends
+	if err := paging.Decode(&friends); err != nil {
+		t.Fatalf("cannot decode paging result. [e:%v]", err)
+	}
+	if len(friends.Friends) != 2 {
+		t.Fatalf("expect to have 2 friends. [len:%v]", len(friends.Friends))
+	}
+	if friends.Friends[0].Name != "friend 1" {
+		t.Fatalf("expect name to be 'friend 1'. [name:%v]", friends.Friends[0].Name)
+	}
+	if friends.Friends[0].Id != "1" {
+		t.Fatalf("expect id to be '1'. [id:%v]", friends.Friends[0].Id)
+	}
+	if friends.Friends[1].Name != "friend 2" {
+		t.Fatalf("expect name to be 'friend 2'. [name:%v]", friends.Friends[0].Name)
+	}
+	if friends.Friends[1].Id != "2" {
+		t.Fatalf("expect id to be '2'. [id:%v]", friends.Friends[0].Id)
+	}
+}
+
 func TestPagingResult(t *testing.T) {
 	if FB_TEST_VALID_ACCESS_TOKEN == "" {
 		t.Skipf("skip this case as we don't have a valid access token.")
