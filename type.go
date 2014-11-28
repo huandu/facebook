@@ -67,7 +67,6 @@ type Result map[string]interface{}
 // Represents facebook API call result with paging information.
 type PagingResult struct {
 	session  *Session
-	result   Result
 	paging   pagingData
 	previous string
 	next     string
