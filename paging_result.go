@@ -52,6 +52,14 @@ func (pr *PagingResult) Data() []Result {
 	return pr.paging.Data
 }
 
+// Decodes the current full result to a struct. See Result#Decode.
+func (pr *PagingResult) Decode(v interface{}) (err error) {
+	res := Result{
+		"data": pr.Data(),
+	}
+	return res.Decode(v)
+}
+
 // Read previous page.
 func (pr *PagingResult) Previous() (noMore bool, err error) {
 	if !pr.HasPrevious() {
