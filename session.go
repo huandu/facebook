@@ -261,13 +261,19 @@ func (session *Session) Validate() (err error) {
 
 // Inspect Session access token.
 // Returns JSON array containing data about the inspected token.
+// See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.2#checktoken
 func (session *Session) Inspect() (result Result, err error) {
 	if session.accessToken == "" {
 		err = fmt.Errorf("access token is not set.")
 		return
 	}
 
-	appAccessToken := session.App().AppAccessToken()
+	if session.app == nil {
+		err = fmt.Errorf("cannot inspect access token without binding an app.")
+		return
+	}
+
+	appAccessToken := session.app.AppAccessToken()
 
 	if appAccessToken == "" {
 		err = fmt.Errorf("app access token is not set.")
@@ -279,6 +285,21 @@ func (session *Session) Inspect() (result Result, err error) {
 		"access_token": appAccessToken,
 	})
 
+	if err != nil {
+		return
+	}
+
+	// facebook stores everything, including error, inside result["data"].
+	// make sure that result["data"] exists and doesn't contain error.
+	if _, ok := result["data"]; !ok {
+		err = fmt.Errorf("facebook inspect api returns unexpected result.")
+		return
+	}
+
+	var data Result
+	result.DecodeField("data", &data)
+	result = data
+	err = result.Err()
 	return
 }
 

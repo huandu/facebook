@@ -21,7 +21,7 @@ const (
 	FB_TEST_MY_USERNAME = "huan.du"
 
 	// remeber to change it to a valid token to run test
-	//FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBACFDDIbZALXCQ56BW2G0ffoFFB1ZCfDSXUZA5BQJ18GP9V7xAlf334PZC9W3qfldZCUD7iS5NDPMjwhAZALlBTr8QoB00uKFSEFWX2Gq5ZAZAzEThbAMubkF1zksicXSWllubCctdVgUOP1BsPaHApxTJFjNE9Hjr1iZBvnqin06CZBadDCrq3ufoZD"
+	//FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAINjZARoC9ZAuEUTgYe2bDC6EdThnni3b56scyshKUkYnKdimqfA2ZAXcd2wLd3AAvLtwoWNhsxM76mK7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
 	FB_TEST_VALID_ACCESS_TOKEN = ""
 
 	// remember to change it to a valid signed request to run test
@@ -110,6 +110,10 @@ const (
 		"tl8v0nUjyYMVr1K0ML5m2UjHNjsVeZ8h4V1x4DK2Exjnp8u/L479hVnTUFh4DTq8WX7LFwPS" +
 		"V04qCwqXpy7iQWkl0NcpQF435Sd8ZziioOQEpQlKUAJAwBjsKKr5iRXgIvpWFdqKKaEKVemf" +
 		"/Vj+3M/7KqEo3vK/LRRR6XJ9/dm8+nb4HFC7R/yinDA9wfL9qKK01Hpopp/UOs0UUUAWf//Z"
+)
+
+var (
+	testGlobalApp = New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
 )
 
 type AllTypes struct {
@@ -1200,5 +1204,54 @@ func TestDecodeLargeInteger(t *testing.T) {
 			t.Logf("actual integers:   %v", actualIntegers)
 			t.Fatalf("a decoded integer is not expected. [expected:%v] [actual:%v]", bigIntegers[k], actualIntegers[k])
 		}
+	}
+}
+
+func TestInspectValidToken(t *testing.T) {
+	if FB_TEST_VALID_ACCESS_TOKEN == "" {
+		t.Skipf("skip this case as we don't have a valid access token.")
+	}
+
+	session := testGlobalApp.Session(FB_TEST_VALID_ACCESS_TOKEN)
+	result, err := session.Inspect()
+
+	if err != nil {
+		t.Fatalf("cannot inspect a valid access token. [e:%v]", err)
+	}
+
+	var isValid bool
+	err = result.DecodeField("is_valid", &isValid)
+
+	if err != nil {
+		t.Fatalf("cannot get 'is_valid' in inspect result. [e:%v]", err)
+	}
+
+	if !isValid {
+		t.Fatalf("inspect result shows access token is invalid. why? [result:%v]", result)
+	}
+}
+
+func TestInspectInvalidToken(t *testing.T) {
+	invalidToken := "CAACZA38ZAD8CoBAe2bDC6EdThnni3b56scyshKINjZARoC9ZAuEUTgYUkYnKdimqfA2ZAXcd2wLd7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB3AAvLtwoWNhsxM76mK0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
+	session := testGlobalApp.Session(invalidToken)
+	result, err := session.Inspect()
+
+	if err == nil {
+		t.Fatalf("facebook should indicate it's an invalid token. why not? [result:%v]", result)
+	}
+
+	if _, ok := err.(*Error); !ok {
+		t.Fatalf("inspect error should be a standard facebook error. why not? [e:%v]", err)
+	}
+
+	isValid := true
+	err = result.DecodeField("is_valid", &isValid)
+
+	if err != nil {
+		t.Fatalf("cannot get 'is_valid' in inspect result. [e:%v]", err)
+	}
+
+	if isValid {
+		t.Fatalf("inspect result shows access token is valid. why? [result:%v]", result)
 	}
 }
