@@ -16,13 +16,12 @@ import (
 )
 
 const (
-	FB_TEST_APP_ID      = "169186383097898"
-	FB_TEST_APP_SECRET  = "b2e4262c306caa3c7f5215d2d099b319"
-	FB_TEST_MY_USERNAME = "huan.du"
+	FB_TEST_APP_ID     = "169186383097898"
+	FB_TEST_APP_SECRET = "b2e4262c306caa3c7f5215d2d099b319"
 
 	// remeber to change it to a valid token to run test
-	//FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAINjZARoC9ZAuEUTgYe2bDC6EdThnni3b56scyshKUkYnKdimqfA2ZAXcd2wLd3AAvLtwoWNhsxM76mK7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
-	FB_TEST_VALID_ACCESS_TOKEN = ""
+	FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAEA8vh60UNiQUcifYCWh1tdZBmZBZB6rbUoMIXQqdWH5fg3JRI3V76MimUe3rkg3MLXSwnDZCboEiibo8iQtkSlrEI4eOS0myPnpcgZCJbZBpkJ23AUAXUzqTSPuJKpKurnivCmUtxv3OHXtT5rALZCJ7rR3CpQKbz9AyO7lxOFBBxiBYj1tng7vfd8cZCeT2StY83ZA1B4ht"
+	//FB_TEST_VALID_ACCESS_TOKEN = ""
 
 	// remember to change it to a valid signed request to run test
 	//FB_TEST_VALID_SIGNED_REQUEST = "ZAxP-ILRQBOwKKxCBMNlGmVraiowV7WFNg761OYBNGc.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNDM0OTg0MDAsImlzc3VlZF9hdCI6MTM0MzQ5MzI2NSwib2F1dGhfdG9rZW4iOiJBQUFDWkEzOFpBRDhDb0JBRFpCcmZ5TFpDanBNUVczdThVTWZmRldSWkNpZGw5Tkx4a1BsY2tTcXZaQnpzTW9OWkF2bVk2RUd2NG1hUUFaQ0t2VlpBWkJ5VXA5a0FCU2x6THFJejlvZTdOdHBzdzhyQVpEWkQiLCJ1c2VyIjp7ImNvdW50cnkiOiJ1cyIsImxvY2FsZSI6ImVuX1VTIiwiYWdlIjp7Im1pbiI6MjF9fSwidXNlcl9pZCI6IjUzODc0NDQ2OCJ9"
@@ -171,22 +170,8 @@ type NullStruct struct {
 	Null *int
 }
 
-func TestApiGetUserInfo(t *testing.T) {
-	me, err := Api(FB_TEST_MY_USERNAME, GET, nil)
-
-	if err != nil {
-		t.Fatalf("cannot get my info. [e:%v]", err)
-	}
-
-	if e := me.Err(); e != nil {
-		t.Fatalf("facebook returns error. [e:%v]", e)
-	}
-
-	t.Logf("my info. %v", me)
-}
-
 func TestApiGetUserInfoV2(t *testing.T) {
-	Version = "v2.0"
+	Version = "v2.2"
 	defer func() {
 		Version = ""
 	}()
@@ -214,20 +199,57 @@ func TestBatchApiGetInfo(t *testing.T) {
 		t.Skipf("cannot call batch api without access token. skip this test.")
 	}
 
+	verifyBatchResult := func(t *testing.T, index int, res Result) {
+		batch, err := res.Batch()
+
+		if err != nil {
+			t.Fatalf("cannot parse batch api results[%v]. [e:%v] [result:%v]", index, err, res)
+		}
+
+		if batch.StatusCode != 200 {
+			t.Fatalf("facebook returns unexpected http status code in results[%v]. [code:%v] [result:%v]", index, batch.StatusCode, res)
+		}
+
+		contentType := batch.Header.Get("Content-Type")
+
+		if contentType == "" {
+			t.Fatalf("facebook returns unexpected http header in results[%v]. [header:%v]", index, batch.Header)
+		}
+
+		if batch.Body == "" {
+			t.Fatalf("facebook returns unexpected http body in results[%v]. [body:%v]", index, batch.Body)
+		}
+
+		var id string
+		err = batch.Result.DecodeField("id", &id)
+
+		if err != nil {
+			t.Fatalf("cannot get 'id' field in results[%v]. [result:%v]", index, res)
+		}
+
+		if id == "" {
+			t.Fatalf("facebook should return account id in results[%v].", index)
+		}
+	}
+
 	test := func(t *testing.T) {
 		params1 := Params{
 			"method":       GET,
-			"relative_url": FB_TEST_MY_USERNAME,
+			"relative_url": "me",
 		}
 		params2 := Params{
 			"method":       GET,
-			"relative_url": uint64(100002828925788), // id of my another facebook id
+			"relative_url": uint64(100002828925788), // id of my another facebook account
 		}
 
-		me, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
+		results, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
 
 		if err != nil {
 			t.Fatalf("cannot get batch result. [e:%v]", err)
+		}
+
+		if len(results) != 2 {
+			t.Fatalf("batch api should return results in an array with 2 entries. [len:%v]", len(results))
 		}
 
 		if Version == "" {
@@ -236,15 +258,17 @@ func TestBatchApiGetInfo(t *testing.T) {
 			t.Logf("global facebook version: %v", Version)
 		}
 
-		t.Logf("my info. %v", me)
+		for index, result := range results {
+			verifyBatchResult(t, index, result)
+		}
 	}
 
 	// Use default Version.
 	Version = ""
 	test(t)
 
-	// User "v2.0".
-	Version = "v2.0"
+	// User "v2.2".
+	Version = "v2.2"
 	defer func() {
 		Version = ""
 	}()
@@ -312,7 +336,7 @@ func TestSession(t *testing.T) {
 
 	// Global version overwrite default session version.
 	func() {
-		Version = "v2.0"
+		Version = "v2.2"
 		defer func() {
 			Version = ""
 		}()
@@ -323,7 +347,7 @@ func TestSession(t *testing.T) {
 	// Session version overwrite default version.
 	func() {
 		Version = "vx.y" // an invalid version.
-		session.Version = "v2.0"
+		session.Version = "v2.2"
 		defer func() {
 			Version = ""
 		}()
@@ -440,7 +464,7 @@ func TestSimpleFQL(t *testing.T) {
 		t.Logf("my name. %v", me[0]["name"])
 	}
 
-	// v2.0 api doesn't allow me to query user without access token.
+	// v2.2 api doesn't allow me to query user without access token.
 	Version = "v1.0"
 	test(t, defaultSession)
 
@@ -448,7 +472,7 @@ func TestSimpleFQL(t *testing.T) {
 		return
 	}
 
-	Version = "v2.0"
+	Version = "v2.2"
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 	test(t, session)
@@ -519,7 +543,7 @@ func TestMultiFQL(t *testing.T) {
 		}
 	}
 
-	// v2.0 api doesn't allow me to query user without access token.
+	// v2.2 api doesn't allow me to query user without access token.
 	Version = "v1.0"
 	test(t, defaultSession)
 
@@ -527,7 +551,7 @@ func TestMultiFQL(t *testing.T) {
 		return
 	}
 
-	Version = "v2.0"
+	Version = "v2.2"
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 	test(t, session)

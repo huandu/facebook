@@ -77,12 +77,19 @@ func Put(path string, params Params) (Result, error) {
 // except uploading binary data. Use Batch to do so.
 //
 // Note: API response is stored in "body" field of a Result.
-//     var res1, res2 Result
 //     results, _ := BatchApi(accessToken, Params{...}, Params{...})
 //
-//     // Get batch request response.
-//     results[0].DecodeField("body", &res1)
-//     results[1].DecodeField("body", &res2)
+//     // Use first batch api response.
+//     var res1 *BatchResult
+//     var err error
+//     res1, err = results[0].Batch()
+//
+//     if err != nil {
+//         // this is not a valid batch api response.
+//     }
+//
+//     // Use BatchResult#Result to get response body content as Result.
+//     res := res1.Result
 //
 // Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func BatchApi(accessToken string, params ...Params) ([]Result, error) {

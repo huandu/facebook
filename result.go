@@ -246,6 +246,14 @@ func (res Result) Paging(session *Session) (*PagingResult, error) {
 	return newPagingResult(session, res)
 }
 
+// Creates a BatchResult for this result.
+// Returns error if the Result is not a batch api response.
+//
+// See BatchApi document for a sample usage.
+func (res Result) Batch() (*BatchResult, error) {
+	return newBatchResult(res)
+}
+
 func (res Result) decode(v reflect.Value, fullName string) error {
 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()

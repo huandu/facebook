@@ -72,6 +72,15 @@ type PagingResult struct {
 	next     string
 }
 
+// Represents facebook batch API call result.
+// See https://developers.facebook.com/docs/graph-api/making-multiple-requests/#multiple_methods.
+type BatchResult struct {
+	StatusCode int         // HTTP status code.
+	Header     http.Header // HTTP response headers.
+	Body       string      // Raw HTTP response body string.
+	Result     Result      // Facebook api result parsed from body.
+}
+
 // Facebook API error.
 type Error struct {
 	Message      string
