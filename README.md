@@ -2,9 +2,11 @@
 
 [![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
 
-This is a Go library fully supports Facebook Graph API (both 1.0 and 2.0) with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
+This is a Go library fully supports Facebook Graph API (both 1.0 and 2.x) with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
 
-See [full document](http://godoc.org/github.com/huandu/facebook) for details.
+See [full document](http://godoc.org/github.com/huandu/facebook) for API details.
+
+Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this library. I'll try my best to response it.
 
 ## Usage ##
 
@@ -185,16 +187,30 @@ res.DecodeField("data.0", &feed) // read latest feed
 ```go
 params1 := Params{
     "method": fb.GET,
-    "relative_url": "huandu",
+    "relative_url": "me",
 }
 params2 := Params{
     "method": fb.GET,
     "relative_url": uint64(100002828925788),
 }
-res, err := fb.BatchApi(your_access_token, params1, params2)
+results, err := fb.BatchApi(your_access_token, params1, params2)
 
-// res is a []Result. if err is nil, res[0] and res[1] are response to
-// params1 and params2 respectively.
+if err != nil {
+    // check error...
+    return
+}
+
+// batchResult1 and batchResult2 are response for params1 and params2.
+batchResult1, _ := results[0].Batch()
+batchResult2, _ := results[1].Batch()
+
+// Use parsed result.
+var id string
+res := batchResult1.Result
+res.DecodeField("id", &id)
+
+// Use response header.
+contentType := batchResult1.Header.Get("Content-Type")
 ```
 
 ### Send FQL query ###
@@ -290,10 +306,6 @@ session.Get("/me", nil)
 // it's also possible to enable/disable this feature per session.
 session.EnableAppsecretProof(false)
 ```
-
-### Need more samples? ###
-
-I've try my best to add enough information in every public method and type. If you still have any question or suggestion, feel free to create an issue or send pull request to me. Thank you.
 
 ## Change Log ##
 
