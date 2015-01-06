@@ -1,5 +1,11 @@
 # Change Log #
 
+## v1.4.0 ##
+
+* `[FIX]` [#23](https://github.com/huandu/facebook/issues/24) Algorithm change: Camel case string to underscore string supports abbreviation
+
+Fix for [#23](https://github.com/huandu/facebook/issues/24) could be a breaking change. Camel case string `HTTPServer` will be converted to `http_server` instead of `h_t_t_p_server`. See issue description for detail.
+
 ## v1.3.0 ##
 
 * `[NEW]` [#22](https://github.com/huandu/facebook/issues/22) Add a new helper struct `BatchResult` to hold batch request responses.
