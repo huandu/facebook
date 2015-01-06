@@ -1279,3 +1279,22 @@ func TestInspectInvalidToken(t *testing.T) {
 		t.Fatalf("inspect result shows access token is valid. why? [result:%v]", result)
 	}
 }
+
+func TestCamelCaseToUnderScore(t *testing.T) {
+	cases := map[string]string{
+		"TestCase":           "test_case",
+		"HTTPServer":         "http_server",
+		"NoHTTPS":            "no_https",
+		"Wi_thF":             "wi_th_f",
+		"_AnotherTES_TCaseP": "__another_te_s__t_case_p",
+		"ALL": "all",
+	}
+
+	for k, v := range cases {
+		str := camelCaseToUnderScore(k)
+
+		if str != v {
+			t.Fatalf("wrong underscore string. [expect:%v] [actual:%v]", v, str)
+		}
+	}
+}
