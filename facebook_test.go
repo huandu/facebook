@@ -1286,8 +1286,9 @@ func TestCamelCaseToUnderScore(t *testing.T) {
 		"HTTPServer":         "http_server",
 		"NoHTTPS":            "no_https",
 		"Wi_thF":             "wi_th_f",
-		"_AnotherTES_TCaseP": "__another_te_s__t_case_p",
-		"ALL": "all",
+		"_AnotherTES_TCaseP": "_another_tes_t_case_p",
+		"ALL":                "all",
+		"UserID":             "user_id",
 	}
 
 	for k, v := range cases {
