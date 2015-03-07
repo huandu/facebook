@@ -112,7 +112,7 @@ session, _ := globalApp.SessionFromSignedRequest(signedRequest)
 
 // if you can get a valid access token in other way.
 // creates a session directly with the token.
-seesion := globalApp.Session(token)
+session := globalApp.Session(token)
 
 // validate access token. err is nil if token is valid.
 err := session.Validate()
