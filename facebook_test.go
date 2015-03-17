@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 )
 
 const (
@@ -862,7 +863,8 @@ func TestDecodeField(t *testing.T) {
         },
         "nullStruct": {
         	"null": null
-        }
+        },
+        "timestamp": "2015-01-03T11:15:01+0000"
     }`
 
 	var result Result
@@ -874,6 +876,7 @@ func TestDecodeField(t *testing.T) {
 	var aNull NullStruct = NullStruct{
 		Null: &anInt,
 	}
+	var aTimestamp time.Time
 
 	err = json.Unmarshal([]byte(jsonStr), &result)
 
@@ -1012,6 +1015,16 @@ func TestDecodeField(t *testing.T) {
 
 	if aNull.Null != nil {
 		t.Fatalf("expect aNull.Null is reset to nil.")
+	}
+
+	err = result.DecodeField("timestamp", &aTimestamp)
+
+	if err != nil {
+		t.Fatalf("cannot decode timestamp field. [e:%v]", err)
+	}
+
+	if !aTimestamp.Equal(time.Date(2015, time.January, 3, 11, 15, 1, 0, time.FixedZone("no-offset", 0))) {
+		t.Fatalf("expect aTimestamp date to be 2015-01-03 11:15:01 +0000 [value:%v]", aTimestamp.String())
 	}
 }
 
