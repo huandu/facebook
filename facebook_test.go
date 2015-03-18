@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 )
 
 const (
@@ -831,6 +832,8 @@ func TestStructFieldTag(t *testing.T) {
 	t.Logf("expected decode error. [e:%v]", err)
 }
 
+type myTime time.Time
+
 func TestDecodeField(t *testing.T) {
 	jsonStr := `{
         "int": 1234,
@@ -862,7 +865,9 @@ func TestDecodeField(t *testing.T) {
         },
         "nullStruct": {
         	"null": null
-        }
+        },
+        "timestamp": "2015-01-03T11:15:01+0000",
+        "custom_timestamp": "2014-03-04T11:15:01+0000"
     }`
 
 	var result Result
@@ -874,6 +879,8 @@ func TestDecodeField(t *testing.T) {
 	var aNull NullStruct = NullStruct{
 		Null: &anInt,
 	}
+	var aTimestamp time.Time
+	var aCustomTimestamp myTime
 
 	err = json.Unmarshal([]byte(jsonStr), &result)
 
@@ -1012,6 +1019,26 @@ func TestDecodeField(t *testing.T) {
 
 	if aNull.Null != nil {
 		t.Fatalf("expect aNull.Null is reset to nil.")
+	}
+
+	err = result.DecodeField("timestamp", &aTimestamp)
+
+	if err != nil {
+		t.Fatalf("cannot decode timestamp field. [e:%v]", err)
+	}
+
+	if !aTimestamp.Equal(time.Date(2015, time.January, 3, 11, 15, 1, 0, time.FixedZone("no-offset", 0))) {
+		t.Fatalf("expect aTimestamp date to be 2015-01-03 11:15:01 +0000 [value:%v]", aTimestamp.String())
+	}
+
+	err = result.DecodeField("custom_timestamp", &aCustomTimestamp)
+
+	if err != nil {
+		t.Fatalf("cannot decode custom_timestamp field. [e:%v]", err)
+	}
+
+	if !time.Time(aCustomTimestamp).Equal(time.Date(2014, time.March, 4, 11, 15, 1, 0, time.FixedZone("no-offset", 0))) {
+		t.Fatalf("expect aCustomTimestamp date to be 2014-03-04 11:15:01 +0000 [value:%v]", time.Time(aCustomTimestamp).String())
 	}
 }
 
