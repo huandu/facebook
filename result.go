@@ -884,7 +884,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		field.SetString(val.String())
 
 	case reflect.Struct:
-		if field.Type().PkgPath() == "time" && field.Type().Name() == "Time" {
+		if field.Type().ConvertibleTo(reflect.TypeOf(time.Time{})) {
 			if valType.Kind() != reflect.String {
 				return fmt.Errorf("field '%v' is not a string in result.", fullName)
 			}
@@ -895,7 +895,8 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 				return fmt.Errorf("field '%v' was unable to parse the time string '%s'.", fullName, val.String())
 			}
 
-			field.Set(reflect.ValueOf(t))
+			matchedType := reflect.ValueOf(t).Convert(field.Type())
+			field.Set(matchedType)
 			return nil
 		}
 
