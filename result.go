@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Makes a Result from facebook Graph API response.
@@ -883,6 +884,22 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		field.SetString(val.String())
 
 	case reflect.Struct:
+		if field.Type().ConvertibleTo(typeOfTime) {
+			if valType.Kind() != reflect.String {
+				return fmt.Errorf("field '%v' is not a string in result.", fullName)
+			}
+
+			t, err := time.Parse("2006-01-02T15:04:05-0700", val.String())
+
+			if err != nil {
+				return fmt.Errorf("field '%v' was unable to parse the time string '%s'.", fullName, val.String())
+			}
+
+			matchedType := reflect.ValueOf(t).Convert(field.Type())
+			field.Set(matchedType)
+			return nil
+		}
+
 		if valType.Kind() != reflect.Map || valType.Key().Kind() != reflect.String {
 			return fmt.Errorf("field '%v' is not a json object in result.", fullName)
 		}

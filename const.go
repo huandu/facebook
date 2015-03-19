@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"regexp"
+	"time"
 )
 
 // Facebook graph api methods.
@@ -48,6 +49,7 @@ var (
 	typeOfPointerToBinaryData = reflect.TypeOf(&binaryData{})
 	typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
 	typeOfJSONNumber          = reflect.TypeOf(json.Number(""))
+	typeOfTime                = reflect.TypeOf(time.Time{})
 
 	facebookSuccessJsonBytes = []byte("true")
 )
