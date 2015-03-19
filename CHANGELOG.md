@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.4.1 ##
+
+* `[NEW]` [#27](https://github.com/huandu/facebook/pull/27) Timestamp value in Graph API response can be decoded as a `time.Time` value now.
+
 ## v1.4.0 ##
 
 * `[FIX]` [#23](https://github.com/huandu/facebook/issues/24) Algorithm change: Camel case string to underscore string supports abbreviation

@@ -25,12 +25,14 @@ import (
 func main() {
     res, _ := fb.Get("/538744468", fb.Params{
         "fields": "username",
+        "access_token": "a-valid-access-token",
     })
     fmt.Println("here is my facebook username:", res["username"])
 }
 ```
 
-Type of `res["username"]` is `interface{}`. This library provides several helpful methods to decode fields to any Go type or even a custom Go struct.
+Type of `res` is `map[string]interface{}`. It may not be easy and safe to read fields in res directly.
+This library provides serveral helpful methods which can decode res to any Go type including a custom Go struct.
 
 ```go
 // Decode "username" to a go string.
@@ -96,10 +98,10 @@ for _, item := range items {
 
 ### Use `App` and `Session` ###
 
-It's recommended to use `App` and `Session` in a production app. They provide more controls over all API calls. They can also make your code clear and concise.
+It's recommended to use `App` and `Session` in a production app. They provide more controls over all API calls. They can also make code clear and concise.
 
 ```go
-// create a global App var to hold your app id and secret.
+// create a global App var to hold app id and secret.
 var globalApp = fb.New("your-app-id", "your-app-secret")
 
 // facebook asks for a valid redirect uri when parsing signed request.
@@ -110,14 +112,14 @@ globalApp.RedirectUri = "http://your.site/canvas/url/"
 // creates a new session with signed request.
 session, _ := globalApp.SessionFromSignedRequest(signedRequest)
 
-// if you can get a valid access token in other way.
+// if there is another way to get decoded access token,
 // creates a session directly with the token.
 session := globalApp.Session(token)
 
 // validate access token. err is nil if token is valid.
 err := session.Validate()
 
-// use session to send api request with your access token.
+// use session to send api request with access token.
 res, _ := session.Get("/me/feed", nil)
 ```
 
@@ -141,9 +143,10 @@ results = paging.Data()
 
 ### Read graph api response and decode result into a struct ###
 
-As facebook Graph API always uses lower case words as keys in API response. This library can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
+As facebook Graph API always uses lower case words as keys in API response.
+This library can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
 
-For instance, given we have following JSON response from facebook.
+For instance, to decode following JSON response...
 
 ```json
 {
@@ -151,25 +154,26 @@ For instance, given we have following JSON response from facebook.
 }
 ```
 
-We can use following struct to decode it.
+One can use following struct.
 
 ```go
 type Data struct {
-    FooBar string  // "FooBar" => "foo_bar"
+    FooBar string  // "FooBar" maps to "foo_bar" in JSON automatically in this case.
 }
 ```
 
-Like `encoding/json` package, struct can have tag definitions. Tags can be used to mark a field as required in API response and/or map field to a specific key name.
+Decoding behavior can be changed per field through field tag -- just like what `encoding/json` does.
 
-Following is a full sample wrap up everything about struct decoding.
+Following is a sample shows all possible field tags.
 
 ```go
 // define a facebook feed object.
 type FacebookFeed struct {
-    Id string `facebook:",required"`             // this field must exist in response
-    Story string
-    FeedFrom *FacebookFeedFrom `facebook:"from"` // use customized field name "from"
-    CreatedTime string
+    Id          string `facebook:",required"`             // this field must exist in response.
+                                                          // mind the "," before "required".
+    Story       string
+    FeedFrom    *FacebookFeedFrom `facebook:"from"`       // use customized field name "from"
+    CreatedTime string `facebook:"created_time,required"` // both customized field name and "required" flag.
 }
 
 type FacebookFeedFrom struct {
@@ -264,7 +268,7 @@ import (
 var context appengine.Context
 
 // default Session object uses http.DefaultClient which is not allowed to use
-// in appengine. we have to create a Session and assign it a special client.
+// in appengine. one has to create a Session and assign it a special client.
 seesion := globalApp.Session("a-access-token")
 session.HttpClient = urlfetch.Client(context)
 
@@ -281,17 +285,17 @@ See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to
 // change following global variable to specific a global default version.
 fb.Version = "v2.0"
 
-// now you will get an error as v2.0 api doesn't allow you to do so.
+// starting with graph api v2.0, it's not allowed to get user information without access token.
 fb.Api("huan.du", GET, nil)
 
-// you can also specify version per session.
+// it's possible to specify version per session.
 session := &fb.Session{}
 session.Version = "v2.0" // overwrite global default.
 ```
 
 ### Enable `appsecret_proof` ###
 
-Facebook can verify Graph API Calls with `appsecret_proof`. It's a feature to make your Graph API call more secure. See [Securing Graph API Requests](https://developers.facebook.com/docs/graph-api/securing-requests) to know more about it.
+Facebook can verify Graph API Calls with `appsecret_proof`. It's a feature to make Graph API call more secure. See [Securing Graph API Requests](https://developers.facebook.com/docs/graph-api/securing-requests) to know more about it.
 
 ```go
 globalApp := fb.New("your-app-id", "your-app-secret")
@@ -299,7 +303,7 @@ globalApp := fb.New("your-app-id", "your-app-secret")
 // enable "appsecret_proof" for all sessions created by this app.
 globalApp.EnableAppsecretProof = true
 
-// all your calls in this session are secured.
+// all calls in this session are secured.
 session := globalApp.Session("a-valid-access-token")
 session.Get("/me", nil)
 
