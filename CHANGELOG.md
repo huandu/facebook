@@ -2,7 +2,7 @@
 
 ## v1.4.1 ##
 
-* `[NEW]` [#27](https://github.com/huandu/facebook/pull/27) Timestamp value in Graph API response can be decoded as a `time.Time` value now.
+* `[NEW]` [#27](https://github.com/huandu/facebook/pull/27) Timestamp value in Graph API response can be decoded as a `time.Time` value now. Thanks, [@Lazyshot](https://github.com/Lazyshot).
 
 ## v1.4.0 ##
 
