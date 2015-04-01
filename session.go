@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 )
 
@@ -507,6 +508,13 @@ func (session *Session) sendRequest(request *http.Request) ([]byte, error) {
 	var response *http.Response
 	var err error
 
+	if session.Debug {
+		b, _ := httputil.DumpRequest(request, true)
+		fmt.Println("---[ FACEBOOK REQUEST ]------------------------------")
+		fmt.Println(string(b))
+		fmt.Println("-----------------------------------------------------")
+	}
+
 	if session.HttpClient == nil {
 		response, err = http.DefaultClient.Do(request)
 	} else {
@@ -518,6 +526,13 @@ func (session *Session) sendRequest(request *http.Request) ([]byte, error) {
 	}
 
 	defer response.Body.Close()
+
+	if session.Debug {
+		b, _ := httputil.DumpResponse(response, true)
+		fmt.Println("---[ FACEBOOK RESPONSE ]-----------------------------")
+		fmt.Println(string(b))
+		fmt.Println("-----------------------------------------------------")
+	}
 
 	buf := &bytes.Buffer{}
 	_, err = io.Copy(buf, response.Body)

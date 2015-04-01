@@ -41,6 +41,7 @@ type HttpClient interface {
 type Session struct {
 	HttpClient HttpClient
 	Version    string // facebook versioning.
+	Debug      bool   // enable debug logging.
 
 	accessToken string // facebook access token. can be empty.
 	app         *App
