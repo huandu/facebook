@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 //
-// Copyright 2012 - 2014, Huan Du
+// Copyright 2012 - 2015, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -48,11 +48,17 @@ type Session struct {
 
 	enableAppsecretProof bool   // add "appsecret_proof" parameter in every facebook API call.
 	appsecretProof       string // pre-calculated "appsecret_proof" value.
+
+	debug DebugMode // using facebook debugging api in every request.
 }
 
 // API HTTP method.
 // Can be GET, POST or DELETE.
 type Method string
+
+// Graph API debug mode.
+// See https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#graphapidebugmode
+type DebugMode string
 
 // API params.
 //
@@ -99,4 +105,23 @@ type binaryData struct {
 type binaryFile struct {
 	Filename string // filename used in multipart form writer.
 	Path     string // path to file. must be readable.
+}
+
+// DebugInfo is the debug information returned by facebook when debug mode is enabled.
+type DebugInfo struct {
+	Messages []DebugMessage // debug messages. it can be nil if there is no message.
+	Header   http.Header    // all HTTP headers for this response.
+	Proto    string         // HTTP protocol name for this response.
+
+	// Facebook debug HTTP headers.
+	FacebookApiVersion string // the actual graph API version provided by facebook-api-version HTTP header.
+	FacebookDebug      string // the X-FB-Debug HTTP header.
+	FacebookRev        string // the x-fb-rev HTTP header.
+}
+
+// DebugMessage is one debug message in "__debug__" of graph API response.
+type DebugMessage struct {
+	Type    string
+	Message string
+	Link    string
 }

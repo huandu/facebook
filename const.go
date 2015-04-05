@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 //
-// Copyright 2012 - 2014, Huan Du
+// Copyright 2012 - 2015, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -26,6 +26,25 @@ const (
 	ERROR_CODE_UNKNOWN = -1 // unknown facebook graph api error code.
 
 	_MIME_FORM_URLENCODED = "application/x-www-form-urlencoded"
+)
+
+// Graph API debug mode values.
+const (
+	DEBUG_OFF DebugMode = "" // turn off debug.
+
+	DEBUG_ALL     DebugMode = "all"
+	DEBUG_INFO    DebugMode = "info"
+	DEBUG_WARNING DebugMode = "warning"
+)
+
+const (
+	debugInfoKey   = "__debug__"
+	debugProtoKey  = "__proto__"
+	debugHeaderKey = "__header__"
+
+	facebookApiVersionHeader = "facebook-api-version"
+	facebookDebugHeader      = "x-fb-debug"
+	facebookRevHeader        = "x-fb-rev"
 )
 
 var (

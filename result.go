@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 //
-// Copyright 2012 - 2014, Huan Du
+// Copyright 2012 - 2015, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -18,12 +19,22 @@ import (
 	"time"
 )
 
-// Makes a Result from facebook Graph API response.
+// MakeResult makes a Result from facebook Graph API response.
 func MakeResult(jsonBytes []byte) (Result, error) {
-	var res Result
+	res := Result{}
+	err := makeResult(jsonBytes, &res)
 
+	if err != nil {
+		return nil, err
+	}
+
+	// facebook may return an error
+	return res, res.Err()
+}
+
+func makeResult(jsonBytes []byte, res interface{}) error {
 	if bytes.Equal(jsonBytes, facebookSuccessJsonBytes) {
-		return Result{}, nil
+		return nil
 	}
 
 	jsonReader := bytes.NewReader(jsonBytes)
@@ -34,18 +45,16 @@ func MakeResult(jsonBytes []byte) (Result, error) {
 	// use Number instead of float64 to avoid precision lost.
 	dec.UseNumber()
 
-	err := dec.Decode(&res)
+	err := dec.Decode(res)
 
 	if err != nil {
-		err = fmt.Errorf("cannot format facebook response. %v", err)
-		return nil, err
+		return fmt.Errorf("cannot format facebook response. %v", err)
 	}
 
-	// facebook may return an error
-	return res, res.Err()
+	return nil
 }
 
-// Gets a field.
+// Get gets a field from Result.
 //
 // Field can be a dot separated string.
 // If field name is "a.b.c", it will try to return value of res["a"]["b"]["c"].
@@ -65,7 +74,7 @@ func (res Result) Get(field string) interface{} {
 	return res.get(f)
 }
 
-// Gets a field.
+// GetField gets a field from Result.
 //
 // Arguments are treated as keys to access value in Result.
 // If arguments are "a","b","c", it will try to return value of res["a"]["b"]["c"].
@@ -144,7 +153,7 @@ func getValueField(value reflect.Value, fields []string) reflect.Value {
 	return getValueField(value, fields[1:])
 }
 
-// Decodes full result to a struct.
+// Decode decodes full result to a struct.
 // It only decodes fields defined in the struct.
 //
 // As all facebook response fields are lower case strings,
@@ -186,7 +195,7 @@ func (res Result) Decode(v interface{}) (err error) {
 	return
 }
 
-// Decodes a field of result to any type, including struct.
+// DecodeField decodes a field of result to any type, including struct.
 // Field name format is defined in Result.Get().
 //
 // More details about decoding struct see Result.Decode().
@@ -200,8 +209,7 @@ func (res Result) DecodeField(field string, v interface{}) error {
 	return decodeField(reflect.ValueOf(f), reflect.ValueOf(v), field)
 }
 
-// Checks if Result is a Graph API error.
-// Returns nil if Result is not an error.
+// Err returns an error if Result is a Graph API error.
 //
 // The returned error can be converted to Error by type assertion.
 //     err := res.Err()
@@ -231,8 +239,8 @@ func (res Result) Err() error {
 	return &err
 }
 
-// Creates a PagingResult for this Result.
-// Returns error if the Result cannot be used for paging.
+// Paging creates a PagingResult for this Result and
+// returns error if the Result cannot be used for paging.
 //
 // Facebook uses following JSON structure to response paging information.
 // If "data" doesn't present in Result, Paging will return error.
@@ -247,12 +255,44 @@ func (res Result) Paging(session *Session) (*PagingResult, error) {
 	return newPagingResult(session, res)
 }
 
-// Creates a BatchResult for this result.
-// Returns error if the Result is not a batch api response.
+// Batch creates a BatchResult for this result and
+// returns error if the Result is not a batch api response.
 //
 // See BatchApi document for a sample usage.
 func (res Result) Batch() (*BatchResult, error) {
 	return newBatchResult(res)
+}
+
+// DebugInfo creates a DebugInfo for this result if this result
+// has "__debug__" key.
+func (res Result) DebugInfo() *DebugInfo {
+	var info Result
+	err := res.DecodeField(debugInfoKey, &info)
+
+	if err != nil {
+		return nil
+	}
+
+	debugInfo := &DebugInfo{}
+	info.DecodeField("messages", &debugInfo.Messages)
+
+	if proto, ok := info[debugProtoKey]; ok {
+		if v, ok := proto.(string); ok {
+			debugInfo.Proto = v
+		}
+	}
+
+	if header, ok := info[debugHeaderKey]; ok {
+		if v, ok := header.(http.Header); ok {
+			debugInfo.Header = v
+
+			debugInfo.FacebookApiVersion = v.Get(facebookApiVersionHeader)
+			debugInfo.FacebookDebug = v.Get(facebookDebugHeader)
+			debugInfo.FacebookRev = v.Get(facebookRevHeader)
+		}
+	}
+
+	return debugInfo
 }
 
 func (res Result) decode(v reflect.Value, fullName string) error {

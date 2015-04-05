@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 //
-// Copyright 2012 - 2014, Huan Du
+// Copyright 2012 - 2015, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -13,8 +13,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"strconv"
 	"strings"
 )
 
@@ -88,50 +86,55 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	return
 }
 
-// Parses facebook code to a valid access token.
+// ParseCode redeems code for a valid access token.
+// It's a shorthand call to ParseCodeInfo(code, "").
 //
 // In facebook PHP SDK, there is a CSRF state to avoid attack.
 // That state is not checked in this library.
 // Caller is responsible to store and check state if possible.
-//
-// Returns a valid access token exchanged from a code.
 func (app *App) ParseCode(code string) (token string, err error) {
+	token, _, _, err = app.ParseCodeInfo(code, "")
+	return
+}
+
+// ParseCodeInfo redeems code for access token and returns extra information.
+// The machineId is optional.
+//
+// See https://developers.facebook.com/docs/facebook-login/access-tokens#extending
+func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int, newMachineId string, err error) {
 	if code == "" {
 		err = fmt.Errorf("code is empty")
 		return
 	}
 
-	var response []byte
-	session := &Session{}
-	urlStr := session.getUrl("graph", "/oauth/access_token", nil)
-
-	response, err = session.sendPostRequest(urlStr, Params{
-		"client_id":     app.AppId,
-		"client_secret": app.AppSecret,
-		"redirect_uri":  app.RedirectUri,
-		"code":          code,
+	var res Result
+	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
+		"client_id":    app.AppId,
+		"redirect_uri": app.RedirectUri,
+		"code":         code,
 	})
-
-	if err != nil {
-		return
-	}
-
-	var values url.Values
-	values, err = url.ParseQuery(string(response))
 
 	if err != nil {
 		err = fmt.Errorf("cannot parse facebook response. error is %v.", err)
 		return
 	}
 
-	token = values.Get("access_token")
+	err = res.DecodeField("access_token", &token)
 
-	// successfully get a new token.
-	if token != "" {
+	if err != nil {
 		return
 	}
 
-	_, err = MakeResult(response)
+	err = res.DecodeField("expires_in", &expires)
+
+	if err != nil {
+		return
+	}
+
+	if _, ok := res["machine_id"]; ok {
+		err = res.DecodeField("machine_id", &newMachineId)
+	}
+
 	return
 }
 
@@ -143,11 +146,8 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 		return
 	}
 
-	var response []byte
-	session := &Session{}
-	urlStr := session.getUrl("graph", "/oauth/access_token", nil)
-
-	response, err = session.sendPostRequest(urlStr, Params{
+	var res Result
+	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
 		"grant_type":        "fb_exchange_token",
 		"client_id":         app.AppId,
 		"client_secret":     app.AppSecret,
@@ -155,29 +155,17 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 	})
 
 	if err != nil {
-		return
-	}
-
-	var values url.Values
-	values, err = url.ParseQuery(string(response))
-
-	if err != nil {
 		err = fmt.Errorf("cannot parse facebook response. error is %v.", err)
 		return
 	}
 
-	token = values.Get("access_token")
+	err = res.DecodeField("access_token", &token)
 
-	// successfully get a new token.
-	if token != "" {
-		if _, ok := values["expires"]; ok {
-			expiresStr := values.Get("expires")
-			expires, err = strconv.Atoi(expiresStr)
-		}
+	if err != nil {
 		return
 	}
 
-	_, err = MakeResult(response)
+	err = res.DecodeField("expires_in", &expires)
 	return
 }
 
@@ -190,11 +178,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	}
 
 	var res Result
-	var response []byte
-	session := &Session{}
-	urlStr := session.getUrl("graph", "/oauth/client_code", nil)
-
-	response, err = session.sendPostRequest(urlStr, Params{
+	res, err = defaultSession.sendOauthRequest("/oauth/client_code", Params{
 		"client_id":     app.AppId,
 		"client_secret": app.AppSecret,
 		"redirect_uri":  app.RedirectUri,
@@ -202,12 +186,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	})
 
 	if err != nil {
-		return
-	}
-
-	res, err = MakeResult(response)
-
-	if err != nil {
+		err = fmt.Errorf("cannot get code from facebook. error is %v.", err)
 		return
 	}
 

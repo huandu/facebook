@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 //
-// Copyright 2012 - 2014, Huan Du
+// Copyright 2012 - 2015, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -21,7 +21,7 @@ const (
 	FB_TEST_APP_SECRET = "b2e4262c306caa3c7f5215d2d099b319"
 
 	// remeber to change it to a valid token to run test
-	//FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAEA8vh60UNiQUcifYCWh1tdZBmZBZB6rbUoMIXQqdWH5fg3JRI3V76MimUe3rkg3MLXSwnDZCboEiibo8iQtkSlrEI4eOS0myPnpcgZCJbZBpkJ23AUAXUzqTSPuJKpKurnivCmUtxv3OHXtT5rALZCJ7rR3CpQKbz9AyO7lxOFBBxiBYj1tng7vfd8cZCeT2StY83ZA1B4ht"
+	//FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAKhvZCmzLyMIs1vJ0aKB4mz6t9ZBZCZBLC7hqpnAGpujbkbgdYsFReYet48HK1ZBijp5gcOI0tMK4pLUWiQDCKEgSlAtf2ZBYrpoWtWORTOGMyg37E364ZCU3TjLp72bUBTjtgRKESGrqv2YFhJb5mmX7FYL1us59pkAvlUOomPqgk21YQzLtivQRotcW5f89aGbP66ews9"
 	FB_TEST_VALID_ACCESS_TOKEN = ""
 
 	// remember to change it to a valid signed request to run test
@@ -466,9 +466,6 @@ func TestSimpleFQL(t *testing.T) {
 	}
 
 	// v2.2 api doesn't allow me to query user without access token.
-	Version = "v1.0"
-	test(t, defaultSession)
-
 	if FB_TEST_VALID_ACCESS_TOKEN == "" {
 		return
 	}
@@ -521,7 +518,7 @@ func TestMultiFQL(t *testing.T) {
 		}
 
 		var username string
-		var uid int64
+		var uid string
 
 		err = query1[0].DecodeField("username", &username)
 
@@ -536,18 +533,15 @@ func TestMultiFQL(t *testing.T) {
 		err = query2[0].DecodeField("uid", &uid)
 
 		if err != nil {
-			t.Fatalf("cannot decode username from query2. [e:%v]", err)
+			t.Fatalf("cannot decode username from query2. [e:%v] [query2:%v]", err, query2)
 		}
 
-		if uid != 538744468 {
+		if uid != "538744468" {
 			t.Fatalf("username is expected to be 'facebook'. [username:%v]", username)
 		}
 	}
 
 	// v2.2 api doesn't allow me to query user without access token.
-	Version = "v1.0"
-	test(t, defaultSession)
-
 	if FB_TEST_VALID_ACCESS_TOKEN == "" {
 		return
 	}
@@ -556,6 +550,85 @@ func TestMultiFQL(t *testing.T) {
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 	test(t, session)
+}
+
+func TestGraphDebuggingAPI(t *testing.T) {
+	if FB_TEST_VALID_ACCESS_TOKEN == "" {
+		t.Skipf("cannot call batch api without access token. skip this test.")
+	}
+
+	test := func(t *testing.T, session *Session) {
+		session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
+		defer session.SetAccessToken("")
+
+		// test app must not grant "read_friendlists" permission.
+		// otherwise there is no way to get a warning from facebook.
+		res, _ := session.Get("/me/friendlists", nil)
+
+		if res == nil {
+			t.Fatalf("res must not be nil.")
+		}
+
+		debugInfo := res.DebugInfo()
+
+		if debugInfo == nil {
+			t.Fatalf("debug info must exist.")
+		}
+
+		t.Logf("facebook response is: %v", res)
+		t.Logf("debug info is: %v", *debugInfo)
+
+		if debugInfo.Messages == nil && len(debugInfo.Messages) > 0 {
+			t.Fatalf("facebook must warn me for the permission issue.")
+		}
+
+		msg := debugInfo.Messages[0]
+
+		if msg.Type == "" || msg.Message == "" {
+			t.Fatalf("facebook must say something. [msg:%v]", msg)
+		}
+
+		if debugInfo.FacebookApiVersion == "" {
+			t.Fatalf("facebook must tell me api version.")
+		}
+
+		if debugInfo.FacebookDebug == "" {
+			t.Fatalf("facebook must tell me X-FB-Debug.")
+		}
+
+		if debugInfo.FacebookRev == "" {
+			t.Fatalf("facebook must tell me x-fb-rev.")
+		}
+	}
+
+	defer func() {
+		Debug = DEBUG_OFF
+		Version = ""
+	}()
+
+	Version = "v2.2"
+	Debug = DEBUG_ALL
+	test(t, defaultSession)
+	session := &Session{}
+	session.SetDebug(DEBUG_ALL)
+	test(t, session)
+
+	// test changing debug mode.
+	old := session.SetDebug(DEBUG_OFF)
+
+	if old != DEBUG_ALL {
+		t.Fatalf("debug mode must be DEBUG_ALL. [debug:%v]", old)
+	}
+
+	if session.Debug() != DEBUG_ALL {
+		t.Fatalf("debug mode must be DEBUG_ALL [debug:%v]", session.Debug())
+	}
+
+	Debug = DEBUG_OFF
+
+	if session.Debug() != DEBUG_OFF {
+		t.Fatalf("debug mode must be DEBUG_OFF. [debug:%v]", session.Debug())
+	}
 }
 
 func TestResultDecode(t *testing.T) {

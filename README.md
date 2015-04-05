@@ -2,11 +2,11 @@
 
 [![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
 
-This is a Go library fully supports Facebook Graph API (both 1.0 and 2.x) with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
+This is a Go package fully supports Facebook Graph API (both 1.0 and 2.x) with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
 
 See [full document](http://godoc.org/github.com/huandu/facebook) for API details.
 
-Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this library. I'll try my best to response it.
+Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to response it.
 
 ## Usage ##
 
@@ -32,7 +32,7 @@ func main() {
 ```
 
 Type of `res` is `map[string]interface{}`. It may not be easy and safe to read fields in res directly.
-This library provides serveral helpful methods which can decode res to any Go type including a custom Go struct.
+This package provides serveral helpful methods which can decode res to any Go type including a custom Go struct.
 
 ```go
 // Decode "username" to a go string.
@@ -144,7 +144,7 @@ results = paging.Data()
 ### Read graph api response and decode result into a struct ###
 
 As facebook Graph API always uses lower case words as keys in API response.
-This library can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
+This package can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
 
 For instance, to decode following JSON response...
 
@@ -281,7 +281,7 @@ res, err := session.Get("/me", nil)
 See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand facebook versioning strategy.
 
 ```go
-// this library uses default version which is controlled by facebook app setting.
+// this package uses default version which is controlled by facebook app setting.
 // change following global variable to specific a global default version.
 fb.Version = "v2.0"
 
@@ -311,6 +311,24 @@ session.Get("/me", nil)
 session.EnableAppsecretProof(false)
 ```
 
+### Debugging API Requests ###
+
+Facebook introduces a way to debug graph API calls. See [Debugging API Requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#debugging) for details.
+
+This package provides both package level and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally; or use `Session#SetDebug` to change debug mode for one session.
+
+When debug mode is turned on, use `Result#DebugInfo` to get `DebugInfo` struct from result.
+
+```go
+fb.Debug = fb.DEBUG_ALL
+
+res, _ := fb.Get("/me", fb.Params{"access_token": "xxx"})
+debugInfo := res.DebugInfo()
+
+fmt.Println("http headers:", debugInfo.Header)
+fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
+```
+
 ## Change Log ##
 
 See CHANGELOG.md.
@@ -325,9 +343,9 @@ Use `go get github.com/huandu/facebook` to get and install it.
 
 ## Out of Scope ##
 
-1. No OAuth integration. This library only provides APIs to parse/verify access token and code generated in OAuth 2.0 authentication process.
+1. No OAuth integration. This package only provides APIs to parse/verify access token and code generated in OAuth 2.0 authentication process.
 2. No old RESTful API support. Such APIs are deprecated for years. Forget about them.
 
 ## License ##
 
-This library is licensed under MIT license. See LICENSE for details.
+This package is licensed under MIT license. See LICENSE for details.

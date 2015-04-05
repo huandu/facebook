@@ -1,7 +1,7 @@
 // A facebook graph api client in go.
 // https://github.com/huandu/facebook/
 //
-// Copyright 2012 - 2014, Huan Du
+// Copyright 2012 - 2015, Huan Du
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
@@ -13,7 +13,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -194,14 +193,24 @@ func (session *Session) MultiFQL(queries Params) (Result, error) {
 //     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
 //     res, err := session.Request(request)
 //     fmt.Println(res["gender"])  // get "male"
-func (session *Session) Request(request *http.Request) (Result, error) {
-	response, err := session.sendRequest(request)
+func (session *Session) Request(request *http.Request) (res Result, err error) {
+	var response *http.Response
+	var data []byte
+
+	response, data, err = session.sendRequest(request)
 
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	return MakeResult(response)
+	res, err = MakeResult(data)
+	session.addDebugInfo(res, response)
+
+	if res != nil {
+		err = res.Err()
+	}
+
+	return
 }
 
 // Gets current user id from access token.
@@ -359,9 +368,26 @@ func (session *Session) App() *App {
 	return session.app
 }
 
+// Debug returns current debug mode.
+func (session *Session) Debug() DebugMode {
+	if session.debug != DEBUG_OFF {
+		return session.debug
+	}
+
+	return Debug
+}
+
+// SetDebug updates per session debug mode and returns old mode.
+// If per session debug mode is DEBUG_OFF, session will use global
+// Debug mode.
+func (session *Session) SetDebug(debug DebugMode) DebugMode {
+	old := session.debug
+	session.debug = debug
+	return old
+}
+
 func (session *Session) graph(path string, method Method, params Params) (res Result, err error) {
 	var graphUrl string
-	var response []byte
 
 	if params == nil {
 		params = Params{}
@@ -380,42 +406,28 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 		graphUrl = session.getUrl("graph", path, nil)
 	}
 
-	response, err = session.sendPostRequest(graphUrl, params)
+	var response *http.Response
+	response, err = session.sendPostRequest(graphUrl, params, &res)
+	session.addDebugInfo(res, response)
 
-	// cannot get response from remote server
-	if err != nil {
-		return
+	if res != nil {
+		err = res.Err()
 	}
 
-	res, err = MakeResult(response)
 	return
 }
 
-func (session *Session) graphBatch(batchParams Params, params ...Params) (res []Result, err error) {
-	var response []byte
-
+func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Result, error) {
 	if batchParams == nil {
 		batchParams = Params{}
 	}
 
 	batchParams["batch"] = params
 
+	var res []Result
 	graphUrl := session.getUrl("graph", "", nil)
-	response, err = session.sendPostRequest(graphUrl, batchParams)
-
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(response, &res)
-
-	if err != nil {
-		res = nil
-		err = fmt.Errorf("cannot format facebook batch response. %v", err)
-		return
-	}
-
-	return
+	_, err := session.sendPostRequest(graphUrl, batchParams, &res)
+	return res, err
 }
 
 func (session *Session) graphFQL(params Params) (res Result, err error) {
@@ -435,26 +447,15 @@ func (session *Session) graphFQL(params Params) (res Result, err error) {
 		return nil, fmt.Errorf("cannot encode params. %v", err)
 	}
 
-	var response []byte
-
 	// it seems facebook disallow POST to /fql. always use GET for FQL.
-	response, err = session.sendGetRequest(buf.String())
+	var response *http.Response
+	response, err = session.sendGetRequest(buf.String(), &res)
+	session.addDebugInfo(res, response)
 
-	// cannot get response from remote server
-	if err != nil {
-		return
+	if res != nil {
+		err = res.Err()
 	}
 
-	err = json.Unmarshal(response, &res)
-
-	if err != nil {
-		res = nil
-		err = fmt.Errorf("cannot format facebook response. %v", err)
-		return
-	}
-
-	// facebook may return an error
-	err = res.Err()
 	return
 }
 
@@ -466,22 +467,32 @@ func (session *Session) prepareParams(params Params) {
 	if session.enableAppsecretProof && session.accessToken != "" && session.app != nil {
 		params["appsecret_proof"] = session.AppsecretProof()
 	}
+
+	debug := session.Debug()
+
+	if debug != DEBUG_OFF {
+		params["debug"] = debug
+	}
 }
 
-func (session *Session) sendGetRequest(url string) ([]byte, error) {
-	var request *http.Request
-	var err error
-
-	request, err = http.NewRequest("GET", url, nil)
+func (session *Session) sendGetRequest(url string, res interface{}) (*http.Response, error) {
+	request, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return session.sendRequest(request)
+	response, data, err := session.sendRequest(request)
+
+	if err != nil {
+		return response, err
+	}
+
+	err = makeResult(data, res)
+	return response, err
 }
 
-func (session *Session) sendPostRequest(url string, params Params) ([]byte, error) {
+func (session *Session) sendPostRequest(url string, params Params, res interface{}) (*http.Response, error) {
 	session.prepareParams(params)
 
 	buf := &bytes.Buffer{}
@@ -500,13 +511,45 @@ func (session *Session) sendPostRequest(url string, params Params) ([]byte, erro
 	}
 
 	request.Header.Set("Content-Type", mime)
-	return session.sendRequest(request)
+	response, data, err := session.sendRequest(request)
+
+	if err != nil {
+		return response, err
+	}
+
+	err = makeResult(data, res)
+	return response, err
 }
 
-func (session *Session) sendRequest(request *http.Request) ([]byte, error) {
-	var response *http.Response
-	var err error
+func (session *Session) sendOauthRequest(url string, params Params) (Result, error) {
+	urlStr := session.getUrl("graph", "/oauth/client_code", nil)
+	buf := &bytes.Buffer{}
+	mime, err := params.Encode(buf)
 
+	if err != nil {
+		return nil, fmt.Errorf("cannot encode POST params. %v", err)
+	}
+
+	var request *http.Request
+
+	request, err = http.NewRequest("POST", urlStr, buf)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Content-Type", mime)
+	_, data, err := session.sendRequest(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := MakeResult(data)
+	return res, err
+}
+
+func (session *Session) sendRequest(request *http.Request) (response *http.Response, data []byte, err error) {
 	if session.HttpClient == nil {
 		response, err = http.DefaultClient.Do(request)
 	} else {
@@ -514,19 +557,20 @@ func (session *Session) sendRequest(request *http.Request) ([]byte, error) {
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot reach facebook server. %v", err)
+		err = fmt.Errorf("cannot reach facebook server. %v", err)
+		return
 	}
-
-	defer response.Body.Close()
 
 	buf := &bytes.Buffer{}
 	_, err = io.Copy(buf, response.Body)
+	response.Body.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot read facebook response. %v", err)
+		err = fmt.Errorf("cannot read facebook response. %v", err)
 	}
 
-	return buf.Bytes(), nil
+	data = buf.Bytes()
+	return
 }
 
 func (session *Session) isVideoPost(path string, method Method) bool {
@@ -562,6 +606,22 @@ func (session *Session) getUrl(name, path string, params Params) string {
 	}
 
 	return buf.String()
+}
+
+func (session *Session) addDebugInfo(res Result, response *http.Response) Result {
+	if session.Debug() == DEBUG_OFF || res == nil || response == nil {
+		return res
+	}
+
+	debugInfo := make(map[string]interface{})
+
+	// save debug information in result directly.
+	res.DecodeField("__debug__", &debugInfo)
+	debugInfo[debugProtoKey] = response.Proto
+	debugInfo[debugHeaderKey] = response.Header
+
+	res["__debug__"] = debugInfo
+	return res
 }
 
 func decodeBase64URLEncodingString(data string) ([]byte, error) {
