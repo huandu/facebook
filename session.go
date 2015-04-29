@@ -522,7 +522,7 @@ func (session *Session) sendPostRequest(url string, params Params, res interface
 }
 
 func (session *Session) sendOauthRequest(url string, params Params) (Result, error) {
-	urlStr := session.getUrl("graph", "/oauth/client_code", nil)
+	urlStr := session.getUrl("graph", url, nil)
 	buf := &bytes.Buffer{}
 	mime, err := params.Encode(buf)
 
