@@ -2,15 +2,19 @@
 
 [![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
 
-This is a Go package fully supports Facebook Graph API (both 1.0 and 2.x) with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
+This is a Go package fully supports Facebook Graph API with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
 
-See [full document](http://godoc.org/github.com/huandu/facebook) for API details.
+API documents can be found on [godoc](http://godoc.org/github.com/huandu/facebook).
 
-Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to response it.
+Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply it.
+
+## Get It ##
+
+Use `go get -u github.com/huandu/facebook` to get or update it.
 
 ## Usage ##
 
-### Quick Tutorial ###
+### Quick start ###
 
 Here is a sample to read my Facebook username by uid.
 
@@ -31,11 +35,11 @@ func main() {
 }
 ```
 
-Type of `res` is `map[string]interface{}`. It may not be easy and safe to read fields in res directly.
-This package provides serveral helpful methods which can decode res to any Go type including a custom Go struct.
+Type of `res` is `fb.Result` (a.k.a. `map[string]interface{}`).
+This type has several useful methods to decode `res` to any Go type safely.
 
 ```go
-// Decode "username" to a go string.
+// Decode "username" to a Go string.
 var username string
 res.DecodeField("username", &username)
 fmt.Println("alternative way to get username:", username)
@@ -331,15 +335,7 @@ fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
 
 ## Change Log ##
 
-See CHANGELOG.md.
-
-## TODO ##
-
-1. Real-time update subscriptions.
-
-## Get It ##
-
-Use `go get github.com/huandu/facebook` to get and install it.
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Out of Scope ##
 

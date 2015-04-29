@@ -1,5 +1,10 @@
 # Change Log #
 
+## v1.5.0 ##
+
+* `[NEW]` [#28](https://github.com/huandu/facebook/pull/28) Support debug mode introduced by facebook graph API v2.3.
+* `[FIX]` Removed all test cases depending on facebook graph API v1.0.
+
 ## v1.4.1 ##
 
 * `[NEW]` [#27](https://github.com/huandu/facebook/pull/27) Timestamp value in Graph API response can be decoded as a `time.Time` value now. Thanks, [@Lazyshot](https://github.com/Lazyshot).
