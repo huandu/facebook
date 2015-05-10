@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -475,8 +476,8 @@ func (session *Session) prepareParams(params Params) {
 	}
 }
 
-func (session *Session) sendGetRequest(url string, res interface{}) (*http.Response, error) {
-	request, err := http.NewRequest("GET", url, nil)
+func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Response, error) {
+	request, err := http.NewRequest("GET", uri, nil)
 
 	if err != nil {
 		return nil, err
@@ -492,7 +493,7 @@ func (session *Session) sendGetRequest(url string, res interface{}) (*http.Respo
 	return response, err
 }
 
-func (session *Session) sendPostRequest(url string, params Params, res interface{}) (*http.Response, error) {
+func (session *Session) sendPostRequest(uri string, params Params, res interface{}) (*http.Response, error) {
 	session.prepareParams(params)
 
 	buf := &bytes.Buffer{}
@@ -504,7 +505,7 @@ func (session *Session) sendPostRequest(url string, params Params, res interface
 
 	var request *http.Request
 
-	request, err = http.NewRequest("POST", url, buf)
+	request, err = http.NewRequest("POST", uri, buf)
 
 	if err != nil {
 		return nil, err
@@ -521,8 +522,8 @@ func (session *Session) sendPostRequest(url string, params Params, res interface
 	return response, err
 }
 
-func (session *Session) sendOauthRequest(url string, params Params) (Result, error) {
-	urlStr := session.getUrl("graph", url, nil)
+func (session *Session) sendOauthRequest(uri string, params Params) (Result, error) {
+	urlStr := session.getUrl("graph", uri, nil)
 	buf := &bytes.Buffer{}
 	mime, err := params.Encode(buf)
 
@@ -543,6 +544,28 @@ func (session *Session) sendOauthRequest(url string, params Params) (Result, err
 
 	if err != nil {
 		return nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, fmt.Errorf("empty response from facebook")
+	}
+
+	// facebook may return a query string.
+	if 'a' <= data[0] && data[0] <= 'z' {
+		query, err := url.ParseQuery(string(data))
+
+		if err != nil {
+			return nil, err
+		}
+
+		// convert a query to Result.
+		res := Result{}
+
+		for k := range query {
+			res[k] = query.Get(k)
+		}
+
+		return res, nil
 	}
 
 	res, err := MakeResult(data)
