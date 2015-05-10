@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.5.1 ##
+
+* `[FIX]` [#31](https://github.com/huandu/facebook/pull/31) When `/oauth/access_token` returns a query string instead of json, this package can correctly handle it.
+
 ## v1.5.0 ##
 
 * `[NEW]` [#28](https://github.com/huandu/facebook/pull/28) Support debug mode introduced by facebook graph API v2.3.
