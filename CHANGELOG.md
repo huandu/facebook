@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.5.2 ##
+
+* `[FIX]` [#32](https://github.com/huandu/facebook/pull/32) BatchApi/Batch returns facebook error when access token is not valid.
+
 ## v1.5.1 ##
 
 * `[FIX]` [#31](https://github.com/huandu/facebook/pull/31) When `/oauth/access_token` returns a query string instead of json, this package can correctly handle it.
