@@ -1439,3 +1439,31 @@ func TestMakeSliceResult(t *testing.T) {
 		t.Fatalf("invalid facebook error. [e:%v]", fbErr.Error())
 	}
 }
+
+func TestMakeSliceResultWithNilElements(t *testing.T) {
+	jsonStr := `[
+		null,
+		{
+			"foo": "bar"
+		},
+		null
+	]`
+	var res []Result
+	err := makeResult([]byte(jsonStr), &res)
+
+	if err != nil {
+		t.Fatalf("fail to decode results. [e:%v]", err)
+	}
+
+	if len(res) != 3 {
+		t.Fatalf("expect 3 elements in res. [res:%v]", res)
+	}
+
+	if res[0] != nil || res[1] == nil || res[2] != nil {
+		t.Fatalf("decoded res is not expected. [res:%v]", res)
+	}
+
+	if res[1]["foo"].(string) != "bar" {
+		t.Fatalf("decode res is not expected. [res:%v]", res)
+	}
+}
