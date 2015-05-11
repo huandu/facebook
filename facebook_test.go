@@ -21,8 +21,8 @@ const (
 	FB_TEST_APP_SECRET = "b2e4262c306caa3c7f5215d2d099b319"
 
 	// remeber to change it to a valid token to run test
-	//FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAKhvZCmzLyMIs1vJ0aKB4mz6t9ZBZCZBLC7hqpnAGpujbkbgdYsFReYet48HK1ZBijp5gcOI0tMK4pLUWiQDCKEgSlAtf2ZBYrpoWtWORTOGMyg37E364ZCU3TjLp72bUBTjtgRKESGrqv2YFhJb5mmX7FYL1us59pkAvlUOomPqgk21YQzLtivQRotcW5f89aGbP66ews9"
-	FB_TEST_VALID_ACCESS_TOKEN = ""
+	FB_TEST_VALID_ACCESS_TOKEN = "CAACZA38ZAD8CoBAFCaVgLBNdz0RrH45yUBUA95exI1FY5i4mZBY5iULfM3YEpS53nP6eSF4cf3nmoiePHvMkdSZApkxu1heAupW7OE8tmiySRZAYkZBZBvhveCZCgPaJlFovlI0ZAhWdWTLxxmJaZCKDG0B8n9VGEvcN3zoS1AHjokSz4aNos39xthp7XtAz9X3NRvp1qU4UTOlxK8IJOC1ApAMmvcEE0kWvgZD"
+	//FB_TEST_VALID_ACCESS_TOKEN = ""
 
 	// remember to change it to a valid signed request to run test
 	//FB_TEST_VALID_SIGNED_REQUEST = "ZAxP-ILRQBOwKKxCBMNlGmVraiowV7WFNg761OYBNGc.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNDM0OTg0MDAsImlzc3VlZF9hdCI6MTM0MzQ5MzI2NSwib2F1dGhfdG9rZW4iOiJBQUFDWkEzOFpBRDhDb0JBRFpCcmZ5TFpDanBNUVczdThVTWZmRldSWkNpZGw5Tkx4a1BsY2tTcXZaQnpzTW9OWkF2bVk2RUd2NG1hUUFaQ0t2VlpBWkJ5VXA5a0FCU2x6THFJejlvZTdOdHBzdzhyQVpEWkQiLCJ1c2VyIjp7ImNvdW50cnkiOiJ1cyIsImxvY2FsZSI6ImVuX1VTIiwiYWdlIjp7Im1pbiI6MjF9fSwidXNlcl9pZCI6IjUzODc0NDQ2OCJ9"
@@ -274,6 +274,20 @@ func TestBatchApiGetInfo(t *testing.T) {
 		Version = ""
 	}()
 	test(t)
+
+	// when providing an invalid access token, BatchApi should return a facebook error.
+	_, err := BatchApi("an_invalid_access_token", Params{
+		"method":       GET,
+		"relative_url": "me",
+	})
+
+	if err == nil {
+		t.Fatalf("expect an error when providing an invalid access token to BatchApi.")
+	}
+
+	if _, ok := err.(*Error); !ok {
+		t.Fatalf("batch result error must be an *Error. [e:%v]", err)
+	}
 }
 
 func TestApiParseSignedRequest(t *testing.T) {
@@ -1397,5 +1411,31 @@ func TestCamelCaseToUnderScore(t *testing.T) {
 		if str != v {
 			t.Fatalf("wrong underscore string. [expect:%v] [actual:%v]", v, str)
 		}
+	}
+}
+
+func TestMakeSliceResult(t *testing.T) {
+	jsonStr := `{
+		"error": {
+			"message": "Invalid OAuth access token.", 
+			"type": "OAuthException", 
+			"code": 190
+		}
+	}`
+	var res []Result
+	err := makeResult([]byte(jsonStr), &res)
+
+	if err == nil {
+		t.Fatalf("makeResult must fail")
+	}
+
+	fbErr, ok := err.(*Error)
+
+	if !ok {
+		t.Fatalf("error must be a facebook error. [e:%v]", err)
+	}
+
+	if fbErr.Code != 190 {
+		t.Fatalf("invalid facebook error. [e:%v]", fbErr.Error())
 	}
 }

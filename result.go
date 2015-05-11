@@ -48,6 +48,36 @@ func makeResult(jsonBytes []byte, res interface{}) error {
 	err := dec.Decode(res)
 
 	if err != nil {
+		typ := reflect.TypeOf(res)
+
+		if typ != nil {
+			// if res is a slice, jsonBytes may be a facebook error.
+			// try to decode it as Error.
+			kind := typ.Kind()
+
+			if kind == reflect.Ptr {
+				typ = typ.Elem()
+				kind = typ.Kind()
+			}
+
+			if kind == reflect.Array || kind == reflect.Slice {
+				var errRes Result
+				err = makeResult(jsonBytes, &errRes)
+
+				if err != nil {
+					return err
+				}
+
+				err = errRes.Err()
+
+				if err == nil {
+					err = fmt.Errorf("cannot format facebook response. expect an array but get an object.")
+				}
+
+				return err
+			}
+		}
+
 		return fmt.Errorf("cannot format facebook response. %v", err)
 	}
 
