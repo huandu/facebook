@@ -13,6 +13,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -165,7 +166,11 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 		return
 	}
 
-	err = res.DecodeField("expires_in", &expires)
+	var expiresString string
+	err = res.DecodeField("expires", &expiresString)
+	if err == nil {
+		expires, err = strconv.Atoi(expiresString)
+	}
 	return
 }
 
