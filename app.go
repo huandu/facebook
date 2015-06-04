@@ -125,7 +125,13 @@ func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int
 		return
 	}
 
-	err = res.DecodeField("expires_in", &expires)
+	expiresKey := "expires_in"
+
+	if _, ok := res["expires"]; ok {
+		expiresKey = "expires"
+	}
+
+	err = res.DecodeField(expiresKey, &expires)
 
 	if err != nil {
 		return
@@ -165,7 +171,13 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 		return
 	}
 
-	err = res.DecodeField("expires_in", &expires)
+	expiresKey := "expires_in"
+
+	if _, ok := res["expires"]; ok {
+		expiresKey = "expires"
+	}
+
+	err = res.DecodeField(expiresKey, &expires)
 	return
 }
 
