@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.5.3 ##
+
+* `[FIX]` [#34](https://github.com/huandu/facebook/pull/34) Use `expires` instead of `expires_in` if possible when exchanging token or parsing code.
+
 ## v1.5.2 ##
 
 * `[FIX]` [#32](https://github.com/huandu/facebook/pull/32) BatchApi/Batch returns facebook error when access token is not valid.
