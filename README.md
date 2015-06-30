@@ -46,12 +46,12 @@ fmt.Println("alternative way to get first_name:", first_name)
 
 // It's also possible to decode the whole result into a predefined struct.
 type User struct {
-    First_name string
+    FirstName string
 }
 
 var user User
 res.Decode(&user)
-fmt.Println("print first_name in struct:", user.First_name)
+fmt.Println("print first_name in struct:", user.FirstName)
 ```
 
 ### Read a graph `user` object with a valid access token ###
