@@ -16,7 +16,7 @@ Use `go get -u github.com/huandu/facebook` to get or update it.
 
 ### Quick start ###
 
-Here is a sample to read my Facebook username by uid.
+Here is a sample to read my Facebook first name by uid.
 
 ```go
 package main
@@ -28,10 +28,10 @@ import (
 
 func main() {
     res, _ := fb.Get("/538744468", fb.Params{
-        "fields": "username",
+        "fields": "first_name",
         "access_token": "a-valid-access-token",
     })
-    fmt.Println("here is my facebook username:", res["username"])
+    fmt.Println("here is my facebook first name:", res["first_name"])
 }
 ```
 
@@ -39,19 +39,19 @@ Type of `res` is `fb.Result` (a.k.a. `map[string]interface{}`).
 This type has several useful methods to decode `res` to any Go type safely.
 
 ```go
-// Decode "username" to a Go string.
-var username string
-res.DecodeField("username", &username)
-fmt.Println("alternative way to get username:", username)
+// Decode "first_name" to a Go string.
+var first_name string
+res.DecodeField("first_name", &first_name)
+fmt.Println("alternative way to get first_name:", first_name)
 
 // It's also possible to decode the whole result into a predefined struct.
 type User struct {
-    Username string
+    FirstName string
 }
 
 var user User
 res.Decode(&user)
-fmt.Println("print username in struct:", user.Username)
+fmt.Println("print first_name in struct:", user.FirstName)
 ```
 
 ### Read a graph `user` object with a valid access token ###
