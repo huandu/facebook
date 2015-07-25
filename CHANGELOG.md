@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.5.4 ##
+
+* `[FIX]` [#37](https://github.com/huandu/facebook/pull/37) Add missing `client_secret` in query string when parsing client code.
+
 ## v1.5.3 ##
 
 * `[FIX]` [#34](https://github.com/huandu/facebook/pull/34) Use `expires` instead of `expires_in` if possible when exchanging token or parsing code.
