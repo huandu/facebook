@@ -109,9 +109,10 @@ func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int
 
 	var res Result
 	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
-		"client_id":    app.AppId,
-		"redirect_uri": app.RedirectUri,
-		"code":         code,
+		"client_id":     app.AppId,
+		"redirect_uri":  app.RedirectUri,
+		"client_secret": app.AppSecret,
+		"code":          code,
 	})
 
 	if err != nil {
