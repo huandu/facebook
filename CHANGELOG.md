@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.5.5 ##
+
+* `[FIX]` [#39](https://github.com/huandu/facebook/pull/39) When `/oauth/access_token` returns a query string, this package can parse `expires` or `expires_in` field correctly.
+
 ## v1.5.4 ##
 
 * `[FIX]` [#37](https://github.com/huandu/facebook/pull/37) Add missing `client_secret` in query string when parsing client code.
