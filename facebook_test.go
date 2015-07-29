@@ -1417,8 +1417,8 @@ func TestCamelCaseToUnderScore(t *testing.T) {
 func TestMakeSliceResult(t *testing.T) {
 	jsonStr := `{
 		"error": {
-			"message": "Invalid OAuth access token.", 
-			"type": "OAuthException", 
+			"message": "Invalid OAuth access token.",
+			"type": "OAuthException",
 			"code": 190
 		}
 	}`
@@ -1465,5 +1465,49 @@ func TestMakeSliceResultWithNilElements(t *testing.T) {
 
 	if res[1]["foo"].(string) != "bar" {
 		t.Fatalf("decode res is not expected. [res:%v]", res)
+	}
+}
+
+// case for #39.
+func TestResultDecodeNumberString(t *testing.T) {
+	res := Result{
+		"int":    json.Number("1234"),
+		"string": json.Number("1234"),
+		"float":  json.Number("1234"),
+	}
+
+	var intValue int64
+	var strValue string
+	var floatValue float32
+	var err error
+
+	err = res.DecodeField("int", &intValue)
+
+	if err != nil {
+		t.Fatalf("fail to decode field `int`. [e:%v]", err)
+	}
+
+	if intValue != 1234 {
+		t.Fatalf("unexpected int value. [expect:1234] [actual:%v]", intValue)
+	}
+
+	err = res.DecodeField("string", &strValue)
+
+	if err != nil {
+		t.Fatalf("fail to decode field `string`. [e:%v]", err)
+	}
+
+	if strValue != "1234" {
+		t.Fatalf("unexpected string value. [expect:1234] [actual:%v]", strValue)
+	}
+
+	err = res.DecodeField("float", &floatValue)
+
+	if err != nil {
+		t.Fatalf("fail to decode field `float`. [e:%v]", err)
+	}
+
+	if floatValue != 1234 {
+		t.Fatalf("unexpected float value. [expect:1234] [actual:%v]", floatValue)
 	}
 }

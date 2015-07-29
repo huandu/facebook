@@ -13,6 +13,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -562,7 +563,9 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 		res := Result{}
 
 		for k := range query {
-			res[k] = query.Get(k)
+			// json.Number is an alias of string and can be decoded as a string or number.
+			// therefore, it's safe to convert all query values to this type for all purpose.
+			res[k] = json.Number(query.Get(k))
 		}
 
 		return res, nil
