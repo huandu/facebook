@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.5.6 ##
+
+* `[NEW]` [#40](https://github.com/huandu/facebook/pull/40) `Session` works with http client created by package `golang.org/x/oauth2`. README is updated with a sample.
+
 ## v1.5.5 ##
 
 * `[FIX]` [#39](https://github.com/huandu/facebook/pull/39) When `/oauth/access_token` returns a query string, this package can parse `expires` or `expires_in` field correctly.

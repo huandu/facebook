@@ -333,6 +333,40 @@ fmt.Println("http headers:", debugInfo.Header)
 fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
 ```
 
+### Work with package `golang.org/x/oauth2` ##
+
+Package `golang.org/x/oauth2` can handle facebook OAuth2 authentication process and access token very well. This package can work with it by setting `Session#HttpClient` to OAuth2's client.
+
+```go
+import (
+    "golang.org/x/oauth2"
+    oauth2fb "golang.org/x/oauth2/facebook"
+    fb "github.com/huandu/facebook"
+)
+
+// Get facebook access token.
+conf := &oauth2.Config{
+    ClientID:     "AppId",
+    ClientSecret: "AppSecret",
+    RedirectURL:  "CallbackURL",
+    Scopes:       []string{"email"},
+    Endpoint:     oauth2fb.Endpoint,
+}
+token, err := conf.Exchange(oauth2.NoContext, "code")
+
+// Create a client to manage access token life cycle.
+client := conf.Client(oauth2.NoContext, token)
+
+// Use OAuth2 client with session.
+session := &fb.Session{
+    Version:    "v2.4",
+    HttpClient: client,
+}
+
+// Use session.
+res, _ := session.Get("/me", nil)
+```
+
 ## Change Log ##
 
 See [CHANGELOG.md](CHANGELOG.md).
