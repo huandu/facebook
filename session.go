@@ -226,7 +226,7 @@ func (session *Session) User() (id string, err error) {
 		return
 	}
 
-	if session.accessToken == "" {
+	if session.accessToken == "" && session.HttpClient == nil {
 		err = fmt.Errorf("access token is not set.")
 		return
 	}
@@ -250,7 +250,7 @@ func (session *Session) User() (id string, err error) {
 // Validates Session access token.
 // Returns nil if access token is valid.
 func (session *Session) Validate() (err error) {
-	if session.accessToken == "" {
+	if session.accessToken == "" && session.HttpClient == nil {
 		err = fmt.Errorf("access token is not set.")
 		return
 	}
@@ -274,7 +274,7 @@ func (session *Session) Validate() (err error) {
 // Returns JSON array containing data about the inspected token.
 // See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.2#checktoken
 func (session *Session) Inspect() (result Result, err error) {
-	if session.accessToken == "" {
+	if session.accessToken == "" && session.HttpClient == nil {
 		err = fmt.Errorf("access token is not set.")
 		return
 	}
