@@ -69,6 +69,7 @@ var (
 	typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
 	typeOfJSONNumber          = reflect.TypeOf(json.Number(""))
 	typeOfTime                = reflect.TypeOf(time.Time{})
+	typeOfUnmarshaler         = reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
 
 	facebookSuccessJsonBytes = []byte("true")
 )

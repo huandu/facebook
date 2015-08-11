@@ -396,6 +396,8 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 }
 
 func decodeField(val reflect.Value, field reflect.Value, fullName string) error {
+	var unmarshaler json.Unmarshaler
+
 	if field.Kind() == reflect.Ptr {
 		// reset Ptr field if val is nil.
 		if !val.IsValid() {
@@ -410,6 +412,10 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			field.Set(reflect.New(field.Type().Elem()))
 		}
 
+		if field.Type().Implements(typeOfUnmarshaler) {
+			unmarshaler = field.Interface().(json.Unmarshaler)
+		}
+
 		field = field.Elem()
 	}
 
@@ -419,6 +425,21 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 	if !val.IsValid() {
 		return fmt.Errorf("field '%v' is not a pointer. cannot assign nil to it.", fullName)
+	}
+
+	if unmarshaler == nil && field.Type().Implements(typeOfUnmarshaler) {
+		unmarshaler = field.Interface().(json.Unmarshaler)
+	}
+
+	// if field implements Unmarshaler, let field unmarshals data itself.
+	if unmarshaler != nil {
+		data, err := json.Marshal(val.Interface())
+
+		if err != nil {
+			return fmt.Errorf("fail to marshal value for field '%v'. %v", fullName, err)
+		}
+
+		return unmarshaler.UnmarshalJSON(data)
 	}
 
 	kind := field.Kind()

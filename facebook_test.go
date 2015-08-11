@@ -171,6 +171,40 @@ type NullStruct struct {
 	Null *int
 }
 
+// custom unmarshaler.
+type CustomMarshaler struct {
+	Name  string
+	Hash  int64
+	Extra bool `facebook:",required"` // this field is ignored due to Unmarshaler.
+}
+
+type customMarshaler struct {
+	Name string
+	Hash int64
+}
+
+func (cm *CustomMarshaler) UnmarshalJSON(data []byte) error {
+	var c customMarshaler
+	err := json.Unmarshal(data, &c)
+
+	if err != nil {
+		return err
+	}
+
+	cm.Name = c.Name
+	cm.Hash = c.Hash
+
+	if cm.Name == "bar" {
+		return fmt.Errorf("sorry but i don't like `bar`.")
+	}
+
+	return nil
+}
+
+type CustomMarshalerStruct struct {
+	Marshaler *CustomMarshaler
+}
+
 func TestApiGetUserInfoV2(t *testing.T) {
 	Version = "v2.2"
 	defer func() {
@@ -1509,5 +1543,43 @@ func TestResultDecodeNumberString(t *testing.T) {
 
 	if floatValue != 1234 {
 		t.Fatalf("unexpected float value. [expect:1234] [actual:%v]", floatValue)
+	}
+}
+
+func TestResultDecodeUnmarshaler(t *testing.T) {
+	correctJSON := `{
+		"marshaler": {
+			"name": "foo",
+			"hash": 123456
+		}
+	}`
+
+	errorJSON := `{
+		"marshaler": {
+			"name": "bar",
+			"hash": 123456
+		}
+	}`
+
+	var correctResult, errorResult Result
+	err1 := makeResult([]byte(correctJSON), &correctResult)
+	err2 := makeResult([]byte(errorJSON), &errorResult)
+
+	if err1 != nil || err2 != nil {
+		t.Fatalf("invalid test case input. [e1:%v] [e2:%v]", err1, err2)
+	}
+
+	var cms CustomMarshalerStruct
+
+	err := correctResult.Decode(&cms)
+
+	if err != nil {
+		t.Fatalf("fail to decode input. [e:%v]", err)
+	}
+
+	err = errorResult.Decode(&cms)
+
+	if err == nil {
+		t.Fatalf("input should fail due to Unmarshaler.")
 	}
 }
