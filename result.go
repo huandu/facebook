@@ -16,7 +16,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // MakeResult makes a Result from facebook Graph API response.
@@ -396,8 +395,6 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 }
 
 func decodeField(val reflect.Value, field reflect.Value, fullName string) error {
-	var unmarshaler json.Unmarshaler
-
 	if field.Kind() == reflect.Ptr {
 		// reset Ptr field if val is nil.
 		if !val.IsValid() {
@@ -412,10 +409,6 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			field.Set(reflect.New(field.Type().Elem()))
 		}
 
-		if field.Type().Implements(typeOfUnmarshaler) {
-			unmarshaler = field.Interface().(json.Unmarshaler)
-		}
-
 		field = field.Elem()
 	}
 
@@ -427,12 +420,8 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		return fmt.Errorf("field '%v' is not a pointer. cannot assign nil to it.", fullName)
 	}
 
-	if unmarshaler == nil && field.Type().Implements(typeOfUnmarshaler) {
-		unmarshaler = field.Interface().(json.Unmarshaler)
-	}
-
 	// if field implements Unmarshaler, let field unmarshals data itself.
-	if unmarshaler != nil {
+	if unmarshaler := indirect(field); unmarshaler != nil {
 		data, err := json.Marshal(val.Interface())
 
 		if err != nil {
@@ -975,22 +964,6 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		field.SetString(val.String())
 
 	case reflect.Struct:
-		if field.Type().ConvertibleTo(typeOfTime) {
-			if valType.Kind() != reflect.String {
-				return fmt.Errorf("field '%v' is not a string in result.", fullName)
-			}
-
-			t, err := time.Parse("2006-01-02T15:04:05-0700", val.String())
-
-			if err != nil {
-				return fmt.Errorf("field '%v' was unable to parse the time string '%s'.", fullName, val.String())
-			}
-
-			matchedType := reflect.ValueOf(t).Convert(field.Type())
-			field.Set(matchedType)
-			return nil
-		}
-
 		if valType.Kind() != reflect.Map || valType.Key().Kind() != reflect.String {
 			return fmt.Errorf("field '%v' is not a json object in result.", fullName)
 		}
@@ -1112,6 +1085,57 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 	default:
 		return fmt.Errorf("field '%v' in struct uses unsupported type '%v'.", fullName, kind)
+	}
+
+	return nil
+}
+
+// Indirect walks down v allocating pointers as needed until it gets to a non-pointer.
+// If v implements json.Unmarshaler, indrect stops and returns it.
+//
+// This implementation is a modified version of http://golang.org/src/encoding/json/decode.go.
+func indirect(v reflect.Value) json.Unmarshaler {
+	// if v is a struct field and v's pointer may implement json.Unmarshaler,
+	// try to discover this case.
+	if v.Kind() != reflect.Ptr && v.Type().Name() != "" && v.CanAddr() {
+		v = v.Addr()
+	}
+
+	for {
+		if v.Kind() == reflect.Interface && !v.IsNil() {
+			e := v.Elem()
+
+			if e.Kind() == reflect.Ptr && !e.IsNil() && e.Elem().Kind() == reflect.Ptr {
+				v = e
+				continue
+			}
+		}
+
+		if v.Kind() != reflect.Ptr {
+			break
+		}
+
+		if v.Elem().Kind() != reflect.Ptr && v.CanSet() {
+			break
+		}
+
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+
+		if v.Type().NumMethod() > 0 {
+			if u, ok := v.Interface().(json.Unmarshaler); ok {
+				return u
+			}
+		}
+
+		v = v.Elem()
+	}
+
+	if v.Type().NumMethod() > 0 {
+		if u, ok := v.Interface().(json.Unmarshaler); ok {
+			return u
+		}
 	}
 
 	return nil

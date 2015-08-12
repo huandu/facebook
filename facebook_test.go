@@ -202,7 +202,7 @@ func (cm *CustomMarshaler) UnmarshalJSON(data []byte) error {
 }
 
 type CustomMarshalerStruct struct {
-	Marshaler *CustomMarshaler
+	Marshaler CustomMarshaler
 }
 
 func TestApiGetUserInfoV2(t *testing.T) {
@@ -953,9 +953,13 @@ func TestStructFieldTag(t *testing.T) {
 	t.Logf("expected decode error. [e:%v]", err)
 }
 
-type myTime time.Time
+type myTime struct {
+	time.Time
+}
 
 func TestDecodeField(t *testing.T) {
+	date1 := "2015-01-03T11:15:01Z"
+	date2 := "2014-03-04T11:15:01.123Z"
 	jsonStr := `{
         "int": 1234,
         "array": ["abcd", "efgh"],
@@ -987,8 +991,8 @@ func TestDecodeField(t *testing.T) {
         "nullStruct": {
         	"null": null
         },
-        "timestamp": "2015-01-03T11:15:01+0000",
-        "custom_timestamp": "2014-03-04T11:15:01+0000"
+        "timestamp": "` + date1 + `",
+        "custom_timestamp": "` + date2 + `"
     }`
 
 	var result Result
@@ -1148,8 +1152,10 @@ func TestDecodeField(t *testing.T) {
 		t.Fatalf("cannot decode timestamp field. [e:%v]", err)
 	}
 
-	if !aTimestamp.Equal(time.Date(2015, time.January, 3, 11, 15, 1, 0, time.FixedZone("no-offset", 0))) {
-		t.Fatalf("expect aTimestamp date to be 2015-01-03 11:15:01 +0000 [value:%v]", aTimestamp.String())
+	t1, _ := time.Parse(time.RFC3339, date1)
+
+	if !aTimestamp.Equal(t1) {
+		t.Fatalf("expect aTimestamp date to be %v [value:%v]", date1, aTimestamp.String())
 	}
 
 	err = result.DecodeField("custom_timestamp", &aCustomTimestamp)
@@ -1158,8 +1164,29 @@ func TestDecodeField(t *testing.T) {
 		t.Fatalf("cannot decode custom_timestamp field. [e:%v]", err)
 	}
 
-	if !time.Time(aCustomTimestamp).Equal(time.Date(2014, time.March, 4, 11, 15, 1, 0, time.FixedZone("no-offset", 0))) {
-		t.Fatalf("expect aCustomTimestamp date to be 2014-03-04 11:15:01 +0000 [value:%v]", time.Time(aCustomTimestamp).String())
+	t2, _ := time.Parse(time.RFC3339, date2)
+
+	if !aCustomTimestamp.Equal(t2) {
+		t.Fatalf("expect aCustomTimestamp date to be %v [value:%v]", date2, aCustomTimestamp.String())
+	}
+
+	var timeStruct struct {
+		Timestamp       time.Time `facebook:",required"`
+		CustomTimestamp myTime    `facebook:",required"`
+	}
+
+	err = result.Decode(&timeStruct)
+
+	if err != nil {
+		t.Fatalf("cannot decode time struct. [e:%v]", err)
+	}
+
+	if !timeStruct.Timestamp.Equal(t1) {
+		t.Fatalf("expect timeStruct.Timestamp date to be %v [value:%v]", date1, aTimestamp.String())
+	}
+
+	if !timeStruct.CustomTimestamp.Equal(t2) {
+		t.Fatalf("expect timeStruct.CustomTimestamp date to be %v [value:%v]", date2, aCustomTimestamp.Time.String())
 	}
 }
 
