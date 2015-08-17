@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.6.0 ##
+
+* `[NEW]` [#42](https://github.com/huandu/facebook/pull/42) Support custom JSON unmarshaling and json.Unmarshaler interface in decoding.
+
 ## v1.5.6 ##
 
 * `[NEW]` [#40](https://github.com/huandu/facebook/pull/40) `Session` works with http client created by package `golang.org/x/oauth2`. README is updated with a sample.

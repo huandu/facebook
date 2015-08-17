@@ -54,6 +54,19 @@ res.Decode(&user)
 fmt.Println("print first_name in struct:", user.FirstName)
 ```
 
+If a type implements `json.Unmarshaler` interface, `Decode` or `DecodeField` will use it to unmarshal JSON.
+
+```go
+res := Result{
+    "create_time": "2006-01-02 15:16:17Z",
+}
+
+// Type `*time.Time` implements `json.Unmarshaler`.
+// res.DecodeField will use the interface to unmarshal data.
+var tm time.Time
+res.DecodeField("create_time", &tm)
+```
+
 ### Read a graph `user` object with a valid access token ###
 
 ```go
