@@ -1,5 +1,10 @@
 # Change Log #
 
+## v1.7.0 ##
+
+* `[NEW]` [#50](https://github.com/huandu/facebook/pull/50) `Result` can decode embedded struct field now.
+* `[NEW]` Add a new field tag `facebook:"-"` to omit the field when decoding. It can improve decoding performance slightly.
+
 ## v1.6.0 ##
 
 * `[NEW]` [#42](https://github.com/huandu/facebook/pull/42) Support custom JSON unmarshaling and json.Unmarshaler interface in decoding.

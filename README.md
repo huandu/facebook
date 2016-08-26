@@ -189,8 +189,9 @@ type FacebookFeed struct {
     Id          string `facebook:",required"`             // this field must exist in response.
                                                           // mind the "," before "required".
     Story       string
-    FeedFrom    *FacebookFeedFrom `facebook:"from"`       // use customized field name "from"
+    FeedFrom    *FacebookFeedFrom `facebook:"from"`       // use customized field name "from".
     CreatedTime string `facebook:"created_time,required"` // both customized field name and "required" flag.
+    Omitted     string `facebook:"-"`                     // this field is omitted when decoding.
 }
 
 type FacebookFeedFrom struct {

@@ -342,6 +342,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 	}
 
 	var field reflect.Value
+	var fieldInfo reflect.StructField
 	var name, fbTag string
 	var val interface{}
 	var ok, required bool
@@ -354,10 +355,15 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		name = ""
 		required = false
 		field = v.Field(i)
-		fbTag = vType.Field(i).Tag.Get("facebook")
+		fieldInfo = vType.Field(i)
+		fbTag = fieldInfo.Tag.Get("facebook")
 
 		// parse struct field tag
 		if fbTag != "" {
+			if fbTag == "-" {
+				continue
+			}
+
 			index := strings.IndexRune(fbTag, ',')
 
 			if index == -1 {
@@ -371,8 +377,15 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 			}
 		}
 
+		// embedded field is "expanded" when decoding.
+		if fieldInfo.Anonymous {
+			if err = decodeField(reflect.ValueOf(res), field, fullName); err != nil {
+				return err
+			}
+		}
+
 		if name == "" {
-			name = camelCaseToUnderScore(v.Type().Field(i).Name)
+			name = camelCaseToUnderScore(fieldInfo.Name)
 		}
 
 		val, ok = res[name]

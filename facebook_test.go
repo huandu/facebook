@@ -117,6 +117,9 @@ var (
 )
 
 type AllTypes struct {
+	AnonymousStruct1
+	*AnonymousStruct2
+
 	Int          int
 	Int8         int8
 	Int16        int16
@@ -133,6 +136,18 @@ type AllTypes struct {
 	ArrayOfInt   []int
 	MapOfString  map[string]string
 	NestedStruct *NestedStruct
+}
+
+type AnonymousStruct1 struct {
+	AnonymousInt1           int
+	AnonymousString1        string
+	AnonymousArrayOfString1 []string
+}
+
+type AnonymousStruct2 struct {
+	AnonymousInt2           int
+	AnonymousString2        string
+	AnonymousArrayOfString2 []string
 }
 
 type NestedStruct struct {
@@ -681,6 +696,8 @@ func TestGraphDebuggingAPI(t *testing.T) {
 
 func TestResultDecode(t *testing.T) {
 	strNormal := `{
+		"anonymous_int1": 123,
+		"anonymous_string2": "abc",
         "int": 1234,
         "int8": 23,
         "int16": 12345,
@@ -768,6 +785,14 @@ func TestResultDecode(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("cannot decode normal struct. [e:%v]", err)
+	}
+
+	if normal.AnonymousInt1 != 123 {
+		t.Fatalf("Fail to decode AnonymousInt1. [value:%v]", normal.AnonymousInt1)
+	}
+
+	if normal.AnonymousString2 != "abc" {
+		t.Fatalf("Fail to decode AnonymousString2. [value:%v]", normal.AnonymousString2)
 	}
 
 	err = json.Unmarshal([]byte(strOverflow), &result)
