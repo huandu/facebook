@@ -220,8 +220,7 @@ func (res Result) Decode(v interface{}) (err error) {
 		}
 	}()
 
-	err = res.decode(reflect.ValueOf(v), "")
-	return
+	return res.decode(reflect.ValueOf(v), "")
 }
 
 // DecodeField decodes a field of result to any type, including struct.
@@ -337,11 +336,13 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		return fmt.Errorf("output value cannot be set.")
 	}
 
+	fullNamePrefix := fullName
 	if fullName != "" {
-		fullName += "."
+		fullNamePrefix += "."
 	}
 
 	var field reflect.Value
+	var structField reflect.StructField
 	var name, fbTag string
 	var val interface{}
 	var ok, required bool
@@ -354,7 +355,24 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		name = ""
 		required = false
 		field = v.Field(i)
-		fbTag = vType.Field(i).Tag.Get("facebook")
+		structField = vType.Field(i)
+		if structField.Anonymous {
+			t := structField.Type
+			k := t.Kind()
+			switch {
+			case k == reflect.Ptr && t.Elem().Kind() == reflect.Struct:
+				if field.IsNil() {
+					field.Set(reflect.New(t.Elem()))
+				}
+				fallthrough
+			case k == reflect.Struct:
+				if err = res.decode(field, fullName); err != nil {
+					return err
+				}
+				continue
+			}
+		}
+		fbTag = structField.Tag.Get("facebook")
 
 		// parse struct field tag
 		if fbTag != "" {
@@ -372,7 +390,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		}
 
 		if name == "" {
-			name = camelCaseToUnderScore(v.Type().Field(i).Name)
+			name = camelCaseToUnderScore(structField.Name)
 		}
 
 		val, ok = res[name]
@@ -380,13 +398,13 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		if !ok {
 			// check whether the field is required. if so, report error.
 			if required {
-				return fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+				return fmt.Errorf("cannot find field '%v%v' in result.", fullNamePrefix, name)
 			}
 
 			continue
 		}
 
-		if err = decodeField(reflect.ValueOf(val), field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
+		if err = decodeField(reflect.ValueOf(val), field, fmt.Sprintf("%v%v", fullNamePrefix, name)); err != nil {
 			return err
 		}
 	}
