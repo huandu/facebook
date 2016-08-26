@@ -337,16 +337,16 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		return fmt.Errorf("output value cannot be set.")
 	}
 
-	if fullName != "" {
-		fullName += "."
-	}
-
 	var field reflect.Value
 	var fieldInfo reflect.StructField
-	var name, fbTag string
+	var name, fbTag, dot string
 	var val interface{}
 	var ok, required bool
 	var err error
+
+	if fullName != "" {
+		dot = "."
+	}
 
 	vType := v.Type()
 	num := vType.NumField()
@@ -393,13 +393,13 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		if !ok {
 			// check whether the field is required. if so, report error.
 			if required {
-				return fmt.Errorf("cannot find field '%v%v' in result.", fullName, name)
+				return fmt.Errorf("cannot find field '%v%v%v' in result.", fullName, dot, name)
 			}
 
 			continue
 		}
 
-		if err = decodeField(reflect.ValueOf(val), field, fmt.Sprintf("%v%v", fullName, name)); err != nil {
+		if err = decodeField(reflect.ValueOf(val), field, fmt.Sprintf("%v%v%v", fullName, dot, name)); err != nil {
 			return err
 		}
 	}

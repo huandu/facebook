@@ -2,40 +2,40 @@
 
 ## v1.7.0 ##
 
-* `[NEW]` [#50](https://github.com/huandu/facebook/pull/50) `Result` can decode embedded struct field now.
+* `[NEW]` [#50](https://github.com/huandu/facebook/issues/50) `Result` can decode embedded struct field now.
 * `[NEW]` Add a new field tag `facebook:"-"` to omit the field when decoding. It can improve decoding performance slightly.
 
 ## v1.6.0 ##
 
-* `[NEW]` [#42](https://github.com/huandu/facebook/pull/42) Support custom JSON unmarshaling and json.Unmarshaler interface in decoding.
+* `[NEW]` [#42](https://github.com/huandu/facebook/issues/42) Support custom JSON unmarshaling and json.Unmarshaler interface in decoding.
 
 ## v1.5.6 ##
 
-* `[NEW]` [#40](https://github.com/huandu/facebook/pull/40) `Session` works with http client created by package `golang.org/x/oauth2`. README is updated with a sample.
+* `[NEW]` [#40](https://github.com/huandu/facebook/issues/40) `Session` works with http client created by package `golang.org/x/oauth2`. README is updated with a sample.
 
 ## v1.5.5 ##
 
-* `[FIX]` [#39](https://github.com/huandu/facebook/pull/39) When `/oauth/access_token` returns a query string, this package can parse `expires` or `expires_in` field correctly.
+* `[FIX]` [#39](https://github.com/huandu/facebook/issues/39) When `/oauth/access_token` returns a query string, this package can parse `expires` or `expires_in` field correctly.
 
 ## v1.5.4 ##
 
-* `[FIX]` [#37](https://github.com/huandu/facebook/pull/37) Add missing `client_secret` in query string when parsing client code.
+* `[FIX]` [#37](https://github.com/huandu/facebook/issues/37) Add missing `client_secret` in query string when parsing client code.
 
 ## v1.5.3 ##
 
-* `[FIX]` [#34](https://github.com/huandu/facebook/pull/34) Use `expires` instead of `expires_in` if possible when exchanging token or parsing code.
+* `[FIX]` [#34](https://github.com/huandu/facebook/issues/34) Use `expires` instead of `expires_in` if possible when exchanging token or parsing code.
 
 ## v1.5.2 ##
 
-* `[FIX]` [#32](https://github.com/huandu/facebook/pull/32) BatchApi/Batch returns facebook error when access token is not valid.
+* `[FIX]` [#32](https://github.com/huandu/facebook/issues/32) BatchApi/Batch returns facebook error when access token is not valid.
 
 ## v1.5.1 ##
 
-* `[FIX]` [#31](https://github.com/huandu/facebook/pull/31) When `/oauth/access_token` returns a query string instead of json, this package can correctly handle it.
+* `[FIX]` [#31](https://github.com/huandu/facebook/issues/31) When `/oauth/access_token` returns a query string instead of json, this package can correctly handle it.
 
 ## v1.5.0 ##
 
-* `[NEW]` [#28](https://github.com/huandu/facebook/pull/28) Support debug mode introduced by facebook graph API v2.3.
+* `[NEW]` [#28](https://github.com/huandu/facebook/issues/28) Support debug mode introduced by facebook graph API v2.3.
 * `[FIX]` Removed all test cases depending on facebook graph API v1.0.
 
 ## v1.4.1 ##
