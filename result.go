@@ -382,6 +382,8 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 			if err = decodeField(reflect.ValueOf(res), field, fullName); err != nil {
 				return err
 			}
+
+			continue
 		}
 
 		if name == "" {

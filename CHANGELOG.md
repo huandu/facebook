@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.7.1 ##
+
+* `[FIX]` Fix a tiny bug which slightly affects performance when decoding anonymous field.
+
 ## v1.7.0 ##
 
 * `[NEW]` [#50](https://github.com/huandu/facebook/issues/50) `Result` can decode embedded struct field now.
