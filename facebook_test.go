@@ -1111,7 +1111,7 @@ func TestDecodeField(t *testing.T) {
 	}
 
 	if len(subResults) != 2 {
-		t.Fatalf("expected sub results len is 2. [len:%v] [results:%v]", subResults)
+		t.Fatalf("expected sub results len is 2. [len:%v] [results:%v]", len(subResults), subResults)
 	}
 
 	err = subResults[0].DecodeField("key4", &aString)
