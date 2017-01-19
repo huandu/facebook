@@ -78,7 +78,7 @@ if err != nil {
     // err can be an facebook API error.
     // if so, the Error struct contains error details.
     if e, ok := err.(*Error); ok {
-        fmt.Logf("facebook error. [message:%v] [type:%v] [code:%v] [subcode:%v]",
+        fmt.Printf("facebook error. [message:%v] [type:%v] [code:%v] [subcode:%v]",
             e.Message, e.Type, e.Code, e.ErrorSubcode)
         return
     }
@@ -104,7 +104,7 @@ var items []fb.Result
 err := res.DecodeField("data", &items)
 
 if err != nil {
-    fmt.Logf("An error has happened %v", err)
+    fmt.Printf("An error has happened %v", err)
     return
 }
 
