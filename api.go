@@ -136,7 +136,7 @@ func Batch(batchParams Params, params ...Params) ([]Result, error) {
 	return defaultSession.Batch(batchParams, params...)
 }
 
-// Makes a FQL query with default session.
+// [Deprecated] Makes a FQL query with default session.
 // Returns a slice of Result. If there is no query result, the result is nil.
 //
 // FQL can only make query without "access_token". For query requiring "access_token", create
@@ -147,7 +147,7 @@ func FQL(query string) ([]Result, error) {
 	return defaultSession.FQL(query)
 }
 
-// Makes a multi FQL query with default session.
+// [Deprecated] Makes a multi FQL query with default session.
 // Returns a parsed Result. The key is the multi query key, and the value is the query result.
 //
 // MultiFQL can only make query without "access_token". For query requiring "access_token", create

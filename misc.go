@@ -107,7 +107,7 @@ func (e *Error) Error() string {
 	return e.Message
 }
 
-// Creates a new binary data holder.
+// Creates new binary data holder.
 func Data(filename string, source io.Reader) *binaryData {
 	return &binaryData{
 		Filename: filename,
@@ -115,8 +115,17 @@ func Data(filename string, source io.Reader) *binaryData {
 	}
 }
 
+// Creates new binary data holder with arbitrary content type.
+func DataWithContentType(filename string, source io.Reader, contentType string) *binaryData {
+	return &binaryData{
+		Filename:    filename,
+		Source:      source,
+		ContentType: contentType,
+	}
+}
+
 // Creates a binary file holder.
-func File(filename, path string) *binaryFile {
+func File(filename string) *binaryFile {
 	return &binaryFile{
 		Filename: filename,
 	}
@@ -127,5 +136,18 @@ func FileAlias(filename, path string) *binaryFile {
 	return &binaryFile{
 		Filename: filename,
 		Path:     path,
+	}
+}
+
+// Creates a new binary file holder with arbitrary content type.
+func FileAliasWithContentType(filename, path, contentType string) *binaryFile {
+	if path == "" {
+		path = filename
+	}
+
+	return &binaryFile{
+		Filename:    filename,
+		Path:        path,
+		ContentType: contentType,
 	}
 }

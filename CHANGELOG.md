@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.8.0 ##
+
+* `[FIX]` [#59](https://github.com/huandu/facebook/pull/59) Guess content type for binary params by filename extension or an arbitrary value. Thanks [@panki](https://github.com/panki).
+
 ## v1.7.1 ##
 
 * `[FIX]` Fix a tiny bug which slightly affects performance when decoding anonymous field.
@@ -11,7 +15,7 @@
 
 ## v1.6.0 ##
 
-* `[NEW]` [#42](https://github.com/huandu/facebook/issues/42) Support custom JSON unmarshaling and json.Unmarshaler interface in decoding.
+* `[NEW]` [#42](https://github.com/huandu/facebook/issues/42) Support custom JSON unmarshaling and `json.Unmarshaler` interface in decoding.
 
 ## v1.5.6 ##
 
@@ -67,7 +71,7 @@ Fix for [#21](https://github.com/huandu/facebook/issues/21) will result a possib
 
 * `[FIX]` [#19](https://github.com/huandu/facebook/issues/19) Any valid int64 number larger than 2^53 or smaller than -2^53 can be correctly decoded without precision lost.
 
-Fix for [#19](https://github.com/huandu/facebook/issues/19) will result a possible breaking change in `Result#Get` and `Result#GetField`. If a JSON field is a number, these two functions will return json.Number instead of float64.
+Fix for [#19](https://github.com/huandu/facebook/issues/19) will result a possible breaking change in `Result#Get` and `Result#GetField`. If a JSON field is a number, these two functions will return `json.Number` instead of `float64`.
 
 The fix also introduces a side effect in `Result#Decode` and `Result#DecodeField`. A number field (`int*` and `float*`) can be decoded to a string. It was not allowed in previous version.
 

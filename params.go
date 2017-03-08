@@ -163,7 +163,7 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 		switch value := v.(type) {
 		case *binaryData:
 			var dst io.Writer
-			filePart := createFormFile(k, value.Filename)
+			filePart := createFormFile(k, value.Filename, value.ContentType)
 			dst, err = w.CreatePart(filePart)
 
 			if err != nil {
@@ -181,7 +181,7 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 			var file *os.File
 			var path string
 
-			filePart := createFormFile(k, value.Filename)
+			filePart := createFormFile(k, value.Filename, value.ContentType)
 			dst, err = w.CreatePart(filePart)
 
 			if err != nil {
@@ -235,15 +235,18 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 
 var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
 
-func createFormFile(fieldName, fileName string) textproto.MIMEHeader {
+func createFormFile(fieldName, fileName, contentType string) textproto.MIMEHeader {
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition",
 		fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
 			quoteEscaper.Replace(fieldName), quoteEscaper.Replace(fileName)))
 
-	contentType := mime.TypeByExtension(path.Ext(fileName))
 	if contentType == "" {
-		contentType = "application/octet-stream"
+		contentType = mime.TypeByExtension(path.Ext(fileName))
+
+		if contentType == "" {
+			contentType = "application/octet-stream"
+		}
 	}
 
 	h.Set("Content-Type", contentType)

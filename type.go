@@ -97,14 +97,16 @@ type Error struct {
 
 // Binary data.
 type binaryData struct {
-	Filename string    // filename used in multipart form writer.
-	Source   io.Reader // file data source.
+	Filename    string    // filename used in multipart form writer.
+	Source      io.Reader // file data source.
+	ContentType string    // content type of the data.
 }
 
 // Binary file.
 type binaryFile struct {
-	Filename string // filename used in multipart form writer.
-	Path     string // path to file. must be readable.
+	Filename    string // filename used in multipart form writer.
+	Path        string // path to file. must be readable.
+	ContentType string // content type of the file.
 }
 
 // DebugInfo is the debug information returned by facebook when debug mode is enabled.

@@ -237,6 +237,8 @@ contentType := batchResult1.Header.Get("Content-Type")
 
 ### Send FQL query ###
 
+*FQL is deprecated by facebook right now.*
+
 ```go
 results, _ := fb.FQL("SELECT username FROM page WHERE page_id = 20531316728")
 fmt.Println(results[0]["username"]) // print "facebook"
@@ -249,6 +251,8 @@ fmt.Println(results[0]["username"]) // print "facebook"
 ```
 
 ### Make multi-FQL ###
+
+*FQL is deprecated by facebook right now.*
 
 ```go
 res, _ := fb.MultiFQL(Params{
