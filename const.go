@@ -26,6 +26,7 @@ const (
 	ERROR_CODE_UNKNOWN = -1 // unknown facebook graph api error code.
 
 	_MIME_FORM_URLENCODED = "application/x-www-form-urlencoded"
+	_MIME_FORM_DATA = "multipart/form-data"
 )
 
 // Graph API debug mode values.

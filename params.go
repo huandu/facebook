@@ -9,12 +9,17 @@ package facebook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
+	"net/textproto"
 	"net/url"
 	"os"
+	"path"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
 // Makes a new Params instance by given data.
@@ -158,7 +163,8 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 		switch value := v.(type) {
 		case *binaryData:
 			var dst io.Writer
-			dst, err = w.CreateFormFile(k, value.Filename)
+			filePart := createFormFile(k, value.Filename)
+			dst, err = w.CreatePart(filePart)
 
 			if err != nil {
 				return
@@ -175,7 +181,8 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 			var file *os.File
 			var path string
 
-			dst, err = w.CreateFormFile(k, value.Filename)
+			filePart := createFormFile(k, value.Filename)
+			dst, err = w.CreatePart(filePart)
 
 			if err != nil {
 				return
@@ -224,4 +231,21 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 	}
 
 	return
+}
+
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+func createFormFile(fieldName, fileName string) textproto.MIMEHeader {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition",
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+			quoteEscaper.Replace(fieldName), quoteEscaper.Replace(fileName)))
+
+	contentType := mime.TypeByExtension(path.Ext(fileName))
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	h.Set("Content-Type", contentType)
+	return h
 }
