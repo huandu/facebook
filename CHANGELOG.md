@@ -1,5 +1,9 @@
 # Change Log #
 
+## v1.8.1 ##
+
+* `[FIX]` [#60](https://github.com/huandu/facebook/pull/60) Handle string errors in `Decode()`. Thanks [@sebnow](https://github.com/sebnow).
+
 ## v1.8.0 ##
 
 * `[FIX]` [#59](https://github.com/huandu/facebook/pull/59) Guess content type for binary params by filename extension or an arbitrary value. Thanks [@panki](https://github.com/panki).
