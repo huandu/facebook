@@ -10,6 +10,7 @@ package facebook
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -216,7 +217,17 @@ func (res Result) Decode(v interface{}) (err error) {
 				panic(r)
 			}
 
-			err = r.(error)
+			if errStr, ok := r.(string); ok {
+				err = errors.New(errStr)
+				return
+			}
+
+			if errErr, ok := r.(error); ok {
+				err = errErr
+				return
+			}
+
+			panic(r)
 		}
 	}()
 
