@@ -11,14 +11,12 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 // Makes a facebook graph api call.
@@ -648,23 +646,4 @@ func (session *Session) addDebugInfo(res Result, response *http.Response) Result
 
 	res["__debug__"] = debugInfo
 	return res
-}
-
-func decodeBase64URLEncodingString(data string) ([]byte, error) {
-	buf := bytes.NewBufferString(data)
-
-	// go's URLEncoding implementation requires base64 padding.
-	if m := len(data) % 4; m != 0 {
-		buf.WriteString(strings.Repeat("=", 4-m))
-	}
-
-	reader := base64.NewDecoder(base64.URLEncoding, buf)
-	output := &bytes.Buffer{}
-	_, err := io.Copy(output, reader)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return output.Bytes(), nil
 }

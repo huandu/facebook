@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -38,14 +39,14 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 		return
 	}
 
-	sig, e1 := decodeBase64URLEncodingString(strs[0])
+	sig, e1 := base64.RawURLEncoding.DecodeString(strs[0])
 
 	if e1 != nil {
 		err = fmt.Errorf("cannot decode signed request sig. error is %v.", e1)
 		return
 	}
 
-	payload, e2 := decodeBase64URLEncodingString(strs[1])
+	payload, e2 := base64.RawURLEncoding.DecodeString(strs[1])
 
 	if e2 != nil {
 		err = fmt.Errorf("cannot decode signed request payload. error is %v.", e2)
