@@ -148,7 +148,7 @@ func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int
 	return
 }
 
-// Exchange a short lived access token to a long lived access token.
+// Exchange a short-lived access token to a long-lived access token.
 // Return new access token and its expires time.
 func (app *App) ExchangeToken(accessToken string) (token string, expires int, err error) {
 	if accessToken == "" {

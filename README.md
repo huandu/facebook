@@ -16,7 +16,7 @@ Use `go get -u github.com/huandu/facebook` to get or update it.
 
 ### Quick start ###
 
-Here is a sample to read my Facebook first name by uid.
+Here is a sample that reads my Facebook first name by uid.
 
 ```go
 package main
@@ -35,7 +35,7 @@ func main() {
 }
 ```
 
-Type of `res` is `fb.Result` (a.k.a. `map[string]interface{}`).
+The type of `res` is `fb.Result` (a.k.a. `map[string]interface{}`).
 This type has several useful methods to decode `res` to any Go type safely.
 
 ```go
@@ -54,7 +54,7 @@ res.Decode(&user)
 fmt.Println("print first_name in struct:", user.FirstName)
 ```
 
-If a type implements `json.Unmarshaler` interface, `Decode` or `DecodeField` will use it to unmarshal JSON.
+If a type implements the `json.Unmarshaler` interface, `Decode` or `DecodeField` will use it to unmarshal JSON.
 
 ```go
 res := Result{
@@ -278,7 +278,7 @@ res, _ := session.MultiFQL(Params{
 
 ### Use it in Google App Engine ###
 
-Google App Engine provide `appengine/urlfetch` package as standard http client package. Default client in `net/http` doesn't work. One must explicitly set http client in `Session` to make it work.
+Google App Engine provides `appengine/urlfetch` package as the standard http client package. The default client in `net/http` doesn't work. One must explicitly set http client in `Session` to make it work.
 
 ```go
 import (

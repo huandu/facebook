@@ -346,7 +346,7 @@ func (session *Session) AppsecretProof() string {
 }
 
 // Enable or disable appsecret proof status.
-// Returns error if there is no App associasted with this Session.
+// Returns error if there is no App associated with this Session.
 func (session *Session) EnableAppsecretProof(enabled bool) error {
 	if session.app == nil {
 		return fmt.Errorf("cannot change appsecret proof status without an associated App.")

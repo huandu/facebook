@@ -62,7 +62,7 @@ type DebugMode string
 
 // API params.
 //
-// For general uses, just use Params as a ordinary map.
+// For general uses, just use Params as an ordinary map.
 //
 // For advanced uses, use MakeParams to create Params from any struct.
 type Params map[string]interface{}
