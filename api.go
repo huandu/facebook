@@ -40,7 +40,7 @@ var (
 // Method can be GET, POST, DELETE or PUT.
 //
 // Params represents query strings in this call.
-// Keys and values in params will be encoded for URL automatically. So there is
+// Keys and values in params will be encoded into the URL automatically, so there is
 // no need to encode keys or values in params manually. Params can be nil.
 //
 // If you want to get
