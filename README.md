@@ -4,15 +4,7 @@
 
 This is a Go package fully supports Facebook Graph API with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
 
-API documents can be found on [godoc](http://godoc.org/github.com/huandu/facebook).
 
-Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply it.
-
-## Get It ##
-
-Use `go get -u github.com/huandu/facebook` to get or update it.
-
-## Usage ##
 
 ### Quick start ###
 
@@ -391,8 +383,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## Out of Scope ##
 
-1. No OAuth integration. This package only provides APIs to parse/verify access token and code generated in OAuth 2.0 authentication process.
-2. No old RESTful API support. Such APIs are deprecated for years. Forget about them.
+precated for years. Forget about them.
 
 ## License ##
 
