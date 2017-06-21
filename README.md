@@ -58,7 +58,7 @@ If a type implements the `json.Unmarshaler` interface, `Decode` or `DecodeField`
 
 ```go
 res := Result{
-    "create_time": "2006-01-02 15:16:17Z",
+    "create_time": "2006-01-02T15:16:17Z",
 }
 
 // Type `*time.Time` implements `json.Unmarshaler`.
