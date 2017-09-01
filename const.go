@@ -61,7 +61,7 @@ var (
 	}
 
 	// checks whether it's a video post.
-	regexpIsVideoPost = regexp.MustCompile("\\/videos$")
+	regexpIsVideoPost = regexp.MustCompile(`\/videos$`)
 
 	// default facebook session.
 	defaultSession = &Session{}
