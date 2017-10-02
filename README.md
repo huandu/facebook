@@ -115,7 +115,7 @@ for _, item := range items {
 
 ### Use `App` and `Session` ###
 
-It's recommended to use `App` and `Session` in a production app. They provide more controls over all API calls. They can also make code clear and concise.
+It's recommended to use `App` and `Session` in a production app. They provide more control over all API calls. They can also make code clear and concise.
 
 ```go
 // create a global App var to hold app id and secret.
@@ -158,7 +158,7 @@ noMore, err := paging.Next()
 results = paging.Data()
 ```
 
-### Read graph api response and decode result into a struct ###
+### Read graph API response and decode result into a struct ###
 
 As facebook Graph API always uses lower case words as keys in API response.
 This package can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
@@ -266,7 +266,7 @@ See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to
 // change following global variable to specific a global default version.
 fb.Version = "v2.0"
 
-// starting with graph api v2.0, it's not allowed to get user information without access token.
+// starting with graph API v2.0; it's not allowed to get user information without access token.
 fb.Api("huan.du", GET, nil)
 
 // it's possible to specify version per session.
@@ -296,9 +296,9 @@ session.EnableAppsecretProof(false)
 
 Facebook introduces a way to debug graph API calls. See [Debugging API Requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#debugging) for details.
 
-This package provides both package level and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally; or use `Session#SetDebug` to change debug mode for one session.
+This package provides both package level, and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally; or use `Session#SetDebug` to change debug mode for one session.
 
-When debug mode is turned on, use `Result#DebugInfo` to get `DebugInfo` struct from result.
+When debug mode is turned on, use `Result#DebugInfo` to get `DebugInfo` struct from the result.
 
 ```go
 fb.Debug = fb.DEBUG_ALL
