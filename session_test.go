@@ -9,6 +9,7 @@ package facebook
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"testing"
 )
@@ -293,4 +294,36 @@ func TestInspectInvalidToken(t *testing.T) {
 	if isValid {
 		t.Fatalf("inspect result shows access token is valid. why? [result:%v]", result)
 	}
+}
+
+func TestSessionCancelationWithContext(t *testing.T) {
+	session := &Session{}
+	ctx, cancel := context.WithCancel(context.Background())
+	newSession := session.WithContext(ctx)
+
+	if session == newSession {
+		t.Fatalf("session.WithContext must return a new session instance.")
+	}
+
+	if session.Context() != context.Background() {
+		t.Fatalf("default session context must be context.Background().")
+	}
+
+	if ctx != newSession.Context() {
+		t.Fatalf("ctx is not set to new session.")
+	}
+
+	if FB_TEST_VALID_ACCESS_TOKEN == "" {
+		t.Skipf("skip this case as we don't have a valid access token.")
+	}
+
+	cancel()
+	newSession.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
+	_, err := newSession.Inspect()
+
+	if err == nil {
+		t.Fatalf("http request must fail as cancelled.")
+	}
+
+	t.Logf("http request error should fail as cancelled. [e:%v]", err)
 }

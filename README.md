@@ -344,6 +344,23 @@ session := &fb.Session{
 res, _ := session.Get("/me", nil)
 ```
 
+### Control timeout and cancelation with `Context` ###
+
+The `Session` can work with `Context` now.
+
+```go
+// Create a new context.
+ctx, cancel := context.WithTimeout(session.Context(), 100 * time.Millisecond)
+defer cancel()
+
+// Call an API with ctx.
+// The return value of `session.WithContext` is a shadow copy of original session and
+// should not be stored. It can be used only once.
+result, err := session.WithContext(ctx).Get("/me", nil)
+```
+
+See https://blog.golang.org/context for more details about how to use `Context`.
+
 ## Change Log ##
 
 See [CHANGELOG.md](CHANGELOG.md).
