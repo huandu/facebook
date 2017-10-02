@@ -9,6 +9,7 @@ package facebook
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -59,6 +60,8 @@ type Session struct {
 	appsecretProof       string // pre-calculated "appsecret_proof" value.
 
 	debug DebugMode // using facebook debugging api in every request.
+
+	context context.Context // Session context.
 }
 
 // An interface to send http request.
@@ -480,6 +483,10 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 }
 
 func (session *Session) sendRequest(request *http.Request) (response *http.Response, data []byte, err error) {
+	if session.context != nil {
+		request = request.WithContext(session.context)
+	}
+
 	if session.HttpClient == nil {
 		response, err = http.DefaultClient.Do(request)
 	} else {
@@ -552,4 +559,25 @@ func (session *Session) addDebugInfo(res Result, response *http.Response) Result
 
 	res["__debug__"] = debugInfo
 	return res
+}
+
+// Context returns the session's context.
+// To change the context, use `Session#WithContext`.
+//
+// The returned context is always non-nil; it defaults to the background context.
+// For outgoing Facebook API requests, the context controls timeout/deadline and cancelation.
+func (session *Session) Context() context.Context {
+	if session.context != nil {
+		return session.context
+	}
+
+	return context.Background()
+}
+
+// WithContext returns a shallow copy of session with its context changed to ctx.
+// The provided ctx must be non-nil.
+func (session *Session) WithContext(ctx context.Context) *Session {
+	s := *session
+	s.context = ctx
+	return &s
 }
