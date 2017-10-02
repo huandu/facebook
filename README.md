@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
 
-This is a Go package fully supports Facebook Graph API with file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
+This is a Go package fully supports Facebook Graph API with file upload, batch request, marketing API. It can be used in Google App Engine.
 
 API documents can be found on [godoc](http://godoc.org/github.com/huandu/facebook).
 
@@ -235,47 +235,6 @@ res.DecodeField("id", &id)
 contentType := batchResult1.Header.Get("Content-Type")
 ```
 
-### Send FQL query ###
-
-*FQL is deprecated by facebook right now.*
-
-```go
-results, _ := fb.FQL("SELECT username FROM page WHERE page_id = 20531316728")
-fmt.Println(results[0]["username"]) // print "facebook"
-
-// most FQL query requires access token. create session to hold access token.
-session := &fb.Session{}
-session.SetAccessToken("A-VALID-ACCESS-TOKEN")
-results, _ := session.FQL("SELECT username FROM page WHERE page_id = 20531316728")
-fmt.Println(results[0]["username"]) // print "facebook"
-```
-
-### Make multi-FQL ###
-
-*FQL is deprecated by facebook right now.*
-
-```go
-res, _ := fb.MultiFQL(Params{
-    "query1": "SELECT username FROM page WHERE page_id = 20531316728",
-    "query2": "SELECT uid FROM user WHERE uid = 538744468",
-})
-var query1, query2 []Result
-
-// get response for query1 and query2.
-res.DecodeField("query1", &query1)
-res.DecodeField("query2", &query2)
-
-// most FQL query requires access token. create session to hold access token.
-session := &fb.Session{}
-session.SetAccessToken("A-VALID-ACCESS-TOKEN")
-res, _ := session.MultiFQL(Params{
-    "query1": "...",
-    "query2": "...",
-})
-
-// same as the sample without access token...
-```
-
 ### Use it in Google App Engine ###
 
 Google App Engine provides `appengine/urlfetch` package as the standard http client package. The default client in `net/http` doesn't work. One must explicitly set http client in `Session` to make it work.
@@ -392,7 +351,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## Out of Scope ##
 
 1. No OAuth integration. This package only provides APIs to parse/verify access token and code generated in OAuth 2.0 authentication process.
-2. No old RESTful API support. Such APIs are deprecated for years. Forget about them.
+2. No old RESTful API and FQL support. Such APIs are deprecated for years. Forget about them.
 
 ## License ##
 
