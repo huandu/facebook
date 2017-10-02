@@ -9,7 +9,6 @@ package facebook
 
 import (
 	"bytes"
-	"io"
 	"unicode"
 	"unicode/utf8"
 )
@@ -100,54 +99,4 @@ func camelCaseToUnderScore(str string) string {
 	}
 
 	return buf.String()
-}
-
-// Returns error string.
-func (e *Error) Error() string {
-	return e.Message
-}
-
-// Creates new binary data holder.
-func Data(filename string, source io.Reader) *binaryData {
-	return &binaryData{
-		Filename: filename,
-		Source:   source,
-	}
-}
-
-// Creates new binary data holder with arbitrary content type.
-func DataWithContentType(filename string, source io.Reader, contentType string) *binaryData {
-	return &binaryData{
-		Filename:    filename,
-		Source:      source,
-		ContentType: contentType,
-	}
-}
-
-// Creates a binary file holder.
-func File(filename string) *binaryFile {
-	return &binaryFile{
-		Filename: filename,
-	}
-}
-
-// Creates a binary file holder and specific a different path for reading.
-func FileAlias(filename, path string) *binaryFile {
-	return &binaryFile{
-		Filename: filename,
-		Path:     path,
-	}
-}
-
-// Creates a new binary file holder with arbitrary content type.
-func FileAliasWithContentType(filename, path, contentType string) *binaryFile {
-	if path == "" {
-		path = filename
-	}
-
-	return &binaryFile{
-		Filename:    filename,
-		Path:        path,
-		ContentType: contentType,
-	}
 }

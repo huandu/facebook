@@ -8,7 +8,7 @@
 package facebook
 
 import (
-    "testing"
+	"testing"
 )
 
 func TestApiGetUserInfoV2(t *testing.T) {

@@ -20,6 +20,14 @@ import (
 	"net/http"
 )
 
+// Facebook graph api methods.
+const (
+	GET    Method = "GET"
+	POST   Method = "POST"
+	DELETE Method = "DELETE"
+	PUT    Method = "PUT"
+)
+
 var (
 	// Default facebook api version.
 	// It can be any valid version string (e.g. "v2.3") or empty.
@@ -34,6 +42,19 @@ var (
 	// See https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#debugging
 	Debug DebugMode
 )
+
+var (
+	// default facebook session.
+	defaultSession = &Session{}
+)
+
+// Graph API debug mode.
+// See https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#graphapidebugmode
+type DebugMode string
+
+// API HTTP method.
+// Can be GET, POST or DELETE.
+type Method string
 
 // Makes a facebook graph api call with default session.
 //
