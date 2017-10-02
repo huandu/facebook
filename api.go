@@ -136,30 +136,6 @@ func Batch(batchParams Params, params ...Params) ([]Result, error) {
 	return defaultSession.Batch(batchParams, params...)
 }
 
-// [Deprecated] Makes a FQL query with default session.
-// Returns a slice of Result. If there is no query result, the result is nil.
-//
-// FQL can only make query without "access_token". For query requiring "access_token", create
-// Session and call its FQL method.
-//
-// Facebook document: https://developers.facebook.com/docs/technical-guides/fql#query
-func FQL(query string) ([]Result, error) {
-	return defaultSession.FQL(query)
-}
-
-// [Deprecated] Makes a multi FQL query with default session.
-// Returns a parsed Result. The key is the multi query key, and the value is the query result.
-//
-// MultiFQL can only make query without "access_token". For query requiring "access_token", create
-// Session and call its MultiFQL method.
-//
-// See Session.MultiFQL document for samples.
-//
-// Facebook document: https://developers.facebook.com/docs/technical-guides/fql#multi
-func MultiFQL(queries Params) (Result, error) {
-	return defaultSession.MultiFQL(queries)
-}
-
 // Makes an arbitrary HTTP request with default session.
 // It expects server responses a facebook Graph API response.
 //     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
