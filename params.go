@@ -22,6 +22,23 @@ import (
 	"strings"
 )
 
+const (
+	_MIME_FORM_URLENCODED = "application/x-www-form-urlencoded"
+	_MIME_FORM_DATA       = "multipart/form-data"
+)
+
+var (
+	typeOfPointerToBinaryData = reflect.TypeOf(&binaryData{})
+	typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
+)
+
+// API params.
+//
+// For general uses, just use Params as an ordinary map.
+//
+// For advanced uses, use MakeParams to create Params from any struct.
+type Params map[string]interface{}
+
 // Makes a new Params instance by given data.
 // Data must be a struct or a map with string keys.
 // MakeParams will change all struct field name to lower case name with underscore.

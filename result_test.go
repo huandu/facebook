@@ -8,33 +8,45 @@
 package facebook
 
 import (
-    "testing"
-	"time"
-	"fmt"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"testing"
+	"time"
 )
 
 type AllTypes struct {
 	AnonymousStruct1
 	*AnonymousStruct2
 
-	Int          int
-	Int8         int8
-	Int16        int16
-	Int32        int32
-	Int64        int64
-	Uint         uint
-	Uint8        uint8
-	Uint16       uint16
-	Uint32       uint32
-	Uint64       uint64
-	Float32      float32
-	Float64      float64
-	String       string
-	ArrayOfInt   []int
-	MapOfString  map[string]string
-	NestedStruct *NestedStruct
+	Int           int
+	Int8          int8
+	Int16         int16
+	Int32         int32
+	Int64         int64
+	Uint          uint
+	Uint8         uint8
+	Uint16        uint16
+	Uint32        uint32
+	Uint64        uint64
+	Float32       float32
+	Float64       float64
+	StringInt     Int
+	StringInt8    Int8
+	StringInt16   Int16
+	StringInt32   Int32
+	StringInt64   Int64
+	StringUint    Uint
+	StringUint8   Uint8
+	StringUint16  Uint16
+	StringUint32  Uint32
+	StringUint64  Uint64
+	StringFloat32 Float32
+	StringFloat64 Float64
+	String        string
+	ArrayOfInt    []int
+	MapOfString   map[string]string
+	NestedStruct  *NestedStruct
 }
 
 type AnonymousStruct1 struct {
@@ -135,6 +147,18 @@ func TestResultDecode(t *testing.T) {
         "uint64": 2034857382993849,
         "float32": 9382.38429,
         "float64": 3984.293848292,
+		"string_int": "1234",
+		"string_int8": "23",
+		"string_int16": "12345",
+		"string_int32": "-127372843",
+		"string_int64": "192438483489298",
+		"string_uint": "1283829",
+		"string_uint8": "233",
+		"string_uint16": "62121",
+		"string_uint32": "3083747392",
+		"string_uint64": "2034857382993849",
+		"string_float32": "9382.38429",
+		"string_float64": "3984.293848292",
         "map_of_string": {"a": "1", "b": "2"},
         "array_of_int": [12, 34, 56],
         "string": "abcd",
@@ -158,6 +182,18 @@ func TestResultDecode(t *testing.T) {
         "uint64": 2034857382993849,
         "float32": 9382.38429,
         "float64": 3984.293848292,
+		"string_int": "1234",
+		"string_int8": "23",
+		"string_int16": "12345",
+		"string_int32": "-127372843",
+		"string_int64": "192438483489298",
+		"string_uint": "1283829",
+		"string_uint8": "233",
+		"string_uint16": "62121",
+		"string_uint32": "383083747392",
+		"string_uint64": "2034857382993849",
+		"string_float32": "9382.38429",
+		"string_float64": "3984.293848292",
         "string": "abcd",
         "map_of_string": {"a": "1", "b": "2"},
         "array_of_int": [12, 34, 56],
@@ -184,6 +220,8 @@ func TestResultDecode(t *testing.T) {
         "uint64": 2034857382993849,
         "float32": 9382.38429,
         "float64": 3984.293848292,
+		"string_uint": "789",
+		"string_float32": "10.234",
         "string": "abcd",
         "map_of_string": {"a": "1", "b": "2"},
         "array_of_int": [12, 34, 56],
@@ -199,6 +237,8 @@ func TestResultDecode(t *testing.T) {
 	var err error
 	var normal, withError AllTypes
 	var anInt int
+	var aStringUint Uint
+	var aStringFloat32 Float32
 
 	err = json.Unmarshal([]byte(strNormal), &result)
 
@@ -266,6 +306,26 @@ func TestResultDecode(t *testing.T) {
 
 	if anInt != 123 {
 		t.Fatalf("invalid array value. expected 123, actual %v", anInt)
+	}
+
+	err = result.DecodeField("string_uint", &aStringUint)
+
+	if err != nil {
+		t.Fatalf("cannot decode `string_uint`. [e:%v]", err)
+	}
+
+	if aStringUint != 789 {
+		t.Fatalf("invalid uint value. expected 789, actual %v", aStringUint)
+	}
+
+	err = result.DecodeField("string_float32", &aStringFloat32)
+
+	if err != nil {
+		t.Fatalf("cannot decode `string_float32`. [e:%v]", err)
+	}
+
+	if aStringFloat32 != 10.234 {
+		t.Fatalf("invalid uint value. expected 10.234, actual %v", aStringFloat32)
 	}
 }
 
@@ -788,26 +848,6 @@ func TestDecodeLargeInteger(t *testing.T) {
 			t.Logf("expected integers: %v", bigIntegers)
 			t.Logf("actual integers:   %v", actualIntegers)
 			t.Fatalf("a decoded integer is not expected. [expected:%v] [actual:%v]", bigIntegers[k], actualIntegers[k])
-		}
-	}
-}
-
-func TestCamelCaseToUnderScore(t *testing.T) {
-	cases := map[string]string{
-		"TestCase":           "test_case",
-		"HTTPServer":         "http_server",
-		"NoHTTPS":            "no_https",
-		"Wi_thF":             "wi_th_f",
-		"_AnotherTES_TCaseP": "_another_tes_t_case_p",
-		"ALL":                "all",
-		"UserID":             "user_id",
-	}
-
-	for k, v := range cases {
-		str := camelCaseToUnderScore(k)
-
-		if str != v {
-			t.Fatalf("wrong underscore string. [expect:%v] [actual:%v]", v, str)
 		}
 	}
 }

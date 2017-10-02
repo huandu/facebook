@@ -17,7 +17,57 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 )
+
+// Graph API debug mode values.
+const (
+	DEBUG_OFF DebugMode = "" // turn off debug.
+
+	DEBUG_ALL     DebugMode = "all"
+	DEBUG_INFO    DebugMode = "info"
+	DEBUG_WARNING DebugMode = "warning"
+)
+
+var (
+	// Maps aliases to Facebook domains.
+	// Copied from Facebook PHP SDK.
+	domainMap = map[string]string{
+		"api":         "https://api.facebook.com/",
+		"api_video":   "https://api-video.facebook.com/",
+		"api_read":    "https://api-read.facebook.com/",
+		"graph":       "https://graph.facebook.com/",
+		"graph_video": "https://graph-video.facebook.com/",
+		"www":         "https://www.facebook.com/",
+	}
+
+	// checks whether it's a video post.
+	regexpIsVideoPost = regexp.MustCompile(`\/videos$`)
+)
+
+// Holds a facebook session with an access token.
+// Session should be created by App.Session or App.SessionFromSignedRequest.
+type Session struct {
+	HttpClient HttpClient
+	Version    string // facebook versioning.
+
+	accessToken string // facebook access token. can be empty.
+	app         *App
+	id          string
+
+	enableAppsecretProof bool   // add "appsecret_proof" parameter in every facebook API call.
+	appsecretProof       string // pre-calculated "appsecret_proof" value.
+
+	debug DebugMode // using facebook debugging api in every request.
+}
+
+// An interface to send http request.
+// This interface is designed to be compatible with type `*http.Client`.
+type HttpClient interface {
+	Do(req *http.Request) (resp *http.Response, err error)
+	Get(url string) (resp *http.Response, err error)
+	Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
+}
 
 // Makes a facebook graph api call.
 //

@@ -8,9 +8,9 @@
 package facebook
 
 import (
-    "testing"
 	"bytes"
 	"encoding/base64"
+	"testing"
 )
 
 func TestSession(t *testing.T) {

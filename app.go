@@ -17,6 +17,22 @@ import (
 	"strings"
 )
 
+// Holds facebook application information.
+type App struct {
+	// Facebook app id
+	AppId string
+
+	// Facebook app secret
+	AppSecret string
+
+	// Facebook app redirect URI in the app's configuration.
+	RedirectUri string
+
+	// Enable appsecret proof in every API call to facebook.
+	// Facebook document: https://developers.facebook.com/docs/graph-api/securing-requests
+	EnableAppsecretProof bool
+}
+
 // Creates a new App and sets app id and secret.
 func New(appId, appSecret string) *App {
 	return &App{
