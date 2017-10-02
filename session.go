@@ -9,6 +9,7 @@ package facebook
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -26,7 +27,12 @@ import (
 // Returns facebook graph api call result.
 // If facebook returns error in response, returns error details in res and set err.
 func (session *Session) Api(path string, method Method, params Params) (Result, error) {
-	return session.graph(path, method, params)
+	return session.graph(context.Background(), path, method, params)
+}
+
+// ApiContext is the same as Api but accepts a context.Context
+func (session *Session) ApiContext(ctx context.Context, path string, method Method, params Params) (Result, error) {
+	return session.graph(ctx, path, method, params)
 }
 
 // Get is a short hand of Api(path, GET, params).
@@ -34,9 +40,19 @@ func (session *Session) Get(path string, params Params) (Result, error) {
 	return session.Api(path, GET, params)
 }
 
+// GetContext is the same as Get but accepts a context.Context
+func (session *Session) GetContext(ctx context.Context, path string, params Params) (Result, error) {
+	return session.ApiContext(ctx, path, GET, params)
+}
+
 // Post is a short hand of Api(path, POST, params).
 func (session *Session) Post(path string, params Params) (Result, error) {
 	return session.Api(path, POST, params)
+}
+
+// PostContext is the same as Post but accepts a context.Context
+func (session *Session) PostContext(ctx context.Context, path string, params Params) (Result, error) {
+	return session.ApiContext(ctx, path, POST, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
@@ -44,9 +60,19 @@ func (session *Session) Delete(path string, params Params) (Result, error) {
 	return session.Api(path, DELETE, params)
 }
 
+// DeleteContext is the same as Delete but accepts a context.Context
+func (session *Session) DeleteContext(ctx context.Context, path string, params Params) (Result, error) {
+	return session.ApiContext(ctx, path, DELETE, params)
+}
+
 // Put is a short hand of Api(path, PUT, params).
 func (session *Session) Put(path string, params Params) (Result, error) {
 	return session.Api(path, PUT, params)
+}
+
+// PutContext is the same as Put but accepts a context.Context
+func (session *Session) PutContext(ctx context.Context, path string, params Params) (Result, error) {
+	return session.ApiContext(ctx, path, PUT, params)
 }
 
 // Makes a batch call. Each params represent a single facebook graph api call.
@@ -63,6 +89,12 @@ func (session *Session) BatchApi(params ...Params) ([]Result, error) {
 	return session.Batch(nil, params...)
 }
 
+// BatchApiContext is the same as BatchApi but accepts
+// a context.Context.
+func (session *Session) BatchApiContext(ctx context.Context, params ...Params) ([]Result, error) {
+	return session.BatchContext(ctx, nil, params...)
+}
+
 // Makes a batch facebook graph api call.
 // Batch is designed for more advanced usage including uploading binary files.
 //
@@ -70,7 +102,12 @@ func (session *Session) BatchApi(params ...Params) ([]Result, error) {
 //
 // Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func (session *Session) Batch(batchParams Params, params ...Params) ([]Result, error) {
-	return session.graphBatch(batchParams, params...)
+	return session.graphBatch(context.Background(), batchParams, params...)
+}
+
+// BatchContext is the same as Batch but accepts a context.Context.
+func (session *Session) BatchContext(ctx context.Context, batchParams Params, params ...Params) ([]Result, error) {
+	return session.graphBatch(ctx, batchParams, params...)
 }
 
 // Makes a FQL query.
@@ -78,7 +115,12 @@ func (session *Session) Batch(batchParams Params, params ...Params) ([]Result, e
 //
 // Facebook document: https://developers.facebook.com/docs/technical-guides/fql#query
 func (session *Session) FQL(query string) ([]Result, error) {
-	res, err := session.graphFQL(Params{
+	return session.FQLContext(context.Background(), query)
+}
+
+// FQLContext is the same as FQL but accepts a context.Context.
+func (session *Session) FQLContext(ctx context.Context, query string) ([]Result, error) {
+	res, err := session.graphFQL(ctx, Params{
 		"q": query,
 	})
 
@@ -114,7 +156,13 @@ func (session *Session) FQL(query string) ([]Result, error) {
 //
 // Facebook document: https://developers.facebook.com/docs/technical-guides/fql#multi
 func (session *Session) MultiFQL(queries Params) (Result, error) {
-	res, err := session.graphFQL(Params{
+	return session.MultiFQLContext(context.Background(), queries)
+}
+
+// MultiFQLContext is the same as MultiFQL but accepts
+// a context.Context.
+func (session *Session) MultiFQLContext(ctx context.Context, queries Params) (Result, error) {
+	res, err := session.graphFQL(ctx, Params{
 		"q": queries,
 	})
 
@@ -386,7 +434,7 @@ func (session *Session) SetDebug(debug DebugMode) DebugMode {
 	return old
 }
 
-func (session *Session) graph(path string, method Method, params Params) (res Result, err error) {
+func (session *Session) graph(ctx context.Context, path string, method Method, params Params) (res Result, err error) {
 	var graphUrl string
 
 	if params == nil {
@@ -407,7 +455,7 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	}
 
 	var response *http.Response
-	response, err = session.sendPostRequest(graphUrl, params, &res)
+	response, err = session.sendPostRequest(ctx, graphUrl, params, &res)
 	session.addDebugInfo(res, response)
 
 	if res != nil {
@@ -417,7 +465,7 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	return
 }
 
-func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Result, error) {
+func (session *Session) graphBatch(ctx context.Context, batchParams Params, params ...Params) ([]Result, error) {
 	if batchParams == nil {
 		batchParams = Params{}
 	}
@@ -426,11 +474,11 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 
 	var res []Result
 	graphUrl := session.getUrl("graph", "", nil)
-	_, err := session.sendPostRequest(graphUrl, batchParams, &res)
+	_, err := session.sendPostRequest(ctx, graphUrl, batchParams, &res)
 	return res, err
 }
 
-func (session *Session) graphFQL(params Params) (res Result, err error) {
+func (session *Session) graphFQL(ctx context.Context, params Params) (res Result, err error) {
 	if params == nil {
 		params = Params{}
 	}
@@ -449,7 +497,7 @@ func (session *Session) graphFQL(params Params) (res Result, err error) {
 
 	// it seems facebook disallow POST to /fql. always use GET for FQL.
 	var response *http.Response
-	response, err = session.sendGetRequest(buf.String(), &res)
+	response, err = session.sendGetRequest(ctx, buf.String(), &res)
 	session.addDebugInfo(res, response)
 
 	if res != nil {
@@ -475,14 +523,14 @@ func (session *Session) prepareParams(params Params) {
 	}
 }
 
-func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Response, error) {
+func (session *Session) sendGetRequest(ctx context.Context, uri string, res interface{}) (*http.Response, error) {
 	request, err := http.NewRequest("GET", uri, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	response, data, err := session.sendRequest(request)
+	response, data, err := session.sendRequest(request.WithContext(ctx))
 
 	if err != nil {
 		return response, err
@@ -492,7 +540,7 @@ func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Respo
 	return response, err
 }
 
-func (session *Session) sendPostRequest(uri string, params Params, res interface{}) (*http.Response, error) {
+func (session *Session) sendPostRequest(ctx context.Context, uri string, params Params, res interface{}) (*http.Response, error) {
 	session.prepareParams(params)
 
 	buf := &bytes.Buffer{}
@@ -511,7 +559,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 	}
 
 	request.Header.Set("Content-Type", mime)
-	response, data, err := session.sendRequest(request)
+	response, data, err := session.sendRequest(request.WithContext(ctx))
 
 	if err != nil {
 		return response, err
@@ -521,7 +569,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 	return response, err
 }
 
-func (session *Session) sendOauthRequest(uri string, params Params) (Result, error) {
+func (session *Session) sendOauthRequest(ctx context.Context, uri string, params Params) (Result, error) {
 	urlStr := session.getUrl("graph", uri, nil)
 	buf := &bytes.Buffer{}
 	mime, err := params.Encode(buf)
@@ -539,7 +587,7 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 	}
 
 	request.Header.Set("Content-Type", mime)
-	_, data, err := session.sendRequest(request)
+	_, data, err := session.sendRequest(request.WithContext(ctx))
 
 	if err != nil {
 		return nil, err

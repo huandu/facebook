@@ -9,6 +9,7 @@ package facebook
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -109,7 +110,7 @@ func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int
 	}
 
 	var res Result
-	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
+	res, err = defaultSession.sendOauthRequest(context.TODO(), "/oauth/access_token", Params{
 		"client_id":     app.AppId,
 		"redirect_uri":  app.RedirectUri,
 		"client_secret": app.AppSecret,
@@ -157,7 +158,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 	}
 
 	var res Result
-	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
+	res, err = defaultSession.sendOauthRequest(context.TODO(), "/oauth/access_token", Params{
 		"grant_type":        "fb_exchange_token",
 		"client_id":         app.AppId,
 		"client_secret":     app.AppSecret,
@@ -197,7 +198,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	}
 
 	var res Result
-	res, err = defaultSession.sendOauthRequest("/oauth/client_code", Params{
+	res, err = defaultSession.sendOauthRequest(context.TODO(), "/oauth/client_code", Params{
 		"client_id":     app.AppId,
 		"client_secret": app.AppSecret,
 		"redirect_uri":  app.RedirectUri,
