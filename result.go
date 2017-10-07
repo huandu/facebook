@@ -284,7 +284,9 @@ func getValueField(value reflect.Value, fields []string) reflect.Value {
 //
 // If a field is missing in the result, Decode keeps it unchanged by default.
 //
-// Decode can read struct field tag value to change default behavior.
+// The decoding of each struct field can be customized by the format string stored
+// under the "facebook" key or the "json" key in the struct field's tag.
+// The "facebook" key is recommended as it's specifically designed for this package.
 //
 // Examples:
 //
@@ -294,6 +296,12 @@ func getValueField(value reflect.Value, fields []string) reflect.Value {
 //
 //         // use "name" as field name in response.
 //         TheName string `facebook:"name"`
+//
+//         // the "json" key also works as expected.
+//         Key string `json:"my_key"`
+//
+//         // if both "facebook" and "json" key are set, the "facebook" key is used.
+//         Value string `facebook:"value" json:"shadowed"`
 //     }
 //
 // To change default behavior, set a struct tag `facebook:",required"` to fields
@@ -440,7 +448,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 
 	var field reflect.Value
 	var fieldInfo reflect.StructField
-	var name, fbTag, dot string
+	var name, dot string
 	var val interface{}
 	var ok, required bool
 	var err error
@@ -457,10 +465,9 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		required = false
 		field = v.Field(i)
 		fieldInfo = vType.Field(i)
-		fbTag = fieldInfo.Tag.Get("facebook")
 
-		// parse struct field tag
-		if fbTag != "" {
+		// parse struct field tag.
+		if fbTag := fieldInfo.Tag.Get("facebook"); fbTag != "" {
 			if fbTag == "-" {
 				continue
 			}
@@ -475,6 +482,21 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 				if fbTag[index:] == ",required" {
 					required = true
 				}
+			}
+		} else {
+			// compatible with json tag.
+			fbTag = fieldInfo.Tag.Get("json")
+
+			if fbTag == "-" {
+				continue
+			}
+
+			index := strings.IndexRune(fbTag, ',')
+
+			if index == -1 {
+				name = fbTag
+			} else {
+				name = fbTag[:index]
 			}
 		}
 

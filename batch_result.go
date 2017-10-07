@@ -13,14 +13,14 @@ import (
 )
 
 type batchResultHeader struct {
-	Name  string `facebook=",required"`
-	Value string `facebook=",required"`
+	Name  string `facebook:",required"`
+	Value string `facebook:",required"`
 }
 
 type batchResultData struct {
-	Code    int                 `facebook=",required"`
-	Headers []batchResultHeader `facebook=",required"`
-	Body    string              `facebook=",required"`
+	Code    int                 `facebook:",required"`
+	Headers []batchResultHeader `facebook:",required"`
+	Body    string              `facebook:",required"`
 }
 
 func newBatchResult(res Result) (*BatchResult, error) {
