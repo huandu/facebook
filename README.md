@@ -179,23 +179,24 @@ type Data struct {
 }
 ```
 
-Decoding behavior can be changed per field through field tag -- just like what `encoding/json` does.
+The decoding of each struct field can be customized by the format string stored under the "facebook" key or the "json" key in the struct field's tag. The "facebook" key is recommended as it's specifically designed for this package.
 
 Following is a sample shows all possible field tags.
 
 ```go
 // define a facebook feed object.
 type FacebookFeed struct {
-    Id          string `facebook:",required"`             // this field must exist in response.
-                                                          // mind the "," before "required".
+    Id          string            `facebook:",required"`             // this field must exist in response.
+                                                                     // mind the "," before "required".
     Story       string
-    FeedFrom    *FacebookFeedFrom `facebook:"from"`       // use customized field name "from".
-    CreatedTime string `facebook:"created_time,required"` // both customized field name and "required" flag.
-    Omitted     string `facebook:"-"`                     // this field is omitted when decoding.
+    FeedFrom    *FacebookFeedFrom `facebook:"from"`                  // use customized field name "from".
+    CreatedTime string            `facebook:"created_time,required"` // both customized field name and "required" flag.
+    Omitted     string            `facebook:"-"`                     // this field is omitted when decoding.
 }
 
 type FacebookFeedFrom struct {
-    Name, Id string
+    Name string `json:"name"`                   // the "json" key also works as expected.
+    Id string   `facebook:"id" json:"shadowed"` // if both "facebook" and "json" key are set, the "facebook" key is used.
 }
 
 // create a feed object direct from graph api result.

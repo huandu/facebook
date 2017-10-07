@@ -987,3 +987,57 @@ func TestResultDecodeUnmarshaler(t *testing.T) {
 		t.Fatalf("input should fail due to Unmarshaler.")
 	}
 }
+
+type MixedTagStruct struct {
+	Foo        int     `facebook:"bar" json:"player"`
+	FirstTest  string  `facebook:"" json:"first"`
+	SecondTest float64 `json:"second"`
+	ThirdTest  uint32  `json:"-"`
+	FourthTest int64   `facebook:",required" json:"fourth"`
+}
+
+func TestCompatibleWithJSONUnmarshal(t *testing.T) {
+	res := Result{
+		"foo":    1,
+		"bar":    2,
+		"player": 3,
+
+		"first_test": "first",
+		"first":      "test",
+
+		"second_test": 1.2,
+		"second":      3.4,
+
+		"third_test": 5,
+		"-":          6,
+
+		"fourth_test": 7,
+		"fourth":      8,
+	}
+	mts := &MixedTagStruct{}
+	err := res.Decode(mts)
+
+	if err != nil {
+		t.Fatalf("fail to decode result. [e:%v]", err)
+	}
+
+	if expected := 2; mts.Foo != expected {
+		t.Fatalf("mts.Foo is incorrect. [expected:%v] [actual:%v]", expected, mts.Foo)
+	}
+
+	if expected := "test"; mts.FirstTest != expected {
+		t.Fatalf("mts.FirstTest is incorrect. [expected:%v] [actual:%v]", expected, mts.FirstTest)
+	}
+
+	if expected := 3.4; mts.SecondTest != expected {
+		t.Fatalf("mts.SecondTest is incorrect. [expected:%v] [actual:%v]", expected, mts.SecondTest)
+	}
+
+	if expected := uint32(0); mts.ThirdTest != expected {
+		t.Fatalf("mts.ThirdTest is incorrect. [expected:%v] [actual:%v]", expected, mts.ThirdTest)
+	}
+
+	if expected := int64(7); mts.FourthTest != expected {
+		t.Fatalf("mts.FourthTest is incorrect. [expected:%v] [actual:%v]", expected, mts.FourthTest)
+	}
+}
