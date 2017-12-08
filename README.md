@@ -1,6 +1,7 @@
 # A Facebook Graph API SDK In Golang #
 
-[![Build Status](https://travis-ci.org/huandu/facebook.png?branch=master)](https://travis-ci.org/huandu/facebook)
+[![Build Status](https://travis-ci.org/huandu/facebook.svg?branch=master)](https://travis-ci.org/huandu/facebook)
+[![GoDoc](https://godoc.org/github.com/huandu/facebook?status.svg)](https://godoc.org/github.com/huandu/facebook)
 
 This is a Go package fully supports Facebook Graph API with file upload, batch request, marketing API. It can be used in Google App Engine.
 
