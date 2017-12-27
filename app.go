@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-// Holds facebook application information.
+// App holds facebook application information.
 type App struct {
 	// Facebook app id
 	AppId string
@@ -33,46 +33,46 @@ type App struct {
 	EnableAppsecretProof bool
 }
 
-// Creates a new App and sets app id and secret.
-func New(appId, appSecret string) *App {
+// New creates a new App and sets app id and secret.
+func New(appID, appSecret string) *App {
 	return &App{
-		AppId:     appId,
+		AppId:     appID,
 		AppSecret: appSecret,
 	}
 }
 
-// Gets application access token, useful for gathering public information about users and applications.
+// AppAccessToken gets application access token, useful for gathering public information about users and applications.
 func (app *App) AppAccessToken() string {
 	return app.AppId + "|" + app.AppSecret
 }
 
-// Parses signed request.
+// ParseSignedRequest parses signed request.
 func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error) {
 	strs := strings.SplitN(signedRequest, ".", 2)
 
 	if len(strs) != 2 {
-		err = fmt.Errorf("invalid signed request format.")
+		err = fmt.Errorf("invalid signed request format")
 		return
 	}
 
 	sig, e1 := base64.RawURLEncoding.DecodeString(strs[0])
 
 	if e1 != nil {
-		err = fmt.Errorf("cannot decode signed request sig. error is %v.", e1)
+		err = fmt.Errorf("fail to decode signed request sig with error %v", e1)
 		return
 	}
 
 	payload, e2 := base64.RawURLEncoding.DecodeString(strs[1])
 
 	if e2 != nil {
-		err = fmt.Errorf("cannot decode signed request payload. error is %v.", e2)
+		err = fmt.Errorf("fail to decode signed request payload with error is %v", e2)
 		return
 	}
 
 	err = json.Unmarshal(payload, &res)
 
 	if err != nil {
-		err = fmt.Errorf("signed request payload is not a valid json string. error is %v.", err)
+		err = fmt.Errorf("signed request payload is not a valid json string with error %v", err)
 		return
 	}
 
@@ -80,14 +80,14 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	err = res.DecodeField("algorithm", &hashMethod)
 
 	if err != nil {
-		err = fmt.Errorf("signed request payload doesn't contains a valid 'algorithm' field.")
+		err = fmt.Errorf("signed request payload doesn't contains a valid 'algorithm' field")
 		return
 	}
 
 	hashMethod = strings.ToUpper(hashMethod)
 
 	if hashMethod != "HMAC-SHA256" {
-		err = fmt.Errorf("signed request payload uses an unknown HMAC method. expect 'HMAC-SHA256'. actual '%v'.", hashMethod)
+		err = fmt.Errorf("signed request payload uses an unknown HMAC method; expect 'HMAC-SHA256' but actual is '%v'", hashMethod)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	expectedSig := hash.Sum(nil)
 
 	if bytes.Compare(sig, expectedSig) != 0 {
-		err = fmt.Errorf("bad signed request signiture.")
+		err = fmt.Errorf("bad signed request signiture")
 		return
 	}
 
@@ -118,7 +118,7 @@ func (app *App) ParseCode(code string) (token string, err error) {
 // The machineId is optional.
 //
 // See https://developers.facebook.com/docs/facebook-login/access-tokens#extending
-func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int, newMachineId string, err error) {
+func (app *App) ParseCodeInfo(code, machineID string) (token string, expires int, newMachineID string, err error) {
 	if code == "" {
 		err = fmt.Errorf("code is empty")
 		return
@@ -133,7 +133,7 @@ func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int
 	})
 
 	if err != nil {
-		err = fmt.Errorf("cannot parse facebook response. error is %v.", err)
+		err = fmt.Errorf("fail to parse facebook response with error %v", err)
 		return
 	}
 
@@ -158,13 +158,13 @@ func (app *App) ParseCodeInfo(code, machineId string) (token string, expires int
 	}
 
 	if _, ok := res["machine_id"]; ok {
-		err = res.DecodeField("machine_id", &newMachineId)
+		err = res.DecodeField("machine_id", &newMachineID)
 	}
 
 	return
 }
 
-// Exchange a short-lived access token to a long-lived access token.
+// ExchangeToken exchanges a short-lived access token to a long-lived access token.
 // Return new access token and its expires time.
 func (app *App) ExchangeToken(accessToken string) (token string, expires int, err error) {
 	if accessToken == "" {
@@ -181,7 +181,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 	})
 
 	if err != nil {
-		err = fmt.Errorf("cannot parse facebook response. error is %v.", err)
+		err = fmt.Errorf("fail to parse facebook response with error %v", err)
 		return
 	}
 
@@ -204,7 +204,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 	return
 }
 
-// Get code from a long lived access token.
+// GetCode gets code from a long lived access token.
 // Return the code retrieved from facebook.
 func (app *App) GetCode(accessToken string) (code string, err error) {
 	if accessToken == "" {
@@ -221,7 +221,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	})
 
 	if err != nil {
-		err = fmt.Errorf("cannot get code from facebook. error is %v.", err)
+		err = fmt.Errorf("fail to get code from facebook with error %v", err)
 		return
 	}
 
@@ -229,7 +229,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	return
 }
 
-// Creates a session based on current App setting.
+// Session creates a session based on current App setting.
 func (app *App) Session(accessToken string) *Session {
 	return &Session{
 		accessToken:          accessToken,
@@ -238,7 +238,7 @@ func (app *App) Session(accessToken string) *Session {
 	}
 }
 
-// Creates a session from a signed request.
+// SessionFromSignedRequest creates a session from a signed request.
 // If signed request contains a code, it will automatically use this code
 // to exchange a valid access token.
 func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session, err error) {
@@ -270,7 +270,7 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
 
 	if err != nil {
 		// no code? no way to continue.
-		err = fmt.Errorf("cannot find 'oauth_token' and 'code'. no way to continue.")
+		err = fmt.Errorf("cannot find 'oauth_token' and 'code'; unable to continue")
 		return
 	}
 

@@ -28,8 +28,8 @@ const (
 )
 
 var (
-	typeOfPointerToBinaryData = reflect.TypeOf(&binaryData{})
-	typeOfPointerToBinaryFile = reflect.TypeOf(&binaryFile{})
+	typeOfPointerToBinaryData = reflect.TypeOf(&BinaryData{})
+	typeOfPointerToBinaryFile = reflect.TypeOf(&BinaryFile{})
 )
 
 // API params.
@@ -178,7 +178,7 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 
 	for k, v := range params {
 		switch value := v.(type) {
-		case *binaryData:
+		case *BinaryData:
 			var dst io.Writer
 			filePart := createFormFile(k, value.Filename, value.ContentType)
 			dst, err = w.CreatePart(filePart)
@@ -193,7 +193,7 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 				return
 			}
 
-		case *binaryFile:
+		case *BinaryFile:
 			var dst io.Writer
 			var file *os.File
 			var path string

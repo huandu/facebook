@@ -29,13 +29,13 @@ const (
 )
 
 var (
-	// Default facebook api version.
+	// Version is the default facebook api version.
 	// It can be any valid version string (e.g. "v2.3") or empty.
 	//
 	// See https://developers.facebook.com/docs/apps/versions for details.
 	Version string
 
-	// Set app level debug mode.
+	// Debug is the app level debug mode.
 	// After setting DebugMode, all newly created session will use the mode
 	// to communicate with graph API.
 	//
@@ -48,15 +48,15 @@ var (
 	defaultSession = &Session{}
 )
 
-// Graph API debug mode.
+// DebugMode is the debug mode of Graph API.
 // See https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#graphapidebugmode
 type DebugMode string
 
-// API HTTP method.
+// Method is HTTP method for an API call.
 // Can be GET, POST or DELETE.
 type Method string
 
-// Makes a facebook graph api call with default session.
+// Api makes a facebook graph api call with default session.
 //
 // Method can be GET, POST, DELETE or PUT.
 //
@@ -100,7 +100,7 @@ func Put(path string, params Params) (Result, error) {
 	return Api(path, PUT, params)
 }
 
-// Makes a batch facebook graph api call with default session.
+// BatchApi makes a batch facebook graph api call with default session.
 //
 // BatchApi supports most kinds of batch calls defines in facebook batch api document,
 // except uploading binary data. Use Batch to do so.
@@ -125,7 +125,7 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 	return Batch(Params{"access_token": accessToken}, params...)
 }
 
-// Makes a batch facebook graph api call with default session.
+// Batch makes a batch facebook graph api call with default session.
 // Batch is designed for more advanced usage including uploading binary files.
 //
 // An uploading files sample
@@ -157,7 +157,7 @@ func Batch(batchParams Params, params ...Params) ([]Result, error) {
 	return defaultSession.Batch(batchParams, params...)
 }
 
-// Makes an arbitrary HTTP request with default session.
+// Request makes an arbitrary HTTP request with default session.
 // It expects server responses a facebook Graph API response.
 //     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
 //     res, err := Request(request)

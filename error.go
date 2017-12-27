@@ -7,7 +7,7 @@
 
 package facebook
 
-// Facebook API error.
+// Error represents Facebook API error.
 type Error struct {
 	Message      string
 	Type         string
@@ -15,7 +15,7 @@ type Error struct {
 	ErrorSubcode int // subcode for authentication related errors.
 }
 
-// Returns error string.
+// Error returns error string.
 func (e *Error) Error() string {
 	return e.Message
 }

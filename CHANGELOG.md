@@ -1,5 +1,9 @@
 # Change Log #
 
+## v2.1.1 ##
+
+* `[NEW]` [#86](https://github.com/huandu/facebook/pull/86) Parse `X-App-Usage` and `X-Page-Usage` in response header and store the usage information in `Result`. Use `Result#UsageInfo()` to read it.
+
 ## v2.1.0 ##
 
 * `[NEW]` [#81](https://github.com/huandu/facebook/pull/81) Compatible with the struct field's tag used by `json.Unmarshal`. The "json" key works as expected now. If both the "facebook" key and the "json" key exist, use "facebook".

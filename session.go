@@ -46,7 +46,7 @@ var (
 	regexpIsVideoPost = regexp.MustCompile(`\/videos$`)
 )
 
-// Holds a facebook session with an access token.
+// Session holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
 	HttpClient HttpClient
@@ -64,7 +64,7 @@ type Session struct {
 	context context.Context // Session context.
 }
 
-// An interface to send http request.
+// HttpClient is an interface to send http request.
 // This interface is designed to be compatible with type `*http.Client`.
 type HttpClient interface {
 	Do(req *http.Request) (resp *http.Response, err error)
@@ -72,7 +72,7 @@ type HttpClient interface {
 	Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
 }
 
-// Makes a facebook graph api call.
+// Api makes a facebook graph api call.
 //
 // If session access token is set, "access_token" in params will be set to the token value.
 //
@@ -102,7 +102,7 @@ func (session *Session) Put(path string, params Params) (Result, error) {
 	return session.Api(path, PUT, params)
 }
 
-// Makes a batch call. Each params represent a single facebook graph api call.
+// BatchApi makes a batch call. Each params represent a single facebook graph api call.
 //
 // BatchApi supports most kinds of batch calls defines in facebook batch api document,
 // except uploading binary data. Use Batch to upload binary data.
@@ -116,7 +116,7 @@ func (session *Session) BatchApi(params ...Params) ([]Result, error) {
 	return session.Batch(nil, params...)
 }
 
-// Makes a batch facebook graph api call.
+// Batch makes a batch facebook graph api call.
 // Batch is designed for more advanced usage including uploading binary files.
 //
 // If session access token is set, "access_token" in batchParams will be set to the token value.
@@ -126,7 +126,7 @@ func (session *Session) Batch(batchParams Params, params ...Params) ([]Result, e
 	return session.graphBatch(batchParams, params...)
 }
 
-// Makes an arbitrary HTTP request.
+// Request makes an arbitrary HTTP request.
 // It expects server responses a facebook Graph API response.
 //     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
 //     res, err := session.Request(request)
@@ -152,7 +152,7 @@ func (session *Session) Request(request *http.Request) (res Result, err error) {
 	return
 }
 
-// Gets current user id from access token.
+// User gets current user id from access token.
 //
 // Returns error if access token is not set or invalid.
 //
@@ -164,7 +164,7 @@ func (session *Session) User() (id string, err error) {
 	}
 
 	if session.accessToken == "" && session.HttpClient == nil {
-		err = fmt.Errorf("access token is not set.")
+		err = fmt.Errorf("access token is not set")
 		return
 	}
 
@@ -184,11 +184,11 @@ func (session *Session) User() (id string, err error) {
 	return
 }
 
-// Validates Session access token.
+// Validate validates Session access token.
 // Returns nil if access token is valid.
 func (session *Session) Validate() (err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
-		err = fmt.Errorf("access token is not set.")
+		err = fmt.Errorf("access token is not set")
 		return
 	}
 
@@ -200,7 +200,7 @@ func (session *Session) Validate() (err error) {
 	}
 
 	if f := result.Get("id"); f == nil {
-		err = fmt.Errorf("invalid access token.")
+		err = fmt.Errorf("invalid access token")
 		return
 	}
 
@@ -212,19 +212,19 @@ func (session *Session) Validate() (err error) {
 // See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.2#checktoken
 func (session *Session) Inspect() (result Result, err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
-		err = fmt.Errorf("access token is not set.")
+		err = fmt.Errorf("access token is not set")
 		return
 	}
 
 	if session.app == nil {
-		err = fmt.Errorf("cannot inspect access token without binding an app.")
+		err = fmt.Errorf("cannot inspect access token without binding an app")
 		return
 	}
 
 	appAccessToken := session.app.AppAccessToken()
 
 	if appAccessToken == "" {
-		err = fmt.Errorf("app access token is not set.")
+		err = fmt.Errorf("app access token is not set")
 		return
 	}
 
@@ -240,7 +240,7 @@ func (session *Session) Inspect() (result Result, err error) {
 	// facebook stores everything, including error, inside result["data"].
 	// make sure that result["data"] exists and doesn't contain error.
 	if _, ok := result["data"]; !ok {
-		err = fmt.Errorf("facebook inspect api returns unexpected result.")
+		err = fmt.Errorf("facebook inspect api returns unexpected result")
 		return
 	}
 
@@ -251,7 +251,7 @@ func (session *Session) Inspect() (result Result, err error) {
 	return
 }
 
-// Gets current access token.
+// AccessToken gets current access token.
 func (session *Session) AccessToken() string {
 	return session.accessToken
 }
@@ -265,7 +265,7 @@ func (session *Session) SetAccessToken(token string) {
 	}
 }
 
-// Check appsecret proof is enabled or not.
+// AppsecretProof checks appsecret proof is enabled or not.
 func (session *Session) AppsecretProof() string {
 	if !session.enableAppsecretProof {
 		return ""
@@ -284,11 +284,11 @@ func (session *Session) AppsecretProof() string {
 	return session.appsecretProof
 }
 
-// Enable or disable appsecret proof status.
+// EnableAppsecretProof enables or disable appsecret proof status.
 // Returns error if there is no App associated with this Session.
 func (session *Session) EnableAppsecretProof(enabled bool) error {
 	if session.app == nil {
-		return fmt.Errorf("cannot change appsecret proof status without an associated App.")
+		return fmt.Errorf("cannot change appsecret proof status without an associated App")
 	}
 
 	if session.enableAppsecretProof != enabled {
@@ -302,7 +302,7 @@ func (session *Session) EnableAppsecretProof(enabled bool) error {
 	return nil
 }
 
-// Gets associated App.
+// App gets associated App.
 func (session *Session) App() *App {
 	return session.app
 }
@@ -326,7 +326,7 @@ func (session *Session) SetDebug(debug DebugMode) DebugMode {
 }
 
 func (session *Session) graph(path string, method Method, params Params) (res Result, err error) {
-	var graphUrl string
+	var graphURL string
 
 	if params == nil {
 		params = Params{}
@@ -340,13 +340,13 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 
 	// get graph api url.
 	if session.isVideoPost(path, method) {
-		graphUrl = session.getUrl("graph_video", path, nil)
+		graphURL = session.getURL("graph_video", path, nil)
 	} else {
-		graphUrl = session.getUrl("graph", path, nil)
+		graphURL = session.getURL("graph", path, nil)
 	}
 
 	var response *http.Response
-	response, err = session.sendPostRequest(graphUrl, params, &res)
+	response, err = session.sendPostRequest(graphURL, params, &res)
 
 	if response != nil {
 		session.addDebugInfo(res, response)
@@ -368,7 +368,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 	batchParams["batch"] = params
 
 	var res []Result
-	graphUrl := session.getUrl("graph", "", nil)
+	graphUrl := session.getURL("graph", "", nil)
 	_, err := session.sendPostRequest(graphUrl, batchParams, &res)
 	return res, err
 }
@@ -436,7 +436,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 }
 
 func (session *Session) sendOauthRequest(uri string, params Params) (Result, error) {
-	urlStr := session.getUrl("graph", uri, nil)
+	urlStr := session.getURL("graph", uri, nil)
 	buf := &bytes.Buffer{}
 	mime, err := params.Encode(buf)
 
@@ -519,7 +519,7 @@ func (session *Session) isVideoPost(path string, method Method) bool {
 	return method == POST && regexpIsVideoPost.MatchString(path)
 }
 
-func (session *Session) getUrl(name, path string, params Params) string {
+func (session *Session) getURL(name, path string, params Params) string {
 	offset := 0
 
 	if path != "" && path[0] == '/' {
