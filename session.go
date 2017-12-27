@@ -143,6 +143,7 @@ func (session *Session) Request(request *http.Request) (res Result, err error) {
 
 	res, err = MakeResult(data)
 	session.addDebugInfo(res, response)
+	session.addUsageInfo(res, response)
 
 	if res != nil {
 		err = res.Err()
@@ -346,7 +347,11 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 
 	var response *http.Response
 	response, err = session.sendPostRequest(graphUrl, params, &res)
-	session.addDebugInfo(res, response)
+
+	if response != nil {
+		session.addDebugInfo(res, response)
+		session.addUsageInfo(res, response)
+	}
 
 	if res != nil {
 		err = res.Err()
@@ -553,11 +558,26 @@ func (session *Session) addDebugInfo(res Result, response *http.Response) Result
 	debugInfo := make(map[string]interface{})
 
 	// save debug information in result directly.
-	res.DecodeField("__debug__", &debugInfo)
+	res.DecodeField(debugInfoKey, &debugInfo)
 	debugInfo[debugProtoKey] = response.Proto
 	debugInfo[debugHeaderKey] = response.Header
 
-	res["__debug__"] = debugInfo
+	res[debugInfoKey] = debugInfo
+	return res
+}
+
+func (session *Session) addUsageInfo(res Result, response *http.Response) Result {
+	var usageInfo UsageInfo
+
+	if usage := response.Header.Get("X-App-Usage"); usage != "" {
+		json.Unmarshal([]byte(usage), &usageInfo.App)
+	}
+
+	if usage := response.Header.Get("X-Page-Usage"); usage != "" {
+		json.Unmarshal([]byte(usage), &usageInfo.Page)
+	}
+
+	res[usageInfoKey] = &usageInfo
 	return res
 }
 

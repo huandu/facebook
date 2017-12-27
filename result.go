@@ -27,6 +27,8 @@ const (
 	debugProtoKey  = "__proto__"
 	debugHeaderKey = "__header__"
 
+	usageInfoKey = "__usage__"
+
 	facebookApiVersionHeader = "facebook-api-version"
 	facebookDebugHeader      = "x-fb-debug"
 	facebookRevHeader        = "x-fb-rev"
@@ -80,6 +82,20 @@ type DebugInfo struct {
 	FacebookApiVersion string // the actual graph API version provided by facebook-api-version HTTP header.
 	FacebookDebug      string // the X-FB-Debug HTTP header.
 	FacebookRev        string // the x-fb-rev HTTP header.
+}
+
+// UsageInfo is the app usage (rate limit) information returned by facebook when rate limits are possible.
+type UsageInfo struct {
+	App struct {
+		CallCount    int `json:"call_count"`
+		TotalTime    int `json:"total_time"`
+		TotalCPUTime int `json:"total_cputime"`
+	} `json:"app"`
+	Page struct {
+		CallCount    int `json:"call_count"`
+		TotalTime    int `json:"total_time"`
+		TotalCPUTime int `json:"total_cputime"`
+	} `json:"page"`
 }
 
 // DebugMessage is one debug message in "__debug__" of graph API response.
@@ -431,6 +447,17 @@ func (res Result) DebugInfo() *DebugInfo {
 	}
 
 	return debugInfo
+}
+
+// UsageInfo returns app and page usage info (rate limits)
+func (res Result) UsageInfo() *UsageInfo {
+	if usageInfo, ok := res[usageInfoKey]; ok {
+		if usage, ok := usageInfo.(*UsageInfo); ok {
+			return usage
+		}
+	}
+
+	return nil
 }
 
 func (res Result) decode(v reflect.Value, fullName string) error {
