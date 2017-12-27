@@ -27,6 +27,8 @@ const (
 	debugProtoKey  = "__proto__"
 	debugHeaderKey = "__header__"
 
+	usageInfoKey = "__usage__"
+
 	facebookApiVersionHeader = "facebook-api-version"
 	facebookDebugHeader      = "x-fb-debug"
 	facebookRevHeader        = "x-fb-rev"
@@ -449,10 +451,12 @@ func (res Result) DebugInfo() *DebugInfo {
 
 // UsageInfo returns app and page usage info (rate limits)
 func (res Result) UsageInfo() *UsageInfo {
-	if usageInfo, ok := res["__usage__"]; ok {
-		ui := usageInfo.(UsageInfo)
-		return &ui
+	if usageInfo, ok := res[usageInfoKey]; ok {
+		if usage, ok := usageInfo.(*UsageInfo); ok {
+			return usage
+		}
 	}
+
 	return nil
 }
 
