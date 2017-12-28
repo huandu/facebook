@@ -567,6 +567,10 @@ func (session *Session) addDebugInfo(res Result, response *http.Response) Result
 }
 
 func (session *Session) addUsageInfo(res Result, response *http.Response) Result {
+	if res == nil || response == nil {
+		return res
+	}
+
 	var usageInfo UsageInfo
 
 	if usage := response.Header.Get("X-App-Usage"); usage != "" {
