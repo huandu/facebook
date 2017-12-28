@@ -1,8 +1,12 @@
 # Change Log #
 
+## v2.1.2 ##
+
+* `[FIX]` [#87](https://github.com/huandu/facebook/issues/87) Fix a crash in `Session#addUsageInfo`. Thanks [@flemeur](https://github.com/flemeur).
+
 ## v2.1.1 ##
 
-* `[NEW]` [#86](https://github.com/huandu/facebook/pull/86) Parse `X-App-Usage` and `X-Page-Usage` in response header and store the usage information in `Result`. Use `Result#UsageInfo()` to read it.
+* `[NEW]` [#86](https://github.com/huandu/facebook/pull/86) Parse `X-App-Usage` and `X-Page-Usage` in response header and store the usage information in `Result`. Use `Result#UsageInfo()` to read it. Thanks [@robbiet480](https://github.com/robbiet480).
 
 ## v2.1.0 ##
 
