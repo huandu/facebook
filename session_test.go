@@ -327,3 +327,14 @@ func TestSessionCancelationWithContext(t *testing.T) {
 
 	t.Logf("http request error should fail as cancelled. [e:%v]", err)
 }
+
+func TestInspectAppAccessToken(t *testing.T) {
+	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
+	session := app.Session(app.AppAccessToken())
+
+	_, err := session.Inspect()
+
+	if err != nil {
+		t.Fatalf("fail to inspect app access token. [e:%v]", err)
+	}
+}
