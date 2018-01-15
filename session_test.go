@@ -275,6 +275,7 @@ func TestInspectValidToken(t *testing.T) {
 func TestInspectInvalidToken(t *testing.T) {
 	invalidToken := "CAACZA38ZAD8CoBAe2bDC6EdThnni3b56scyshKINjZARoC9ZAuEUTgYUkYnKdimqfA2ZAXcd2wLd7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB3AAvLtwoWNhsxM76mK0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
 	session := testGlobalApp.Session(invalidToken)
+	session.HttpClient = http.DefaultClient
 	result, err := session.Inspect()
 
 	if err == nil {
@@ -332,7 +333,7 @@ func TestSessionCancelationWithContext(t *testing.T) {
 func TestInspectAppAccessToken(t *testing.T) {
 	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
 	session := app.Session(app.AppAccessToken())
-
+	session.HttpClient = http.DefaultClient
 	_, err := session.Inspect()
 
 	if err != nil {

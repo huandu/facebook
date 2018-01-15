@@ -49,7 +49,7 @@ var (
 // Session holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
-	HttpClient HttpClient
+	HttpClient *http.Client
 	Version    string // facebook versioning.
 
 	accessToken string // facebook access token. can be empty.
@@ -62,14 +62,6 @@ type Session struct {
 	debug DebugMode // using facebook debugging api in every request.
 
 	context context.Context // Session context.
-}
-
-// HttpClient is an interface to send http request.
-// This interface is designed to be compatible with type `*http.Client`.
-type HttpClient interface {
-	Do(req *http.Request) (resp *http.Response, err error)
-	Get(url string) (resp *http.Response, err error)
-	Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
 }
 
 // Api makes a facebook graph api call.
@@ -163,7 +155,8 @@ func (session *Session) User() (id string, err error) {
 		return
 	}
 
-	if session.accessToken == "" && session.HttpClient == nil {
+	client := &http.Client{}
+	if session.accessToken == "" && session.HttpClient == client {
 		err = fmt.Errorf("access token is not set")
 		return
 	}
@@ -187,7 +180,8 @@ func (session *Session) User() (id string, err error) {
 // Validate validates Session access token.
 // Returns nil if access token is valid.
 func (session *Session) Validate() (err error) {
-	if session.accessToken == "" && session.HttpClient == nil {
+	client := &http.Client{}
+	if session.accessToken == "" && session.HttpClient == client {
 		err = fmt.Errorf("access token is not set")
 		return
 	}
@@ -211,7 +205,8 @@ func (session *Session) Validate() (err error) {
 // Returns JSON array containing data about the inspected token.
 // See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.2#checktoken
 func (session *Session) Inspect() (result Result, err error) {
-	if session.accessToken == "" && session.HttpClient == nil {
+	client := &http.Client{}
+	if session.accessToken == "" && session.HttpClient == client {
 		err = fmt.Errorf("access token is not set")
 		return
 	}
@@ -491,12 +486,7 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 		request = request.WithContext(session.context)
 	}
 
-	if session.HttpClient == nil {
-		response, err = http.DefaultClient.Do(request)
-	} else {
-		response, err = session.HttpClient.Do(request)
-	}
-
+	response, err = session.HttpClient.Do(request)
 	if err != nil {
 		err = fmt.Errorf("cannot reach facebook server. %v", err)
 		return
