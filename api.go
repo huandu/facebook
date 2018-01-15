@@ -175,3 +175,8 @@ func DefaultHttpClient() HttpClient {
 func SetHttpClient(client HttpClient) {
 	defaultSession.HttpClient = client
 }
+
+// HttpClient gets the http client of default session.
+func HttpClient() HttpClient {
+	return defaultSession.HttpClient
+}
