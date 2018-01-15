@@ -126,7 +126,7 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //     // equivalent to following curl command (borrowed from facebook docs)
 //     //     curl \
 //     //         -F 'access_token=…' \
-//     //         -F 'batch=[{"method": http.MethodPost,"relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":http.MethodPost,"relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
+//     //         -F 'batch=[{"method": "POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
 //     //         -F 'file1=@cat.gif' \
 //     //         -F 'file2=@dog.jpg' \
 //     //         https://graph.facebook.com
@@ -135,12 +135,12 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //         "file1": File("cat.gif"),
 //         "file2": File("dog.jpg"),
 //     }, Params{
-//         "method": http.MethodPost,
+//         "method": "POST",
 //         "relative_url": "me/photos",
 //         "body": "message=My cat photo",
 //         "attached_files": "file1",
 //     }, Params{
-//         "method": http.MethodPost,
+//         "method": "POST",
 //         "relative_url": "me/photos",
 //         "body": "message=My dog photo",
 //         "attached_files": "file2",

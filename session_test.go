@@ -143,7 +143,7 @@ func TestUploadBinaryWithBatch(t *testing.T) {
 	//
 	// curl
 	//     -F 'access_token=…' \
-	//     -F 'batch=[{"method": http.MethodPost,"relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":http.MethodPost,"relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
+	//     -F 'batch=[{"method": "POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
 	//     -F 'file1=@cat.gif' \
 	//     -F 'file2=@dog.jpg' \
 	//         https://graph.facebook.com
