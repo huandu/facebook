@@ -20,14 +20,6 @@ import (
 	"net/http"
 )
 
-// Facebook graph api methods.
-const (
-	GET    Method = "GET"
-	POST   Method = "POST"
-	DELETE Method = "DELETE"
-	PUT    Method = "PUT"
-)
-
 var (
 	// Version is the default facebook api version.
 	// It can be any valid version string (e.g. "v2.3") or empty.
@@ -45,7 +37,9 @@ var (
 
 var (
 	// default facebook session.
-	defaultSession = &Session{}
+	defaultSession = &Session{
+		HttpClient: http.DefaultClient,
+	}
 )
 
 // DebugMode is the debug mode of Graph API.
@@ -53,7 +47,7 @@ var (
 type DebugMode string
 
 // Method is HTTP method for an API call.
-// Can be GET, POST or DELETE.
+// Can be GET, POST, PUT or DELETE.
 type Method string
 
 // Api makes a facebook graph api call with default session.
@@ -82,22 +76,22 @@ func Api(path string, method Method, params Params) (Result, error) {
 
 // Get is a short hand of Api(path, GET, params).
 func Get(path string, params Params) (Result, error) {
-	return Api(path, GET, params)
+	return Api(path, http.MethodGet, params)
 }
 
 // Post is a short hand of Api(path, POST, params).
 func Post(path string, params Params) (Result, error) {
-	return Api(path, POST, params)
+	return Api(path, http.MethodPost, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
 func Delete(path string, params Params) (Result, error) {
-	return Api(path, DELETE, params)
+	return Api(path, http.MethodDelete, params)
 }
 
 // Put is a short hand of Api(path, PUT, params).
 func Put(path string, params Params) (Result, error) {
-	return Api(path, PUT, params)
+	return Api(path, http.MethodPut, params)
 }
 
 // BatchApi makes a batch facebook graph api call with default session.
@@ -132,7 +126,7 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //     // equivalent to following curl command (borrowed from facebook docs)
 //     //     curl \
 //     //         -F 'access_token=…' \
-//     //         -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
+//     //         -F 'batch=[{"method": http.MethodPost,"relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":http.MethodPost,"relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
 //     //         -F 'file1=@cat.gif' \
 //     //         -F 'file2=@dog.jpg' \
 //     //         https://graph.facebook.com
@@ -141,12 +135,12 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //         "file1": File("cat.gif"),
 //         "file2": File("dog.jpg"),
 //     }, Params{
-//         "method": "POST",
+//         "method": http.MethodPost,
 //         "relative_url": "me/photos",
 //         "body": "message=My cat photo",
 //         "attached_files": "file1",
 //     }, Params{
-//         "method": "POST",
+//         "method": http.MethodPost,
 //         "relative_url": "me/photos",
 //         "body": "message=My dog photo",
 //         "attached_files": "file2",
@@ -166,17 +160,17 @@ func Request(request *http.Request) (Result, error) {
 	return defaultSession.Request(request)
 }
 
-// DefaultHttpClient returns the http client for default session.
-func DefaultHttpClient() HttpClient {
-	return defaultSession.HttpClient
+// SetDefaultHttpClient returns the http client for a default session.
+func SetDefaultHttpClient() {
+	defaultSession.HttpClient = http.DefaultClient
 }
 
 // SetHttpClient updates the http client of default session.
-func SetHttpClient(client HttpClient) {
+func SetHttpClient(client *http.Client) {
 	defaultSession.HttpClient = client
 }
 
 // HttpClient gets the http client of default session.
-func HttpClient() HttpClient {
+func HttpClient() *http.Client {
 	return defaultSession.HttpClient
 }

@@ -210,11 +210,11 @@ res.DecodeField("data.0", &feed) // read latest feed
 
 ```go
 params1 := Params{
-    "method": fb.GET,
+    "method": http.MethodGet,
     "relative_url": "me",
 }
 params2 := Params{
-    "method": fb.GET,
+    "method": http.MethodGet,
     "relative_url": uint64(100002828925788),
 }
 results, err := fb.BatchApi(your_access_token, params1, params2)
@@ -269,7 +269,7 @@ See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to
 fb.Version = "v2.0"
 
 // starting with graph API v2.0; it's not allowed to get user information without access token.
-fb.Api("huan.du", GET, nil)
+fb.Api("huan.du", http.MethodGet, nil)
 
 // it's possible to specify version per session.
 session := &fb.Session{}
