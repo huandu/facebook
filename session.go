@@ -84,22 +84,22 @@ func (session *Session) Api(path string, method Method, params Params) (Result, 
 
 // Get is a short hand of Api(path, GET, params).
 func (session *Session) Get(path string, params Params) (Result, error) {
-	return session.Api(path, GET, params)
+	return session.Api(path, http.MethodGet, params)
 }
 
 // Post is a short hand of Api(path, POST, params).
 func (session *Session) Post(path string, params Params) (Result, error) {
-	return session.Api(path, POST, params)
+	return session.Api(path, http.MethodPost, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
 func (session *Session) Delete(path string, params Params) (Result, error) {
-	return session.Api(path, DELETE, params)
+	return session.Api(path, http.MethodDelete, params)
 }
 
 // Put is a short hand of Api(path, PUT, params).
 func (session *Session) Put(path string, params Params) (Result, error) {
-	return session.Api(path, PUT, params)
+	return session.Api(path, http.MethodPut, params)
 }
 
 // BatchApi makes a batch call. Each params represent a single facebook graph api call.
@@ -169,7 +169,7 @@ func (session *Session) User() (id string, err error) {
 	}
 
 	var result Result
-	result, err = session.Api("/me", GET, Params{"fields": "id"})
+	result, err = session.Api("/me", http.MethodGet, Params{"fields": "id"})
 
 	if err != nil {
 		return
@@ -193,7 +193,7 @@ func (session *Session) Validate() (err error) {
 	}
 
 	var result Result
-	result, err = session.Api("/me", GET, Params{"fields": "id"})
+	result, err = session.Api("/me", http.MethodGet, Params{"fields": "id"})
 
 	if err != nil {
 		return
@@ -228,7 +228,7 @@ func (session *Session) Inspect() (result Result, err error) {
 		return
 	}
 
-	result, err = session.Api("/debug_token", GET, Params{
+	result, err = session.Api("/debug_token", http.MethodGet, Params{
 		"input_token":  session.accessToken,
 		"access_token": appAccessToken,
 	})
@@ -417,8 +417,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 	}
 
 	var request *http.Request
-
-	request, err = http.NewRequest("POST", uri, buf)
+	request, err = http.NewRequest(http.MethodPost, uri, buf)
 
 	if err != nil {
 		return nil, err
@@ -446,7 +445,7 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 
 	var request *http.Request
 
-	request, err = http.NewRequest("POST", urlStr, buf)
+	request, err = http.NewRequest(http.MethodPost, urlStr, buf)
 
 	if err != nil {
 		return nil, err
@@ -516,7 +515,7 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 }
 
 func (session *Session) isVideoPost(path string, method Method) bool {
-	return method == POST && regexpIsVideoPost.MatchString(path)
+	return method == http.MethodPost && regexpIsVideoPost.MatchString(path)
 }
 
 func (session *Session) getURL(name, path string, params Params) string {
