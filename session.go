@@ -49,7 +49,7 @@ var (
 // Session holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
-	HttpClient HttpClient
+	HttpClient *http.Client
 	Version    string // facebook versioning.
 
 	accessToken string // facebook access token. can be empty.
@@ -64,14 +64,6 @@ type Session struct {
 	context context.Context // Session context.
 }
 
-// HttpClient is an interface to send http request.
-// This interface is designed to be compatible with type `*http.Client`.
-type HttpClient interface {
-	Do(req *http.Request) (resp *http.Response, err error)
-	Get(url string) (resp *http.Response, err error)
-	Post(url string, bodyType string, body io.Reader) (resp *http.Response, err error)
-}
-
 // Api makes a facebook graph api call.
 //
 // If session access token is set, "access_token" in params will be set to the token value.
@@ -84,22 +76,22 @@ func (session *Session) Api(path string, method Method, params Params) (Result, 
 
 // Get is a short hand of Api(path, GET, params).
 func (session *Session) Get(path string, params Params) (Result, error) {
-	return session.Api(path, GET, params)
+	return session.Api(path, http.MethodGet, params)
 }
 
 // Post is a short hand of Api(path, POST, params).
 func (session *Session) Post(path string, params Params) (Result, error) {
-	return session.Api(path, POST, params)
+	return session.Api(path, http.MethodPost, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
 func (session *Session) Delete(path string, params Params) (Result, error) {
-	return session.Api(path, DELETE, params)
+	return session.Api(path, http.MethodDelete, params)
 }
 
 // Put is a short hand of Api(path, PUT, params).
 func (session *Session) Put(path string, params Params) (Result, error) {
-	return session.Api(path, PUT, params)
+	return session.Api(path, http.MethodPut, params)
 }
 
 // BatchApi makes a batch call. Each params represent a single facebook graph api call.
@@ -163,13 +155,14 @@ func (session *Session) User() (id string, err error) {
 		return
 	}
 
-	if session.accessToken == "" && session.HttpClient == nil {
+	client := &http.Client{}
+	if session.accessToken == "" && session.HttpClient == client {
 		err = fmt.Errorf("access token is not set")
 		return
 	}
 
 	var result Result
-	result, err = session.Api("/me", GET, Params{"fields": "id"})
+	result, err = session.Api("/me", http.MethodGet, Params{"fields": "id"})
 
 	if err != nil {
 		return
@@ -187,13 +180,14 @@ func (session *Session) User() (id string, err error) {
 // Validate validates Session access token.
 // Returns nil if access token is valid.
 func (session *Session) Validate() (err error) {
-	if session.accessToken == "" && session.HttpClient == nil {
+	client := &http.Client{}
+	if session.accessToken == "" && session.HttpClient == client {
 		err = fmt.Errorf("access token is not set")
 		return
 	}
 
 	var result Result
-	result, err = session.Api("/me", GET, Params{"fields": "id"})
+	result, err = session.Api("/me", http.MethodGet, Params{"fields": "id"})
 
 	if err != nil {
 		return
@@ -211,7 +205,8 @@ func (session *Session) Validate() (err error) {
 // Returns JSON array containing data about the inspected token.
 // See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.2#checktoken
 func (session *Session) Inspect() (result Result, err error) {
-	if session.accessToken == "" && session.HttpClient == nil {
+	client := &http.Client{}
+	if session.accessToken == "" && session.HttpClient == client {
 		err = fmt.Errorf("access token is not set")
 		return
 	}
@@ -228,7 +223,7 @@ func (session *Session) Inspect() (result Result, err error) {
 		return
 	}
 
-	result, err = session.Api("/debug_token", GET, Params{
+	result, err = session.Api("/debug_token", http.MethodGet, Params{
 		"input_token":  session.accessToken,
 		"access_token": appAccessToken,
 	})
@@ -417,8 +412,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 	}
 
 	var request *http.Request
-
-	request, err = http.NewRequest("POST", uri, buf)
+	request, err = http.NewRequest(http.MethodPost, uri, buf)
 
 	if err != nil {
 		return nil, err
@@ -446,7 +440,7 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 
 	var request *http.Request
 
-	request, err = http.NewRequest("POST", urlStr, buf)
+	request, err = http.NewRequest(http.MethodPost, urlStr, buf)
 
 	if err != nil {
 		return nil, err
@@ -492,12 +486,7 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 		request = request.WithContext(session.context)
 	}
 
-	if session.HttpClient == nil {
-		response, err = http.DefaultClient.Do(request)
-	} else {
-		response, err = session.HttpClient.Do(request)
-	}
-
+	response, err = session.HttpClient.Do(request)
 	if err != nil {
 		err = fmt.Errorf("cannot reach facebook server. %v", err)
 		return
@@ -516,7 +505,7 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 }
 
 func (session *Session) isVideoPost(path string, method Method) bool {
-	return method == POST && regexpIsVideoPost.MatchString(path)
+	return method == http.MethodPost && regexpIsVideoPost.MatchString(path)
 }
 
 func (session *Session) getURL(name, path string, params Params) string {

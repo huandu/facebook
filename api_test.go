@@ -8,6 +8,7 @@
 package facebook
 
 import (
+	"net/http"
 	"testing"
 )
 
@@ -19,7 +20,7 @@ func TestApiGetUserInfoV2(t *testing.T) {
 
 	// It's not allowed to get user info by name. So I get "me" with access token instead.
 	if FB_TEST_VALID_ACCESS_TOKEN != "" {
-		me, err := Api("me", GET, Params{
+		me, err := Api("me", http.MethodGet, Params{
 			"access_token": FB_TEST_VALID_ACCESS_TOKEN,
 		})
 
@@ -75,11 +76,11 @@ func TestBatchApiGetInfo(t *testing.T) {
 
 	test := func(t *testing.T) {
 		params1 := Params{
-			"method":       GET,
+			"method":       http.MethodGet,
 			"relative_url": "me",
 		}
 		params2 := Params{
-			"method":       GET,
+			"method":       http.MethodGet,
 			"relative_url": uint64(100002828925788), // id of my another facebook account
 		}
 
@@ -117,7 +118,7 @@ func TestBatchApiGetInfo(t *testing.T) {
 
 	// when providing an invalid access token, BatchApi should return a facebook error.
 	_, err := BatchApi("an_invalid_access_token", Params{
-		"method":       GET,
+		"method":       http.MethodGet,
 		"relative_url": "me",
 	})
 

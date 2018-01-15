@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"net/http"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func TestSession(t *testing.T) {
 
 		t.Logf("current user id is %v", id)
 
-		result, e := session.Api("/me", GET, Params{
+		result, e := session.Api("/me", http.MethodGet, Params{
 			"fields": "id,email,website",
 		})
 
@@ -84,7 +85,7 @@ func TestSession(t *testing.T) {
 		app.EnableAppsecretProof = true
 		session := app.Session(FB_TEST_VALID_ACCESS_TOKEN)
 
-		_, e := session.Api("/me", GET, Params{
+		_, e := session.Api("/me", http.MethodGet, Params{
 			"fields": "id",
 		})
 
@@ -105,7 +106,7 @@ func TestUploadingBinary(t *testing.T) {
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 
-	result, e := session.Api("/me/photos", POST, Params{
+	result, e := session.Api("/me/photos", http.MethodPost, Params{
 		"message": "Test photo from https://github.com/huandu/facebook",
 		"source":  Data("my_profile.jpg", reader),
 	})
@@ -142,7 +143,7 @@ func TestUploadBinaryWithBatch(t *testing.T) {
 	//
 	// curl
 	//     -F 'access_token=…' \
-	//     -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
+	//     -F 'batch=[{"method": "POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
 	//     -F 'file1=@cat.gif' \
 	//     -F 'file2=@dog.jpg' \
 	//         https://graph.facebook.com
@@ -150,12 +151,12 @@ func TestUploadBinaryWithBatch(t *testing.T) {
 		"file1": Data("cat.jpg", reader1),
 		"file2": Data("dog.jpg", reader2),
 	}, Params{
-		"method":         POST,
+		"method":         http.MethodPost,
 		"relative_url":   "me/photos",
 		"body":           "message=My cat photo",
 		"attached_files": "file1",
 	}, Params{
-		"method":         POST,
+		"method":         http.MethodPost,
 		"relative_url":   "me/photos",
 		"body":           "message=My dog photo",
 		"attached_files": "file2",
@@ -274,6 +275,7 @@ func TestInspectValidToken(t *testing.T) {
 func TestInspectInvalidToken(t *testing.T) {
 	invalidToken := "CAACZA38ZAD8CoBAe2bDC6EdThnni3b56scyshKINjZARoC9ZAuEUTgYUkYnKdimqfA2ZAXcd2wLd7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB3AAvLtwoWNhsxM76mK0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
 	session := testGlobalApp.Session(invalidToken)
+	session.HttpClient = http.DefaultClient
 	result, err := session.Inspect()
 
 	if err == nil {
@@ -331,7 +333,7 @@ func TestSessionCancelationWithContext(t *testing.T) {
 func TestInspectAppAccessToken(t *testing.T) {
 	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
 	session := app.Session(app.AppAccessToken())
-
+	session.HttpClient = http.DefaultClient
 	_, err := session.Inspect()
 
 	if err != nil {
