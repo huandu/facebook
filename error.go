@@ -15,7 +15,7 @@ type Error struct {
 	ErrorSubcode int // subcode for authentication related errors.
 	UserTitle    string `json:"error_user_title"`
 	UserMessage  string `json:"error_user_msg"`
-	IsTransient  string `json:"is_transient"`
+	IsTransient  bool   `json:"is_transient"`
 	TraceID      string `json:"fbtrace_id"`
 }
 
