@@ -177,7 +177,7 @@ func makeResult(jsonBytes []byte, res interface{}) error {
 				err = errRes.Err()
 
 				if err == nil {
-					err = fmt.Errorf("cannot format facebook response. expect an array but get an object.")
+					err = fmt.Errorf("cannot format facebook response; expect an array but get an object")
 				}
 
 				return err
@@ -466,11 +466,11 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 	}
 
 	if v.Kind() != reflect.Struct {
-		return fmt.Errorf("output value must be a struct.")
+		return fmt.Errorf("output value must be a struct")
 	}
 
 	if !v.CanSet() {
-		return fmt.Errorf("output value cannot be set.")
+		return fmt.Errorf("output value cannot be set")
 	}
 
 	var field reflect.Value
@@ -528,7 +528,8 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		}
 
 		// embedded field is "expanded" when decoding.
-		if fieldInfo.Anonymous {
+		// special case: treat it as a normal field if the name is not empty.
+		if fieldInfo.Anonymous && name == "" {
 			if err = decodeField(reflect.ValueOf(res), field, fullName); err != nil {
 				return err
 			}

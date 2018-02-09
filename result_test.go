@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -1039,5 +1040,63 @@ func TestCompatibleWithJSONUnmarshal(t *testing.T) {
 
 	if expected := int64(7); mts.FourthTest != expected {
 		t.Fatalf("mts.FourthTest is incorrect. [expected:%v] [actual:%v]", expected, mts.FourthTest)
+	}
+}
+
+type StructWithAnonymousField struct {
+	Values []struct {
+		AnonymousStruct1 `facebook:"anonymous"`
+	} `facebook:"some values"`
+}
+
+func TestResultDecodeFieldWithBlank(t *testing.T) {
+	jsonStr := `{
+		"some values": [
+			{
+				"anonymous": {
+					"anonymous_int1": 123,
+					"anonymous_string1": "a1",
+					"anonymous_array_of_string1": ["b1", "c1"]
+				}
+			}, {
+				"anonymous": {
+					"anonymous_int1": 456,
+					"anonymous_string1": "a2",
+					"anonymous_array_of_string1": ["b2", "c2"]
+				}
+			}
+		]
+	}`
+	expected := StructWithAnonymousField{
+		Values: []struct {
+			AnonymousStruct1 `facebook:"anonymous"`
+		}{
+			{
+				AnonymousStruct1{
+					AnonymousInt1:           123,
+					AnonymousString1:        "a1",
+					AnonymousArrayOfString1: []string{"b1", "c1"},
+				},
+			},
+			{
+				AnonymousStruct1{
+					AnonymousInt1:           456,
+					AnonymousString1:        "a2",
+					AnonymousArrayOfString1: []string{"b2", "c2"},
+				},
+			},
+		},
+	}
+
+	res, _ := MakeResult([]byte(jsonStr))
+	var value StructWithAnonymousField
+	err := res.Decode(&value)
+
+	if err != nil {
+		t.Fatalf("fail to decode value. [e:%v]", err)
+	}
+
+	if !reflect.DeepEqual(value, expected) {
+		t.Fatalf("invalid decoded value. [expected:%v] [actual:%v]", expected, value)
 	}
 }
