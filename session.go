@@ -51,7 +51,7 @@ var (
 type Session struct {
 	HttpClient        HttpClient
 	Version           string // facebook versioning.
-	RFC3339Timestamps bool   // set to true to send date_format=Y-m-d\TH:i:s.vP on every request which will cause RFC3339 style timestamps to be returned
+	RFC3339Timestamps bool   // set to true to send date_format=Y-m-d\TH:i:sP on every request which will cause RFC3339 style timestamps to be returned
 
 	accessToken string // facebook access token. can be empty.
 	app         *App
@@ -340,7 +340,7 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	params["method"] = method
 
 	if session.RFC3339Timestamps {
-		params["date_format"] = `Y-m-d\TH:i:s.vP`
+		params["date_format"] = `Y-m-d\TH:i:sP`
 	}
 
 	// get graph api url.
