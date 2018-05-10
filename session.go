@@ -339,7 +339,7 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	// overwrite method as we always use post
 	params["method"] = method
 
-	if session.RFC3339Timestamps {
+	if RFC3339Timestamps || session.RFC3339Timestamps {
 		params["date_format"] = `Y-m-d\TH:i:sP`
 	}
 
