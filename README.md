@@ -141,6 +141,12 @@ err := session.Validate()
 res, _ := session.Get("/me/feed", nil)
 ```
 
+By default all requests are sent to Facebook servers. If you wish to override API base URL for unit-testing purposes - just set respective `Session` field:
+```go
+testSrv := httptest.NewServer(someMux)
+session.BaseURL = testSrv.URL + "/"
+```
+
 ### Use `paging` field in response. ###
 
 Some Graph API responses use a special JSON structure to provide paging information. Use `Result.Paging()` to walk through all data in such results.
