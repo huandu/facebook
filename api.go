@@ -41,6 +41,10 @@ var (
 	//
 	// See https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#debugging
 	Debug DebugMode
+
+	// RFC3339Timestamps will cause all requests to return RFC3339 formatted timestamps.
+	// RFC3339 is the timestamp format that the built in UnmarshalJSON expects.
+	RFC3339Timestamps bool
 )
 
 var (
