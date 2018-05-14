@@ -1,5 +1,10 @@
 # Change Log #
 
+## v2.2.0 ##
+
+* `[NEW]` [#103](https://github.com/huandu/facebook/pull/103) Add `RFC3339Timestamps` flag to set `date_format` on every API request. If this flag is set, all date value returned by facebook will be encoded with a format supported by `json.Unmarshal`. Thanks [@robbiet480](https://github.com/robbiet480).
+* `[NEW]` [#105](https://github.com/huandu/facebook/pull/105) Added ability to override `Session` base URL. It's designed for unit testing. All session requests can be redirected to a test server by setting `Session#BaseURL` to a test URL. Thanks [@vania-pooh](https://github.com/vania-pooh).
+
 ## v2.1.2 ##
 
 * `[FIX]` [#87](https://github.com/huandu/facebook/issues/87) Fix a crash in `Session#addUsageInfo`. Thanks [@flemeur](https://github.com/flemeur).
@@ -18,7 +23,7 @@
 * `[NEW]` [#79](https://github.com/huandu/facebook/pull/79) Add some number types which can be decoded from a string implicitly.
 * `[NEW]` [#78](https://github.com/huandu/facebook/pull/78) [#57](https://github.com/huandu/facebook/issues/57) Deprecate FQL and remove all related code.
 * `[FIX]` [#73](https://github.com/huandu/facebook/pull/73) Fix regular expression for video post. Thanks [@acochrane](https://github.com/acochrane).
-* `[FIX]` [#62](https://github.com/huandu/facebook/pull/62) Use base64.RawURLEncoding to decode signed request data. Thanks [@zonr](https://github.com/zonr).
+* `[FIX]` [#62](https://github.com/huandu/facebook/pull/62) Use `base64.RawURLEncoding` to decode signed request data. Thanks [@zonr](https://github.com/zonr).
 * `[FIX]` Fix some typos in README and test cases. Thanks [@nick3399](https://github.com/nick3399), [@J-P-77](https://github.com/J-P-77), [@smasher164](https://github.com/smasher164), [@enm10k](https://github.com/enm10k) and many others. Thank you.
 * `[FIX]` Clean up code for readability. 
 
