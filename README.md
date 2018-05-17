@@ -3,9 +3,9 @@
 [![Build Status](https://travis-ci.org/huandu/facebook.svg?branch=master)](https://travis-ci.org/huandu/facebook)
 [![GoDoc](https://godoc.org/github.com/huandu/facebook?status.svg)](https://godoc.org/github.com/huandu/facebook)
 
-This is a Go package fully supports Facebook Graph API with file upload, batch request, marketing API. It can be used in Google App Engine.
+This is a Go package that fully supports the [Facebook Graph API](https://developers.facebook.com/docs/graph-api/) with file upload, batch request and marketing API. It can be used in Google App Engine.
 
-API documents can be found on [godoc](http://godoc.org/github.com/huandu/facebook).
+API documentation can be found on [godoc](http://godoc.org/github.com/huandu/facebook).
 
 Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply it.
 
@@ -32,7 +32,7 @@ func main() {
         "fields": "first_name",
         "access_token": "a-valid-access-token",
     })
-    fmt.Println("here is my facebook first name:", res["first_name"])
+    fmt.Println("Here is my Facebook first name:", res["first_name"])
 }
 ```
 
@@ -43,7 +43,7 @@ This type has several useful methods to decode `res` to any Go type safely.
 // Decode "first_name" to a Go string.
 var first_name string
 res.DecodeField("first_name", &first_name)
-fmt.Println("alternative way to get first_name:", first_name)
+fmt.Println("Here's an alternative way to get first_name:", first_name)
 
 // It's also possible to decode the whole result into a predefined struct.
 type User struct {
@@ -76,19 +76,19 @@ res, err := fb.Get("/me/feed", fb.Params{
 })
 
 if err != nil {
-    // err can be an facebook API error.
+    // err can be a Facebook API error.
     // if so, the Error struct contains error details.
     if e, ok := err.(*Error); ok {
-        fmt.Printf("facebook error. [message:%v] [type:%v] [code:%v] [subcode:%v]",
-            e.Message, e.Type, e.Code, e.ErrorSubcode)
+        fmt.Printf("facebook error. [message:%v] [type:%v] [code:%v] [subcode:%v] [trace:%v]",
+            e.Message, e.Type, e.Code, e.ErrorSubcode, e.TraceID)
         return
     }
 
     return
 }
 
-// read my last feed.
-fmt.Println("my latest feed story is:", res.Get("data.0.story"))
+// read my last feed story.
+fmt.Println("My latest feed story is:", res.Get("data.0.story"))
 ```
 
 ### Read a graph `search` for page and decode slice of maps
@@ -116,28 +116,28 @@ for _, item := range items {
 
 ### Use `App` and `Session` ###
 
-It's recommended to use `App` and `Session` in a production app. They provide more control over all API calls. They can also make code clear and concise.
+It's recommended to use `App` and `Session` in a production app. They provide more control over all API calls. They can also make code clearer and more concise.
 
 ```go
-// create a global App var to hold app id and secret.
+// Create a global App var to hold app id and secret.
 var globalApp = fb.New("your-app-id", "your-app-secret")
 
-// facebook asks for a valid redirect uri when parsing signed request.
-// it's a new enforced policy starting in late 2013.
+// Facebook asks for a valid redirect uri when parsing signed request.
+// It's a new enforced policy starting as of late 2013.
 globalApp.RedirectUri = "http://your.site/canvas/url/"
 
-// here comes a client with a facebook signed request string in query string.
-// creates a new session with signed request.
+// Here comes a client with a Facebook signed request string in query string.
+// This will return a new session from a signed request.
 session, _ := globalApp.SessionFromSignedRequest(signedRequest)
 
-// if there is another way to get decoded access token,
-// creates a session directly with the token.
+// If there is another way to get decoded access token,
+// this will return a session created directly from the token.
 session := globalApp.Session(token)
 
-// validate access token. err is nil if token is valid.
+// This validates the access token by ensuring that the current user ID is properly returned. err is nil if token is valid.
 err := session.Validate()
 
-// use session to send api request with access token.
+// Use the new session to send an API request with access token.
 res, _ := session.Get("/me/feed", nil)
 ```
 
@@ -146,6 +146,18 @@ By default all requests are sent to Facebook servers. If you wish to override AP
 testSrv := httptest.NewServer(someMux)
 session.BaseURL = testSrv.URL + "/"
 ```
+
+Facebook returns most timestamps in a ISO9601 format which can't be natively parsed by Go's `encoding/json`.
+Setting `RFC3339Timestamps` `true` on the `Session` or at the global level will cause proper RFC3339 timestamps to be requested from Facebook.
+RFC3339 is what `encoding/json` natively expects.
+
+```go
+fb.RFC3339Timestamps = true
+session.RFC3339Timestamps = true
+```
+
+Setting either of these to true will cause `date_format=Y-m-d\TH:i:sP` to be sent as a parameter on every request. The format string is a PHP `date()` representation of RFC3339.
+More info is available in [this issue](https://github.com/huandu/facebook/issues/95).
 
 ### Use `paging` field in response. ###
 
@@ -157,18 +169,31 @@ res, _ := session.Get("/me/home", nil)
 // create a paging structure.
 paging, _ := res.Paging(session)
 
-// get current results.
-results := paging.Data()
+var allResults []Result
 
-// get next page.
-noMore, err := paging.Next()
-results = paging.Data()
+// append first page of results to slice of Result
+allResults = append(allResults, paging.Data()...)
+
+for {
+  // get next page.
+  noMore, err := paging.Next()
+  if err != nil {
+    panic(err)
+  }
+  if noMore {
+    // No more results available
+    break
+  }
+  // append current page of results to slice of Result
+  allResults = append(allResults, paging.Data()...)
+}
+
 ```
 
-### Read graph API response and decode result into a struct ###
+### Read Graph API response and decode result into a struct ###
 
-As facebook Graph API always uses lower case words as keys in API response.
-This package can convert go's camel-case-style struct field name to facebook's underscore-style API key name.
+The Facebook Graph API always uses snake case keys in API response.
+This package can automatically convert from snake case to Go's camel-case-style style struct field names.
 
 For instance, to decode following JSON response...
 
@@ -186,12 +211,12 @@ type Data struct {
 }
 ```
 
-The decoding of each struct field can be customized by the format string stored under the "facebook" key or the "json" key in the struct field's tag. The "facebook" key is recommended as it's specifically designed for this package.
+The decoding of each struct field can be customized by the format string stored under the `facebook` key or the "json" key in the struct field's tag. The `facebook` key is recommended as it's specifically designed for this package.
 
 Following is a sample shows all possible field tags.
 
 ```go
-// define a facebook feed object.
+// define a Facebook feed object.
 type FacebookFeed struct {
     Id          string            `facebook:",required"`             // this field must exist in response.
                                                                      // mind the "," before "required".
@@ -206,7 +231,7 @@ type FacebookFeedFrom struct {
     Id string   `facebook:"id" json:"shadowed"` // if both "facebook" and "json" key are set, the "facebook" key is used.
 }
 
-// create a feed object direct from graph api result.
+// create a feed object direct from Graph API result.
 var feed FacebookFeed
 res, _ := session.Get("/me/feed", nil)
 res.DecodeField("data.0", &feed) // read latest feed
@@ -243,9 +268,11 @@ res.DecodeField("id", &id)
 contentType := batchResult1.Header.Get("Content-Type")
 ```
 
-### Use it in Google App Engine ###
+### Using with Google App Engine ###
 
-Google App Engine provides `appengine/urlfetch` package as the standard http client package. The default client in `net/http` doesn't work. One must explicitly set http client in `Session` to make it work.
+Google App Engine provides the `appengine/urlfetch` package as the standard HTTP client package.
+For this reason, the default client in `net/http` won't work.
+One must explicitly set the HTTP client in `Session` to make it work.
 
 ```go
 import (
@@ -267,19 +294,19 @@ res, err := session.Get("/me", nil)
 
 ### Select Graph API version ###
 
-See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand facebook versioning strategy.
+See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand Facebook versioning strategy.
 
 ```go
-// this package uses default version which is controlled by facebook app setting.
+// this package uses default version which is controlled by Facebook app setting.
 // change following global variable to specific a global default version.
-fb.Version = "v2.0"
+fb.Version = "v3.0"
 
-// starting with graph API v2.0; it's not allowed to get user information without access token.
+// starting with Graph API v2.0; it's not allowed to get user information without access token.
 fb.Api("huan.du", GET, nil)
 
 // it's possible to specify version per session.
 session := &fb.Session{}
-session.Version = "v2.0" // overwrite global default.
+session.Version = "v3.0" // overwrite global default.
 ```
 
 ### Enable `appsecret_proof` ###
@@ -302,9 +329,9 @@ session.EnableAppsecretProof(false)
 
 ### Debugging API Requests ###
 
-Facebook introduces a way to debug graph API calls. See [Debugging API Requests](https://developers.facebook.com/docs/graph-api/using-graph-api/v2.3#debugging) for details.
+Facebook has introduced a way to debug Graph API calls. See [Debugging API Requests](https://developers.facebook.com/docs/graph-api/using-graph-api/debugging) for more details.
 
-This package provides both package level, and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally; or use `Session#SetDebug` to change debug mode for one session.
+This package provides both a package level and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally; or use `Session#SetDebug` to change debug mode for one session.
 
 When debug mode is turned on, use `Result#DebugInfo` to get `DebugInfo` struct from the result.
 
@@ -318,9 +345,21 @@ fmt.Println("http headers:", debugInfo.Header)
 fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
 ```
 
+### Monitoring API usage info ###
+
+Call `Result#UsageInfo` to get a `UsageInfo` struct containing both app and page level rate limit information from the result. More information about rate limiting can be found [here](https://developers.facebook.com/docs/graph-api/advanced/rate-limiting).
+
+```go
+res, _ := fb.Get("/me", fb.Params{"access_token": "xxx"})
+usageInfo := res.UsageInfo()
+
+fmt.Println("App level rate limit information:", usageInfo.App)
+fmt.Println("Page level rate limit information:", usageInfo.Page)
+```
+
 ### Work with package `golang.org/x/oauth2` ##
 
-Package `golang.org/x/oauth2` can handle facebook OAuth2 authentication process and access token very well. This package can work with it by setting `Session#HttpClient` to OAuth2's client.
+The `golang.org/x/oauth2` package can handle the Facebook OAuth2 authentication process and access token quite well. This package can work with it by setting `Session#HttpClient` to OAuth2's client.
 
 ```go
 import (
@@ -329,7 +368,7 @@ import (
     fb "github.com/huandu/facebook"
 )
 
-// Get facebook access token.
+// Get Facebook access token.
 conf := &oauth2.Config{
     ClientID:     "AppId",
     ClientSecret: "AppSecret",
@@ -354,7 +393,7 @@ res, _ := session.Get("/me", nil)
 
 ### Control timeout and cancelation with `Context` ###
 
-The `Session` can work with `Context` now.
+The `Session` accept a `Context`.
 
 ```go
 // Create a new context.
@@ -367,7 +406,7 @@ defer cancel()
 result, err := session.WithContext(ctx).Get("/me", nil)
 ```
 
-See https://blog.golang.org/context for more details about how to use `Context`.
+See [this Go blog post about context](https://blog.golang.org/context) for more details about how to use `Context`.
 
 ## Change Log ##
 
@@ -380,4 +419,4 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## License ##
 
-This package is licensed under MIT license. See LICENSE for details.
+This package is licensed under the MIT license. See LICENSE for details.
