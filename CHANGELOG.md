@@ -25,7 +25,7 @@
 * `[FIX]` [#73](https://github.com/huandu/facebook/pull/73) Fix regular expression for video post. Thanks [@acochrane](https://github.com/acochrane).
 * `[FIX]` [#62](https://github.com/huandu/facebook/pull/62) Use `base64.RawURLEncoding` to decode signed request data. Thanks [@zonr](https://github.com/zonr).
 * `[FIX]` Fix some typos in README and test cases. Thanks [@nick3399](https://github.com/nick3399), [@J-P-77](https://github.com/J-P-77), [@smasher164](https://github.com/smasher164), [@enm10k](https://github.com/enm10k) and many others. Thank you.
-* `[FIX]` Clean up code for readability. 
+* `[FIX]` Clean up code for readability.
 
 ## v1.8.1 ##
 

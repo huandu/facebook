@@ -29,7 +29,7 @@ const (
 
 	usageInfoKey = "__usage__"
 
-	facebookApiVersionHeader = "facebook-api-version"
+	facebookAPIVersionHeader = "facebook-api-version"
 	facebookDebugHeader      = "x-fb-debug"
 	facebookRevHeader        = "x-fb-rev"
 )
@@ -49,7 +49,7 @@ var (
 	typeOfFloat32    = reflect.TypeOf(Float32(0))
 	typeOfFloat64    = reflect.TypeOf(Float64(0))
 
-	facebookSuccessJsonBytes = []byte("true")
+	facebookSuccessJSONBytes = []byte("true")
 )
 
 // Result is Facebook API call result.
@@ -139,7 +139,7 @@ func MakeResult(jsonBytes []byte) (Result, error) {
 }
 
 func makeResult(jsonBytes []byte, res interface{}) error {
-	if bytes.Equal(jsonBytes, facebookSuccessJsonBytes) {
+	if bytes.Equal(jsonBytes, facebookSuccessJSONBytes) {
 		return nil
 	}
 
@@ -440,7 +440,7 @@ func (res Result) DebugInfo() *DebugInfo {
 		if v, ok := header.(http.Header); ok {
 			debugInfo.Header = v
 
-			debugInfo.FacebookApiVersion = v.Get(facebookApiVersionHeader)
+			debugInfo.FacebookApiVersion = v.Get(facebookAPIVersionHeader)
 			debugInfo.FacebookDebug = v.Get(facebookDebugHeader)
 			debugInfo.FacebookRev = v.Get(facebookRevHeader)
 		}

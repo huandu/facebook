@@ -48,6 +48,7 @@ type AllTypes struct {
 	ArrayOfInt    []int
 	MapOfString   map[string]string
 	NestedStruct  *NestedStruct
+	ArrayOfStruct []NestedStruct
 }
 
 type AnonymousStruct1 struct {
@@ -87,7 +88,7 @@ type FieldTagStruct struct {
 }
 
 type MessageTag struct {
-	Id   string
+	ID   string
 	Name string
 	Type string
 }
@@ -122,7 +123,7 @@ func (cm *CustomMarshaler) UnmarshalJSON(data []byte) error {
 	cm.Hash = c.Hash
 
 	if cm.Name == "bar" {
-		return fmt.Errorf("sorry but i don't like `bar`.")
+		return fmt.Errorf("sorry but i don't like `bar`")
 	}
 
 	return nil
@@ -168,7 +169,19 @@ func TestResultDecode(t *testing.T) {
             "string": "hello",
             "int": 123,
             "array_of_string": ["a", "b", "c"]
-        }
+		},
+		"array_of_struct": [
+			{
+				"string": "world",
+				"int": 456,
+				"array_of_string": ["d", "e"]
+			},
+			{
+				"string": ":)",
+				"int": 789,
+				"array_of_string": ["f", "g", "h"]
+			}
+		]
     }`
 	strOverflow := `{
         "int": 1234,
@@ -259,6 +272,14 @@ func TestResultDecode(t *testing.T) {
 
 	if normal.AnonymousString2 != "abc" {
 		t.Fatalf("Fail to decode AnonymousString2. [value:%v]", normal.AnonymousString2)
+	}
+
+	if expected := 2; len(normal.ArrayOfStruct) != expected {
+		t.Fatalf("invalid len of ArrayOfStruct. [expected:%v] [actual:%v]", expected, len(normal.ArrayOfStruct))
+	}
+
+	if expected := ":)"; normal.ArrayOfStruct[1].String != expected {
+		t.Fatalf("invalid content of ArrayOfStruct. [expected:%v] [actual:%v]", expected, normal.ArrayOfStruct[1].String)
 	}
 
 	err = json.Unmarshal([]byte(strOverflow), &result)
@@ -466,7 +487,7 @@ func TestDecodeField(t *testing.T) {
 	var aString string
 	var aSlice []string
 	var subResults []Result
-	var aNull NullStruct = NullStruct{
+	var aNull = NullStruct{
 		Null: &anInt,
 	}
 	var aTimestamp time.Time
@@ -595,7 +616,7 @@ func TestDecodeField(t *testing.T) {
 		t.Fatalf("expect messageTags have only 1 element. [len:%v]", len(messageTags))
 	}
 
-	aString = messageTags["2"][1].Id
+	aString = messageTags["2"][1].ID
 
 	if aString != "293450302" {
 		t.Fatalf("expect messageTags.2.1.id value is '293450302'. [value:%v]", aString)
@@ -656,7 +677,7 @@ func TestDecodeField(t *testing.T) {
 }
 
 type FacebookFriend struct {
-	Id   string `facebook:",required"`
+	ID   string `facebook:",required"`
 	Name string `facebook:",required"`
 }
 
@@ -694,14 +715,14 @@ func TestPagingResultDecode(t *testing.T) {
 	if friends.Friends[0].Name != "friend 1" {
 		t.Fatalf("expect name to be 'friend 1'. [name:%v]", friends.Friends[0].Name)
 	}
-	if friends.Friends[0].Id != "1" {
-		t.Fatalf("expect id to be '1'. [id:%v]", friends.Friends[0].Id)
+	if friends.Friends[0].ID != "1" {
+		t.Fatalf("expect id to be '1'. [id:%v]", friends.Friends[0].ID)
 	}
 	if friends.Friends[1].Name != "friend 2" {
 		t.Fatalf("expect name to be 'friend 2'. [name:%v]", friends.Friends[1].Name)
 	}
-	if friends.Friends[1].Id != "2" {
-		t.Fatalf("expect id to be '2'. [id:%v]", friends.Friends[1].Id)
+	if friends.Friends[1].ID != "2" {
+		t.Fatalf("expect id to be '2'. [id:%v]", friends.Friends[1].ID)
 	}
 }
 
@@ -844,7 +865,7 @@ func TestDecodeLargeInteger(t *testing.T) {
 		t.Fatalf("count of decoded integers is not correct. [expected:%v] [actual:%v]", len(bigIntegers)+1, len(actualIntegers))
 	}
 
-	for k, _ := range bigIntegers {
+	for k := range bigIntegers {
 		if bigIntegers[k] != actualIntegers[k] {
 			t.Logf("expected integers: %v", bigIntegers)
 			t.Logf("actual integers:   %v", actualIntegers)
@@ -1098,5 +1119,60 @@ func TestResultDecodeFieldWithBlank(t *testing.T) {
 
 	if !reflect.DeepEqual(value, expected) {
 		t.Fatalf("invalid decoded value. [expected:%v] [actual:%v]", expected, value)
+	}
+}
+
+type testCampaign struct {
+	CampaignID  int    `facebook:"id,required"`
+	Name        string `facebook:"name"`
+	DailyBudget int    `facebook:"daily_budget"`
+	Status      string `facebook:"status"`
+}
+
+type testResult struct {
+	Campaigns []testCampaign `facebook:"data"`
+}
+
+// This is a case test against issue #108.
+func TestDecodeSliceOfStruct(t *testing.T) {
+	jsonStr := `{
+		"data": [
+			{
+				"name": "Some (RU, 1% to 2%) - App Installs iOS (140) -  ALL13-23 - FB",
+				"daily_budget": 50000,
+				"id": 23842536739160501
+			},
+			{
+				"name": "Someproj (RU, 1%) - App Installs iOS (180) - ALL33-48 - FB",
+				"daily_budget": 200000,
+				"id": 23842536718480501
+			}
+		]
+	}`
+	res, _ := MakeResult([]byte(jsonStr))
+	var r testResult
+	err := res.Decode(&r)
+
+	if err != nil {
+		t.Fatalf("fail to decode result. [err:%v]", err)
+	}
+
+	expected := &testResult{
+		Campaigns: []testCampaign{
+			{
+				Name:        "Some (RU, 1% to 2%) - App Installs iOS (140) -  ALL13-23 - FB",
+				DailyBudget: 50000,
+				CampaignID:  23842536739160501,
+			},
+			{
+				Name:        "Someproj (RU, 1%) - App Installs iOS (180) - ALL33-48 - FB",
+				DailyBudget: 200000,
+				CampaignID:  23842536718480501,
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(&r, expected) {
+		t.Fatalf("invalid decoded result. [expected:%#v] [actual:%#v]", *expected, r)
 	}
 }
