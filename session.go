@@ -340,11 +340,6 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	// always format as json.
 	params["format"] = "json"
 
-	// overwrite method if we are going to use the post method
-	if !session.useGetMethodForGetRequests {
-		params["method"] = method
-	}
-
 	if RFC3339Timestamps || session.RFC3339Timestamps {
 		params["date_format"] = `Y-m-d\TH:i:sP`
 	}
@@ -361,6 +356,8 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	if session.useGetMethodForGetRequests && method == GET {
 		response, err = session.sendGetRequest(graphURL, params, &res)
 	} else {
+		// overwrite method since we are going to use the post method
+		params["method"] = method
 		response, err = session.sendPostRequest(graphURL, params, &res)
 	}
 
