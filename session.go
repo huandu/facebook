@@ -405,20 +405,13 @@ func (session *Session) prepareParams(params Params) {
 func (session *Session) sendGetRequest(uri string, params Params, res interface{}) (*http.Response, error) {
 	session.prepareParams(params)
 
-	buf := &bytes.Buffer{}
-	_, err := params.Encode(buf)
+	uriWithParams, err := composeURI(uri, params)
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot encode POST params. %v", err)
+		return nil, err
 	}
 
-	if strings.Contains(uri, "?") {
-		uri = fmt.Sprintf("%s&%s", uri, buf.String())
-	} else {
-		uri = fmt.Sprintf("%s?%s", uri, buf.String())
-	}
-
-	request, err := http.NewRequest("GET", uri, nil)
+	request, err := http.NewRequest("GET", uriWithParams, nil)
 
 	if err != nil {
 		return nil, err
@@ -637,3 +630,19 @@ func (session *Session) WithContext(ctx context.Context) *Session {
 	s.context = ctx
 	return &s
 }
+
+func composeURI(uri string, params Params) (string, error) {
+	buf := &bytes.Buffer{}
+	_, err := params.Encode(buf)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot encode POST params. %v", err)
+	}
+
+	if strings.Contains(uri, "?") {
+		return fmt.Sprintf("%s&%s", uri, buf.String()), nil
+	} else {
+		return fmt.Sprintf("%s?%s", uri, buf.String()), nil
+	}
+}
+
