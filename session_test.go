@@ -61,7 +61,7 @@ func TestSession(t *testing.T) {
 
 	// Global version overwrite default session version.
 	func() {
-		Version = "v2.2"
+		Version = FB_LATEST_VERSION
 		defer func() {
 			Version = ""
 		}()
@@ -72,7 +72,7 @@ func TestSession(t *testing.T) {
 	// Session version overwrite default version.
 	func() {
 		Version = "vx.y" // an invalid version.
-		session.Version = "v2.2"
+		session.Version = FB_LATEST_VERSION
 		defer func() {
 			Version = ""
 		}()
@@ -224,7 +224,7 @@ func TestGraphDebuggingAPI(t *testing.T) {
 		Version = ""
 	}()
 
-	Version = "v2.2"
+	Version = FB_LATEST_VERSION
 	Debug = DEBUG_ALL
 	test(t, defaultSession)
 	session := &Session{}

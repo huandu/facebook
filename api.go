@@ -5,7 +5,7 @@
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
-// This is a Go library fully supports Facebook Graph API (both 1.0 and 2.x) with
+// Package facebook is a Go library fully supports Facebook Graph API (both 1.0 and 2.x) with
 // file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
 //
 // Library design is highly influenced by facebook official PHP/JS SDK.
@@ -136,7 +136,7 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 //     // equivalent to following curl command (borrowed from facebook docs)
 //     //     curl \
 //     //         -F 'access_token=…' \
-//     //         -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"},]' \
+//     //         -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"}]' \
 //     //         -F 'file1=@cat.gif' \
 //     //         -F 'file2=@dog.jpg' \
 //     //         https://graph.facebook.com

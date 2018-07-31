@@ -211,7 +211,7 @@ func (session *Session) Validate() (err error) {
 
 // Inspect Session access token.
 // Returns JSON array containing data about the inspected token.
-// See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.2#checktoken
+// See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/#checktoken
 func (session *Session) Inspect() (result Result, err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
 		err = fmt.Errorf("access token is not set")
@@ -258,7 +258,7 @@ func (session *Session) AccessToken() string {
 	return session.accessToken
 }
 
-// Sets a new access token.
+// SetAccessToken sets a new access token.
 func (session *Session) SetAccessToken(token string) {
 	if token != session.accessToken {
 		session.id = ""
@@ -374,8 +374,8 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 	batchParams["batch"] = params
 
 	var res []Result
-	graphUrl := session.getURL("graph", "", nil)
-	_, err := session.sendPostRequest(graphUrl, batchParams, &res)
+	graphURL := session.getURL("graph", "", nil)
+	_, err := session.sendPostRequest(graphURL, batchParams, &res)
 	return res, err
 }
 

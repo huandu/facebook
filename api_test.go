@@ -12,7 +12,7 @@ import (
 )
 
 func TestApiGetUserInfoV2(t *testing.T) {
-	Version = "v2.2"
+	Version = FB_LATEST_VERSION
 	defer func() {
 		Version = ""
 	}()
@@ -80,7 +80,7 @@ func TestBatchApiGetInfo(t *testing.T) {
 		}
 		params2 := Params{
 			"method":       GET,
-			"relative_url": uint64(100002828925788), // id of my another facebook account
+			"relative_url": "100002828925788", // id of my another facebook account
 		}
 
 		results, err := BatchApi(FB_TEST_VALID_ACCESS_TOKEN, params1, params2)
@@ -108,8 +108,8 @@ func TestBatchApiGetInfo(t *testing.T) {
 	Version = ""
 	test(t)
 
-	// User "v2.2".
-	Version = "v2.2"
+	// User FB_LATEST_VERSION.
+	Version = FB_LATEST_VERSION
 	defer func() {
 		Version = ""
 	}()

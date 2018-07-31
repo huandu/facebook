@@ -7,6 +7,7 @@
 
 package facebook
 
+// Constants for test cases.
 const (
 	FB_TEST_APP_ID     = "169186383097898"
 	FB_TEST_APP_SECRET = "b2e4262c306caa3c7f5215d2d099b319"
@@ -101,6 +102,8 @@ const (
 		"tl8v0nUjyYMVr1K0ML5m2UjHNjsVeZ8h4V1x4DK2Exjnp8u/L479hVnTUFh4DTq8WX7LFwPS" +
 		"V04qCwqXpy7iQWkl0NcpQF435Sd8ZziioOQEpQlKUAJAwBjsKKr5iRXgIvpWFdqKKaEKVemf" +
 		"/Vj+3M/7KqEo3vK/LRRR6XJ9/dm8+nb4HFC7R/yinDA9wfL9qKK01Hpopp/UOs0UUUAWf//Z"
+
+	FB_LATEST_VERSION = "v3.1"
 )
 
 var (
