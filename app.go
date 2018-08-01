@@ -31,6 +31,14 @@ type App struct {
 	// Enable appsecret proof in every API call to facebook.
 	// Facebook document: https://developers.facebook.com/docs/graph-api/securing-requests
 	EnableAppsecretProof bool
+
+	// By default, the library uses the POST method for all facebook API calls and passes in a method
+	// parameter indicating what the actual verb of the call ought to be. This fails under certain
+	// circumstances with an error of the form "(#3) Application does not have the capability to make this API call".
+	// This option provides the ability to use the GET method to make facebook API calls that require the GET method.
+	// This seems to resolve the issue. Use it only if you encounter the above mentioned issue. Otherwise the default
+	// works fine.
+	UseGetMethodForGetRequests bool
 }
 
 // New creates a new App and sets app id and secret.
@@ -232,9 +240,10 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 // Session creates a session based on current App setting.
 func (app *App) Session(accessToken string) *Session {
 	return &Session{
-		accessToken:          accessToken,
-		app:                  app,
-		enableAppsecretProof: app.EnableAppsecretProof,
+		accessToken:                accessToken,
+		app:                        app,
+		enableAppsecretProof:       app.EnableAppsecretProof,
+		useGetMethodForGetRequests: app.UseGetMethodForGetRequests,
 	}
 }
 

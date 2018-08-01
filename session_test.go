@@ -366,3 +366,31 @@ func TestSessionWithCustomBaseUrl(t *testing.T) {
 		t.Fatal("no call to mock server")
 	}
 }
+
+func TestComposeURI(t *testing.T) {
+	params := Params{"fields": "a,b,c"}
+	baseURI := "https://www.testthis.com/path"
+	expected := "https://www.testthis.com/path?fields=a%2Cb%2Cc"
+	uri, err := composeURI(baseURI, params)
+
+	if err != nil {
+		t.Errorf("Unexpected error when composing URI [%s]", err)
+	}
+
+	if uri != expected {
+		t.Errorf("composeURI did not compose the uri as expected. Expected: [%s], Actual: [%s]", expected, uri)
+	}
+
+	// Now test case where baseURI already has a query parameter
+	baseURI = "https://www.testthis.com/path?param1=p1"
+	expected = "https://www.testthis.com/path?param1=p1&fields=a%2Cb%2Cc"
+	uri, err = composeURI(baseURI, params)
+
+	if err != nil {
+		t.Errorf("Unexpected error when composing URI [%s]", err)
+	}
+
+	if uri != expected {
+		t.Errorf("composeURI did not compose the uri as expected. Expected: [%s], Actual: [%s]", expected, uri)
+	}
+}

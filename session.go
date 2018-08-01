@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 // Graph API debug mode values.
@@ -60,6 +61,8 @@ type Session struct {
 
 	enableAppsecretProof bool   // add "appsecret_proof" parameter in every facebook API call.
 	appsecretProof       string // pre-calculated "appsecret_proof" value.
+
+	useGetMethodForGetRequests bool
 
 	debug DebugMode // using facebook debugging api in every request.
 
@@ -337,9 +340,6 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	// always format as json.
 	params["format"] = "json"
 
-	// overwrite method as we always use post
-	params["method"] = method
-
 	if RFC3339Timestamps || session.RFC3339Timestamps {
 		params["date_format"] = `Y-m-d\TH:i:sP`
 	}
@@ -352,7 +352,14 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	}
 
 	var response *http.Response
-	response, err = session.sendPostRequest(graphURL, params, &res)
+
+	if session.useGetMethodForGetRequests && method == GET {
+		response, err = session.sendGetRequest(graphURL, params, &res)
+	} else {
+		// overwrite method since we are going to use the post method
+		params["method"] = method
+		response, err = session.sendPostRequest(graphURL, params, &res)
+	}
 
 	if response != nil {
 		session.addDebugInfo(res, response)
@@ -395,8 +402,16 @@ func (session *Session) prepareParams(params Params) {
 	}
 }
 
-func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Response, error) {
-	request, err := http.NewRequest("GET", uri, nil)
+func (session *Session) sendGetRequest(uri string, params Params, res interface{}) (*http.Response, error) {
+	session.prepareParams(params)
+
+	uriWithParams, err := composeURI(uri, params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("GET", uriWithParams, nil)
 
 	if err != nil {
 		return nil, err
@@ -615,3 +630,19 @@ func (session *Session) WithContext(ctx context.Context) *Session {
 	s.context = ctx
 	return &s
 }
+
+func composeURI(uri string, params Params) (string, error) {
+	buf := &bytes.Buffer{}
+	_, err := params.Encode(buf)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot encode POST params. %v", err)
+	}
+
+	if strings.Contains(uri, "?") {
+		return fmt.Sprintf("%s&%s", uri, buf.String()), nil
+	} else {
+		return fmt.Sprintf("%s?%s", uri, buf.String()), nil
+	}
+}
+
