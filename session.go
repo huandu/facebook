@@ -334,25 +334,39 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 		params = Params{}
 	}
 
-	// always format as json.
+	// always use JSON format.
 	params["format"] = "json"
-
-	// overwrite method as we always use post
-	params["method"] = method
 
 	if RFC3339Timestamps || session.RFC3339Timestamps {
 		params["date_format"] = `Y-m-d\TH:i:sP`
 	}
 
+	session.prepareParams(params)
+
+	var urlParams Params
+
+	if method == GET {
+		urlParams = params
+	}
+
 	// get graph api url.
 	if session.isVideoPost(path, method) {
-		graphURL = session.getURL("graph_video", path, nil)
+		graphURL = session.getURL("graph_video", path, urlParams)
 	} else {
-		graphURL = session.getURL("graph", path, nil)
+		graphURL = session.getURL("graph", path, urlParams)
 	}
 
 	var response *http.Response
-	response, err = session.sendPostRequest(graphURL, params, &res)
+
+	if method == GET {
+		response, err = session.sendGetRequest(graphURL, &res)
+	} else {
+		if method != POST {
+			params["method"] = method
+		}
+
+		response, err = session.sendPostRequest(graphURL, params, &res)
+	}
 
 	if response != nil {
 		session.addDebugInfo(res, response)
@@ -372,6 +386,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 	}
 
 	batchParams["batch"] = params
+	session.prepareParams(batchParams)
 
 	var res []Result
 	graphURL := session.getURL("graph", "", nil)
@@ -413,8 +428,6 @@ func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Respo
 }
 
 func (session *Session) sendPostRequest(uri string, params Params, res interface{}) (*http.Response, error) {
-	session.prepareParams(params)
-
 	buf := &bytes.Buffer{}
 	mime, err := params.Encode(buf)
 
@@ -422,9 +435,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 		return nil, fmt.Errorf("cannot encode POST params. %v", err)
 	}
 
-	var request *http.Request
-
-	request, err = http.NewRequest("POST", uri, buf)
+	request, err := http.NewRequest("POST", uri, buf)
 
 	if err != nil {
 		return nil, err
@@ -450,9 +461,7 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 		return nil, fmt.Errorf("cannot encode POST params. %v", err)
 	}
 
-	var request *http.Request
-
-	request, err = http.NewRequest("POST", urlStr, buf)
+	request, err := http.NewRequest("POST", urlStr, buf)
 
 	if err != nil {
 		return nil, err

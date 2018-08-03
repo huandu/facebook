@@ -733,12 +733,12 @@ func TestPagingResult(t *testing.T) {
 
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
-	res, err := session.Get("/me/home", Params{
+	res, err := session.Get("/me/posts", Params{
 		"limit": 2,
 	})
 
 	if err != nil {
-		t.Fatalf("cannot get my home post. [e:%v]", err)
+		t.Fatalf("cannot get my posts. [e:%v]", err)
 	}
 
 	paging, err := res.Paging(session)
