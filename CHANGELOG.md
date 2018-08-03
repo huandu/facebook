@@ -1,17 +1,21 @@
 # Change Log #
 
+## v2.3.0 ##
+
+* `[FIX]` [#110](https://github.com/huandu/facebook/pull/110) Use HTTP GET to send request in which the method is `GET`. Thank [@nayakravi](https://github.com/nayakravi) for raising this issue, and Thank [@AlphaB](https://github.com/AlphaB) and [@robbiet480](https://github.com/robbiet480) for your valuable inputs.
+
 ## v2.2.0 ##
 
-* `[NEW]` [#103](https://github.com/huandu/facebook/pull/103) Add `RFC3339Timestamps` flag to set `date_format` on every API request. If this flag is set, all date value returned by facebook will be encoded with a format supported by `json.Unmarshal`. Thanks [@robbiet480](https://github.com/robbiet480).
-* `[NEW]` [#105](https://github.com/huandu/facebook/pull/105) Added ability to override `Session` base URL. It's designed for unit testing. All session requests can be redirected to a test server by setting `Session#BaseURL` to a test URL. Thanks [@vania-pooh](https://github.com/vania-pooh).
+* `[NEW]` [#103](https://github.com/huandu/facebook/pull/103) Add `RFC3339Timestamps` flag to set `date_format` on every API request. If this flag is set, all date value returned by facebook will be encoded with a format supported by `json.Unmarshal`. Thanks, [@robbiet480](https://github.com/robbiet480).
+* `[NEW]` [#105](https://github.com/huandu/facebook/pull/105) Added ability to override `Session` base URL. It's designed for unit testing. All session requests can be redirected to a test server by setting `Session#BaseURL` to a test URL. Thanks, [@vania-pooh](https://github.com/vania-pooh).
 
 ## v2.1.2 ##
 
-* `[FIX]` [#87](https://github.com/huandu/facebook/issues/87) Fix a crash in `Session#addUsageInfo`. Thanks [@flemeur](https://github.com/flemeur).
+* `[FIX]` [#87](https://github.com/huandu/facebook/issues/87) Fix a crash in `Session#addUsageInfo`. Thanks, [@flemeur](https://github.com/flemeur).
 
 ## v2.1.1 ##
 
-* `[NEW]` [#86](https://github.com/huandu/facebook/pull/86) Parse `X-App-Usage` and `X-Page-Usage` in response header and store the usage information in `Result`. Use `Result#UsageInfo()` to read it. Thanks [@robbiet480](https://github.com/robbiet480).
+* `[NEW]` [#86](https://github.com/huandu/facebook/pull/86) Parse `X-App-Usage` and `X-Page-Usage` in response header and store the usage information in `Result`. Use `Result#UsageInfo()` to read it. Thanks, [@robbiet480](https://github.com/robbiet480).
 
 ## v2.1.0 ##
 
@@ -19,21 +23,21 @@
 
 ## v2.0.0 ##
 
-* `[NEW]` [#80](https://github.com/huandu/facebook/pull/80) [#71](https://github.com/huandu/facebook/pull/71) All `Session` API, which sends requests to Facebook, support `Context` now. Thanks [@sebnow](https://github.com/sebnow) for your thoughts and reminder.
+* `[NEW]` [#80](https://github.com/huandu/facebook/pull/80) [#71](https://github.com/huandu/facebook/pull/71) All `Session` API, which sends requests to Facebook, support `Context` now. Thanks, [@sebnow](https://github.com/sebnow) for your thoughts and reminder.
 * `[NEW]` [#79](https://github.com/huandu/facebook/pull/79) Add some number types which can be decoded from a string implicitly.
 * `[NEW]` [#78](https://github.com/huandu/facebook/pull/78) [#57](https://github.com/huandu/facebook/issues/57) Deprecate FQL and remove all related code.
-* `[FIX]` [#73](https://github.com/huandu/facebook/pull/73) Fix regular expression for video post. Thanks [@acochrane](https://github.com/acochrane).
-* `[FIX]` [#62](https://github.com/huandu/facebook/pull/62) Use `base64.RawURLEncoding` to decode signed request data. Thanks [@zonr](https://github.com/zonr).
-* `[FIX]` Fix some typos in README and test cases. Thanks [@nick3399](https://github.com/nick3399), [@J-P-77](https://github.com/J-P-77), [@smasher164](https://github.com/smasher164), [@enm10k](https://github.com/enm10k) and many others. Thank you.
+* `[FIX]` [#73](https://github.com/huandu/facebook/pull/73) Fix regular expression for video post. Thanks, [@acochrane](https://github.com/acochrane).
+* `[FIX]` [#62](https://github.com/huandu/facebook/pull/62) Use `base64.RawURLEncoding` to decode signed request data. Thanks,[@zonr](https://github.com/zonr).
+* `[FIX]` Fix some typos in README and test cases. Thank [@nick3399](https://github.com/nick3399), [@J-P-77](https://github.com/J-P-77), [@smasher164](https://github.com/smasher164), [@enm10k](https://github.com/enm10k) and many others.
 * `[FIX]` Clean up code for readability.
 
 ## v1.8.1 ##
 
-* `[FIX]` [#60](https://github.com/huandu/facebook/pull/60) Handle string errors in `Decode()`. Thanks [@sebnow](https://github.com/sebnow).
+* `[FIX]` [#60](https://github.com/huandu/facebook/pull/60) Handle string errors in `Decode()`. Thanks, [@sebnow](https://github.com/sebnow).
 
 ## v1.8.0 ##
 
-* `[FIX]` [#59](https://github.com/huandu/facebook/pull/59) Guess content type for binary params by filename extension or an arbitrary value. Thanks [@panki](https://github.com/panki).
+* `[FIX]` [#59](https://github.com/huandu/facebook/pull/59) Guess content type for binary params by filename extension or an arbitrary value. Thanks,[@panki](https://github.com/panki).
 
 ## v1.7.1 ##
 
