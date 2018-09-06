@@ -1,5 +1,9 @@
 # Change Log #
 
+## v2.3.1 ##
+
+* `[FIX]` [#114](https://github.com/huandu/facebook/pull/114) Query string in the path (e.g. `fb.Get("/me?fields=name,email", nil)`) works as expected now. Thanks, [@AsifArko](https://github.com/AsifArko).
+
 ## v2.3.0 ##
 
 * `[FIX]` [#110](https://github.com/huandu/facebook/pull/110) Use HTTP GET to send request in which the method is `GET`. Thank [@nayakravi](https://github.com/nayakravi) for raising this issue, and Thank [@AlphaB](https://github.com/AlphaB) and [@robbiet480](https://github.com/robbiet480) for your valuable inputs.
