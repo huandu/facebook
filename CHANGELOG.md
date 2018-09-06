@@ -1,8 +1,12 @@
 # Change Log #
 
+## v2.3.2 ##
+
+* `[FIX]` [#114](https://github.com/huandu/facebook/pull/114) Correctly parse query string in the path which doesn't start with '/', e.g. `fb.Get("me?fields=name,email", nil)`.
+
 ## v2.3.1 ##
 
-* `[FIX]` [#114](https://github.com/huandu/facebook/pull/114) Query string in the path (e.g. `fb.Get("/me?fields=name,email", nil)`) works as expected now. Thanks, [@AsifArko](https://github.com/AsifArko).
+* `[FIX]` [#114](https://github.com/huandu/facebook/pull/114) Query string in the path, e.g. `fb.Get("/me?fields=name,email", nil)`, works as expected now. Thanks, [@AsifArko](https://github.com/AsifArko).
 
 ## v2.3.0 ##
 

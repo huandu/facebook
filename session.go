@@ -347,6 +347,11 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	// parse path only if path contains '?'.
 	// url.ParseRequestURI cannot parse uri without "/" like "me".
 	if strings.Contains(path, "?") {
+		// make sure the path starts with a slash.
+		if path[0] != '/' {
+			path = "/" + path
+		}
+
 		// parse query string in path.
 		u, e := url.ParseRequestURI(path)
 

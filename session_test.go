@@ -386,7 +386,7 @@ func TestGetWithQueryString(t *testing.T) {
 
 	t.Logf("current user id is %v", id)
 
-	result, e := Api("/me?access_token="+FB_TEST_VALID_ACCESS_TOKEN, GET, Params{
+	result, e := Api("me?access_token="+FB_TEST_VALID_ACCESS_TOKEN, GET, Params{
 		"fields": "name,email",
 	})
 
