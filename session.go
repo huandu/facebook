@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 // Graph API debug mode values.
@@ -342,6 +343,34 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	}
 
 	session.prepareParams(params)
+
+	// parse path only if path contains '?'.
+	// url.ParseRequestURI cannot parse uri without "/" like "me".
+	if strings.Contains(path, "?") {
+		// parse query string in path.
+		u, e := url.ParseRequestURI(path)
+
+		if e != nil {
+			err = e
+			return
+		}
+
+		path = u.Path
+
+		if u.RawQuery != "" {
+			query, e := url.ParseQuery(u.RawQuery)
+
+			if e != nil {
+				err = e
+				return
+			}
+
+			// use these queries to overwrite the value in params.
+			for k := range query {
+				params[k] = query.Get(k)
+			}
+		}
+	}
 
 	var urlParams Params
 

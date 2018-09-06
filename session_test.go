@@ -101,6 +101,8 @@ func TestUploadingBinary(t *testing.T) {
 		t.Skipf("skip this case as we don't have a valid access token.")
 	}
 
+	t.Skipf("facebook doesn't support uploading photo to timeline.")
+
 	buf := bytes.NewBufferString(FB_TEST_BINARY_JPG_FILE)
 	reader := base64.NewDecoder(base64.StdEncoding, buf)
 
@@ -366,4 +368,35 @@ func TestSessionWithCustomBaseUrl(t *testing.T) {
 	if numCalls != 1 {
 		t.Fatal("no call to mock server")
 	}
+}
+
+func TestGetWithQueryString(t *testing.T) {
+	if FB_TEST_VALID_ACCESS_TOKEN == "" {
+		t.Skipf("skip this case as we don't have a valid access token.")
+	}
+
+	session := &Session{}
+	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
+
+	id, err := session.User()
+
+	if err != nil {
+		t.Fatalf("cannot get current user id. [e:%v]", err)
+	}
+
+	t.Logf("current user id is %v", id)
+
+	result, e := Api("/me?access_token="+FB_TEST_VALID_ACCESS_TOKEN, GET, Params{
+		"fields": "name,email",
+	})
+
+	if e != nil {
+		t.Fatalf("cannot get my extended info. [e:%v]", e)
+	}
+
+	if result.Get("name") == nil || result.Get("email") == nil {
+		t.Fatalf("fail to get my extend info. [result:%v]", result)
+	}
+
+	t.Logf("my extended info is: %v", result)
 }
