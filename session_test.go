@@ -370,7 +370,7 @@ func TestSessionWithCustomBaseUrl(t *testing.T) {
 	}
 }
 
-func TestGetWithQueryString(t *testing.T) {
+func TestSessionGetWithQueryString(t *testing.T) {
 	if FB_TEST_VALID_ACCESS_TOKEN == "" {
 		t.Skipf("skip this case as we don't have a valid access token.")
 	}
@@ -386,8 +386,8 @@ func TestGetWithQueryString(t *testing.T) {
 
 	t.Logf("current user id is %v", id)
 
-	result, e := Api("me?access_token="+FB_TEST_VALID_ACCESS_TOKEN, GET, Params{
-		"fields": "name,email",
+	result, e := session.Api("me?fields=name,email", GET, Params{
+		"fields": "id,name",
 	})
 
 	if e != nil {

@@ -147,3 +147,24 @@ func TestGraphError(t *testing.T) {
 
 	t.Logf("facebook error. [e:%v] [message:%v] [type:%v] [code:%v] [subcode:%v]", err, fbErr.Message, fbErr.Type, fbErr.Code, fbErr.ErrorSubcode)
 }
+
+func TestGetAdaccounts(t *testing.T) {
+	if FB_TEST_VALID_ACCESS_TOKEN == "" {
+		t.Skipf("skip this case as we don't have a valid access token.")
+	}
+
+	result, e := Get("/v3.1/me/adaccounts", Params{
+		"fields":       "id,name,currency",
+		"access_token": FB_TEST_VALID_ACCESS_TOKEN,
+	})
+
+	if e != nil {
+		t.Fatalf("cannot get my adaccounts info. [e:%v]", e)
+	}
+
+	if result.Get("data") == nil {
+		t.Fatalf("fail to get my adaccounts info. [result:%v]", result)
+	}
+
+	t.Logf("my adaccounts info is: %v", result)
+}
