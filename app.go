@@ -8,7 +8,6 @@
 package facebook
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -95,7 +94,7 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	hash.Write([]byte(strs[1])) // note: here uses the payload base64 string, not decoded bytes
 	expectedSig := hash.Sum(nil)
 
-	if bytes.Compare(sig, expectedSig) != 0 {
+	if !hmac.Equal(sig, expectedSig) {
 		err = fmt.Errorf("bad signed request signiture")
 		return
 	}
