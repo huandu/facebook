@@ -1,5 +1,9 @@
 # Change Log #
 
+## v2.3.3 ##
+
+* `[FIX]` [#120](https://github.com/huandu/facebook/pull/120) Use timing-safe `hmac.Equal` to check signed request. Thanks, [@gstvg](https://github.com/gstvg).
+
 ## v2.3.2 ##
 
 * `[FIX]` [#114](https://github.com/huandu/facebook/pull/114) Correctly parse query string in the path which doesn't start with '/', e.g. `fb.Get("me?fields=name,email", nil)`.
