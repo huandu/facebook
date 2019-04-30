@@ -1,1 +1,1 @@
-module github.com/huandu/facebook
+module github.com/huandu/facebook/v2
