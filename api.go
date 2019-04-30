@@ -5,15 +5,13 @@
 // Licensed under the MIT license
 // https://github.com/huandu/facebook/blob/master/LICENSE
 
-// Package facebook is a Go library fully supports Facebook Graph API (both 1.0 and 2.x) with
-// file upload, batch request, FQL and multi-FQL. It can be used in Google App Engine.
+// Package facebook is a Go library fully supports Facebook Graph API with
+// file upload and batch request. It can be used in Google App Engine.
 //
 // Library design is highly influenced by facebook official PHP/JS SDK.
 // If you have experience with PHP/JS SDK, you may feel quite familiar with it.
 //
 // Go to project home page to see samples. Link: https://github.com/huandu/facebook
-//
-// This library doesn't implement any deprecated old RESTful API. And it won't.
 package facebook
 
 import (
