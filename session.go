@@ -625,13 +625,22 @@ func (session *Session) addUsageInfo(res Result, response *http.Response) Result
 	}
 
 	var usageInfo UsageInfo
+	header := response.Header
 
-	if usage := response.Header.Get("X-App-Usage"); usage != "" {
+	if usage := header.Get("X-App-Usage"); usage != "" {
 		json.Unmarshal([]byte(usage), &usageInfo.App)
 	}
 
-	if usage := response.Header.Get("X-Page-Usage"); usage != "" {
+	if usage := header.Get("X-Page-Usage"); usage != "" {
 		json.Unmarshal([]byte(usage), &usageInfo.Page)
+	}
+
+	if usage := header.Get("X-Ad-Account-Usage"); usage != "" {
+		json.Unmarshal([]byte(usage), &usageInfo.AdAccount)
+	}
+
+	if usage := header.Get("X-Business-Use-Case-Usage"); usage != "" {
+		json.Unmarshal([]byte(usage), &usageInfo.BusinessUseCase)
 	}
 
 	res[usageInfoKey] = &usageInfo

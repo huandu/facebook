@@ -1,5 +1,9 @@
 # Change Log #
 
+## v2.4.0 ##
+
+* `[NEW]` [#126](https://github.com/huandu/facebook/pull/126) Support v3.3 rate limiting header `x-business-use-case-usage` and `x-ad-account-usage` in `UsageInfo`. Use it in any `Result` by calling `Result#UsageInfo()`. It's also available in `PagingResult` by calling `PagingResult#UsageInfo()`. Thanks [@OwlLaboratory](https://github.com/OwlLaboratory) for raising this change for me.
+
 ## v2.3.3 ##
 
 * `[FIX]` [#120](https://github.com/huandu/facebook/pull/120) Use timing-safe `hmac.Equal` to check signed request. Thanks, [@gstvg](https://github.com/gstvg).

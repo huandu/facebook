@@ -347,7 +347,7 @@ fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
 
 ### Monitoring API usage info ###
 
-Call `Result#UsageInfo` to get a `UsageInfo` struct containing both app and page level rate limit information from the result. More information about rate limiting can be found [here](https://developers.facebook.com/docs/graph-api/advanced/rate-limiting).
+Call `Result#UsageInfo` to get a `UsageInfo` struct containing both app and page level rate limit information from the result. More information about rate limiting can be found [here](https://developers.facebook.com/docs/graph-api/overview/rate-limiting).
 
 ```go
 res, _ := fb.Get("/me", fb.Params{"access_token": "xxx"})
@@ -355,6 +355,8 @@ usageInfo := res.UsageInfo()
 
 fmt.Println("App level rate limit information:", usageInfo.App)
 fmt.Println("Page level rate limit information:", usageInfo.Page)
+fmt.Println("Ad account rate limiting information:", usageInfo.AdAccount)
+fmt.Println("Business use case usage information:", usageInfo.BusinessUseCase)
 ```
 
 ### Work with package `golang.org/x/oauth2` ##

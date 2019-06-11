@@ -13,9 +13,18 @@ import (
 	"net/http"
 )
 
+// PagingResult represents facebook API call result with paging information.
+type PagingResult struct {
+	session  *Session
+	paging   pagingData
+	previous string
+	next     string
+}
+
 type pagingData struct {
-	Data   []Result `facebook:",required"`
-	Paging *pagingNavigator
+	Data      []Result `facebook:",required"`
+	Paging    *pagingNavigator
+	UsageInfo *UsageInfo
 }
 
 type pagingNavigator struct {
@@ -50,6 +59,12 @@ func newPagingResult(session *Session, res Result) (*PagingResult, error) {
 // Data gets current data.
 func (pr *PagingResult) Data() []Result {
 	return pr.paging.Data
+}
+
+// UsageInfo returns API usage information, including
+// business use case, app, page, ad account rate limiting.
+func (pr *PagingResult) UsageInfo() *UsageInfo {
+	return pr.paging.UsageInfo
 }
 
 // Decode decodes the current full result to a struct. See Result#Decode.
@@ -127,12 +142,15 @@ func (pr *PagingResult) navigate(url *string) (noMore bool, err error) {
 		pr.paging.Paging.Next = ""
 		pr.paging.Paging.Previous = ""
 	}
+
 	paging := &pr.paging
 	err = res.Decode(paging)
 
 	if err != nil {
 		return
 	}
+
+	paging.UsageInfo = res.UsageInfo()
 
 	if paging.Paging == nil || len(paging.Data) == 0 {
 		*url = ""
