@@ -55,14 +55,6 @@ var (
 // Result is Facebook API call result.
 type Result map[string]interface{}
 
-// PagingResult represents facebook API call result with paging information.
-type PagingResult struct {
-	session  *Session
-	paging   pagingData
-	previous string
-	next     string
-}
-
 // BatchResult represents facebook batch API call result.
 // See https://developers.facebook.com/docs/graph-api/making-multiple-requests/#multiple_methods.
 type BatchResult struct {
@@ -86,17 +78,28 @@ type DebugInfo struct {
 
 // UsageInfo is the app usage (rate limit) information returned by facebook when rate limits are possible.
 type UsageInfo struct {
-	App struct {
-		CallCount    int `json:"call_count"`
-		TotalTime    int `json:"total_time"`
-		TotalCPUTime int `json:"total_cputime"`
-	} `json:"app"`
-	Page struct {
-		CallCount    int `json:"call_count"`
-		TotalTime    int `json:"total_time"`
-		TotalCPUTime int `json:"total_cputime"`
-	} `json:"page"`
+	App             RateLimiting         `json:"app"`               // HTTP header X-App-Usage.
+	Page            RateLimiting         `json:"page"`              // HTTP header X-Page-Usage.
+	AdAccount       RateLimiting         `json:"ad_account"`        // HTTP header X-Ad-Account-Usage.
+	BusinessUseCase BusinessUseCaseUsage `json:"business_use_case"` // HTTP header x-business-use-case-usage.
 }
+
+// RateLimiting is the rate limiting header for business use cases.
+type RateLimiting struct {
+	CallCount                   int    `json:"call_count"`                      // Percentage of calls made for this business ad account.
+	TotalTime                   int    `json:"total_time"`                      // Percentage of the total CPU time that has been used.
+	TotalCPUTime                int    `json:"total_cputime"`                   // Percentage of the total time that has been used.
+	Type                        string `json:"type"`                            // Type of rate limit logic being applied.
+	EstimatedTimeToRegainAccess int    `json:"estimated_time_to_regain_access"` // Time in minutes to resume calls.
+}
+
+// AdAccountUsage is the rate limiting header for Ads API.
+type AdAccountUsage struct {
+	AccIDUtilPCT float64 `json:"acc_id_util_pct"` // Percentage of calls made for this ad account.
+}
+
+// BusinessUseCaseUsage
+type BusinessUseCaseUsage map[string][]*RateLimiting
 
 // DebugMessage is one debug message in "__debug__" of graph API response.
 type DebugMessage struct {
@@ -449,7 +452,8 @@ func (res Result) DebugInfo() *DebugInfo {
 	return debugInfo
 }
 
-// UsageInfo returns app and page usage info (rate limits)
+// UsageInfo returns API usage information, including
+// business use case, app, page, ad account rate limiting.
 func (res Result) UsageInfo() *UsageInfo {
 	if usageInfo, ok := res[usageInfoKey]; ok {
 		if usage, ok := usageInfo.(*UsageInfo); ok {
