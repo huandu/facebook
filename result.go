@@ -81,6 +81,7 @@ type UsageInfo struct {
 	App             RateLimiting         `json:"app"`               // HTTP header X-App-Usage.
 	Page            RateLimiting         `json:"page"`              // HTTP header X-Page-Usage.
 	AdAccount       RateLimiting         `json:"ad_account"`        // HTTP header X-Ad-Account-Usage.
+	AdsInsights     AdsInsightsThrottle  `json:"ads_insights"`      // HTTP header x-fb-ads-insights-throttle
 	BusinessUseCase BusinessUseCaseUsage `json:"business_use_case"` // HTTP header x-business-use-case-usage.
 }
 
@@ -91,6 +92,12 @@ type RateLimiting struct {
 	TotalCPUTime                int    `json:"total_cputime"`                   // Percentage of the total time that has been used.
 	Type                        string `json:"type"`                            // Type of rate limit logic being applied.
 	EstimatedTimeToRegainAccess int    `json:"estimated_time_to_regain_access"` // Time in minutes to resume calls.
+}
+
+// AdsInsightsThrottle is the rate limiting header for Ads Insights API.
+type AdsInsightsThrottle struct {
+	AppIDUtilPCT float64 `json:"app_id_util_pct"` // The percentage of allocated capacity for the associated app_id has consumed.
+	AccIDUtilPCT float64 `json:"acc_id_util_pct"` // The percentage of allocated capacity for the associated ad account_id has consumed.
 }
 
 // AdAccountUsage is the rate limiting header for Ads API.

@@ -643,6 +643,10 @@ func (session *Session) addUsageInfo(res Result, response *http.Response) Result
 		json.Unmarshal([]byte(usage), &usageInfo.BusinessUseCase)
 	}
 
+	if usage := header.Get("X-Fb-Ads-Insights-Throttle"); usage != "" {
+		json.Unmarshal([]byte(usage), &usageInfo.AdsInsights)
+	}
+
 	res[usageInfoKey] = &usageInfo
 	return res
 }
