@@ -2,7 +2,8 @@
 
 ## v2.4.0 ##
 
-* `[NEW]` [#126](https://github.com/huandu/facebook/pull/126) Support v3.3 rate limiting header `x-business-use-case-usage` and `x-ad-account-usage` in `UsageInfo`. Use it in any `Result` by calling `Result#UsageInfo()`. It's also available in `PagingResult` by calling `PagingResult#UsageInfo()`. Thanks [@OwlLaboratory](https://github.com/OwlLaboratory) for raising this change for me.
+* `[NEW]` [#126](https://github.com/huandu/facebook/pull/126) [#128](https://github.com/huandu/facebook/pull/128) Support v3.3 rate limiting header `x-business-use-case-usage`, `x-ad-account-usage` and `X-FB-Ads-Insights-Throttle` in `UsageInfo`. Use it in any `Result` by calling `Result#UsageInfo()`. It's also available in `PagingResult` by calling `PagingResult#UsageInfo()`. Thanks [@OwlLaboratory](https://github.com/OwlLaboratory) for raising this change for me. And Thanks
+  [@AlphaB](https://github.com/AlphaB) for your PR.
 
 ## v2.3.3 ##
 
