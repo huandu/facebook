@@ -1,5 +1,10 @@
 # Change Log #
 
+## v2.5.0 ##
+
+* `[NEW]` [#147](https://github.com/huandu/facebook/issue/147) `MakeParams` is aware of struct field tag `"facebook"` and `"json"` now. It works quite similar to `json.Marshal` except that it makes any data to `Params` instead of JSON string. Thank [@samber](https://github.com/samber) for your input.
+* `[FIX]` [#148](https://github.com/huandu/facebook/issue/148) Fix a panic in `Param#Encode` when a nil value is included in `Param`. Thanks again, [@samber](https://github.com/samber).
+
 ## v2.4.0 ##
 
 * `[NEW]` [#126](https://github.com/huandu/facebook/pull/126) [#128](https://github.com/huandu/facebook/pull/128) Support v3.3 rate limiting header `x-business-use-case-usage`, `x-ad-account-usage` and `X-FB-Ads-Insights-Throttle` in `UsageInfo`. Use it in any `Result` by calling `Result#UsageInfo()`. It's also available in `PagingResult` by calling `PagingResult#UsageInfo()`. Thanks [@OwlLaboratory](https://github.com/OwlLaboratory) for raising this change for me. And Thanks
@@ -54,7 +59,7 @@
 
 ## v1.8.0 ##
 
-* `[FIX]` [#59](https://github.com/huandu/facebook/pull/59) Guess content type for binary params by filename extension or an arbitrary value. Thanks,[@panki](https://github.com/panki).
+* `[FIX]` [#59](https://github.com/huandu/facebook/pull/59) Guess content type for binary params by filename extension or an arbitrary value. Thanks, [@panki](https://github.com/panki).
 
 ## v1.7.1 ##
 

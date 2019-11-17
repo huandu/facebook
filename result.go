@@ -21,7 +21,8 @@ import (
 )
 
 const (
-	ERROR_CODE_UNKNOWN = -1 // unknown facebook graph api error code.
+	// ErrCodeUnknown is unknown facebook graph api error code.
+	ErrCodeUnknown = -1
 
 	debugInfoKey   = "__debug__"
 	debugProtoKey  = "__proto__"
@@ -105,7 +106,7 @@ type AdAccountUsage struct {
 	AccIDUtilPCT float64 `json:"acc_id_util_pct"` // Percentage of calls made for this ad account.
 }
 
-// BusinessUseCaseUsage
+// BusinessUseCaseUsage is the business use case usage data.
 type BusinessUseCaseUsage map[string][]*RateLimiting
 
 // DebugMessage is one debug message in "__debug__" of graph API response.
@@ -397,7 +398,7 @@ func (res Result) Err() error {
 	// code may be missing in error.
 	// assign a non-zero value to it.
 	if err.Code == 0 {
-		err.Code = ERROR_CODE_UNKNOWN
+		err.Code = ErrCodeUnknown
 	}
 
 	return &err

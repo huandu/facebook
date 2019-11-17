@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	_MIME_FORM_URLENCODED = "application/x-www-form-urlencoded"
-	_MIME_FORM_DATA       = "multipart/form-data"
+	mimeFormURLEncoded = "application/x-www-form-urlencoded"
+	mimeFormData       = "multipart/form-data"
 )
 
 var (
@@ -32,14 +32,14 @@ var (
 	typeOfPointerToBinaryFile = reflect.TypeOf(&BinaryFile{})
 )
 
-// API params.
+// Params is the params used to send Facebook API request.
 //
 // For general uses, just use Params as an ordinary map.
 //
 // For advanced uses, use MakeParams to create Params from any struct.
 type Params map[string]interface{}
 
-// Makes a new Params instance by given data.
+// MakeParams makes a new Params instance by given data.
 // Data must be a struct or a map with string keys.
 // MakeParams will change all struct field name to lower case name with underscore.
 // e.g. "FooBar" will be changed to "foo_bar".
@@ -85,14 +85,53 @@ func makeParams(value reflect.Value) (params Params) {
 	}
 
 	params = Params{}
+	t := value.Type()
 	num := value.NumField()
 
 	for i := 0; i < num; i++ {
-		name := camelCaseToUnderScore(value.Type().Field(i).Name)
+		sf := t.Field(i)
+		tag := sf.Tag
+		name := ""
+		omitEmpty := false
+
+		// If field tag "facebook" or "json" exists, use it as field name and options.
+		fbTag := tag.Get("facebook")
+		jsonTag := tag.Get("json")
+
+		if fbTag != "" || jsonTag != "" {
+			optTag := jsonTag
+
+			// If field tag "facebook" exists, it's preferred.
+			if fbTag != "" {
+				optTag = fbTag
+			}
+
+			opts := strings.Split(optTag, ",")
+
+			if opts[0] != "" {
+				name = opts[0]
+			}
+
+			for _, opt := range opts[1:] {
+				if opt == "omitempty" {
+					omitEmpty = true
+				}
+			}
+		}
+
 		field := value.Field(i)
+
+		if omitEmpty && isEmptyValue(field) {
+			continue
+		}
 
 		for field.Kind() == reflect.Ptr {
 			field = field.Elem()
+		}
+
+		// If name is not set in field tag, use field name directly.
+		if name == "" {
+			name = camelCaseToUnderScore(sf.Name)
 		}
 
 		switch field.Kind() {
@@ -100,6 +139,9 @@ func makeParams(value reflect.Value) (params Params) {
 			// these types won't be marshalled in json.
 			params = nil
 			return
+
+		case reflect.Struct:
+			params[name] = makeParams(field)
 
 		default:
 			params[name] = field.Interface()
@@ -109,13 +151,32 @@ func makeParams(value reflect.Value) (params Params) {
 	return
 }
 
-// Encodes params to query string.
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+
+	return false
+}
+
+// Encode encodes params to query string.
 // If map value is not a string, Encode uses json.Marshal() to convert value to string.
 //
-// Encode will panic if Params contains values that cannot be marshalled to json string.
+// Encode may panic if Params contains values that cannot be marshalled to json string.
 func (params Params) Encode(writer io.Writer) (mime string, err error) {
 	if params == nil || len(params) == 0 {
-		mime = _MIME_FORM_URLENCODED
+		mime = mimeFormURLEncoded
 		return
 	}
 
@@ -135,14 +196,18 @@ func (params Params) Encode(writer io.Writer) (mime string, err error) {
 		return params.encodeMultipartForm(writer)
 	}
 
-	return params.encodeFormUrlEncoded(writer)
+	return params.encodeFormURLEncoded(writer)
 }
 
-func (params Params) encodeFormUrlEncoded(writer io.Writer) (mime string, err error) {
+func (params Params) encodeFormURLEncoded(writer io.Writer) (mime string, err error) {
 	var jsonStr []byte
 	written := false
 
 	for k, v := range params {
+		if v == nil {
+			continue
+		}
+
 		if written {
 			io.WriteString(writer, "&")
 		}
@@ -165,7 +230,7 @@ func (params Params) encodeFormUrlEncoded(writer io.Writer) (mime string, err er
 		written = true
 	}
 
-	mime = _MIME_FORM_URLENCODED
+	mime = mimeFormURLEncoded
 	return
 }
 
