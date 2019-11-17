@@ -70,8 +70,11 @@ type NestedStruct struct {
 }
 
 type ParamsStruct struct {
-	Foo string
-	Bar *ParamsNestedStruct
+	Foo           string
+	Bar           *ParamsNestedStruct
+	Renamed       int `facebook:"changed"`
+	AlwaysVisible float64
+	Zero          string `facebook:",omitempty"`
 }
 
 type ParamsNestedStruct struct {
