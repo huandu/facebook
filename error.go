@@ -7,7 +7,9 @@
 
 package facebook
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Error represents Facebook API error.
 type Error struct {
@@ -15,13 +17,14 @@ type Error struct {
 	Type         string
 	Code         int
 	ErrorSubcode int    // subcode for authentication related errors.
-	UserTitle    string `json:"error_user_title"`
-	UserMessage  string `json:"error_user_msg"`
-	IsTransient  bool   `json:"is_transient"`
-	TraceID      string `json:"fbtrace_id"`
+	UserTitle    string `json:"error_user_title,omitempty"`
+	UserMessage  string `json:"error_user_msg,omitempty"`
+	IsTransient  bool   `json:"is_transient,omitempty"`
+	TraceID      string `json:"fbtrace_id,omitempty"`
 }
 
 // Error returns error string.
 func (e *Error) Error() string {
-	return fmt.Sprintf("message: %s, error_user_title: %s, error_user_msg: %s", e.Message, e.UserTitle, e.UserMessage)
+	return fmt.Sprintf("facebook: %s (code: %d; error_subcode: %d, error_user_title: %s, error_user_msg: %s)",
+		e.Message, e.Code, e.ErrorSubcode, e.UserTitle, e.UserMessage)
 }

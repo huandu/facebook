@@ -50,28 +50,28 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	strs := strings.SplitN(signedRequest, ".", 2)
 
 	if len(strs) != 2 {
-		err = fmt.Errorf("invalid signed request format")
+		err = fmt.Errorf("facebook: invalid signed request format")
 		return
 	}
 
 	sig, e1 := base64.RawURLEncoding.DecodeString(strs[0])
 
 	if e1 != nil {
-		err = fmt.Errorf("fail to decode signed request sig with error %v", e1)
+		err = fmt.Errorf("facebook: fail to decode signed request sig with error %v", e1)
 		return
 	}
 
 	payload, e2 := base64.RawURLEncoding.DecodeString(strs[1])
 
 	if e2 != nil {
-		err = fmt.Errorf("fail to decode signed request payload with error is %v", e2)
+		err = fmt.Errorf("facebook: fail to decode signed request payload with error is %v", e2)
 		return
 	}
 
 	err = json.Unmarshal(payload, &res)
 
 	if err != nil {
-		err = fmt.Errorf("signed request payload is not a valid json string with error %v", err)
+		err = fmt.Errorf("facebook: signed request payload is not a valid json string with error %v", err)
 		return
 	}
 
@@ -79,14 +79,14 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	err = res.DecodeField("algorithm", &hashMethod)
 
 	if err != nil {
-		err = fmt.Errorf("signed request payload doesn't contains a valid 'algorithm' field")
+		err = fmt.Errorf("facebook: signed request payload doesn't contains a valid 'algorithm' field")
 		return
 	}
 
 	hashMethod = strings.ToUpper(hashMethod)
 
 	if hashMethod != "HMAC-SHA256" {
-		err = fmt.Errorf("signed request payload uses an unknown HMAC method; expect 'HMAC-SHA256' but actual is '%v'", hashMethod)
+		err = fmt.Errorf("facebook: signed request payload uses an unknown HMAC method; expect 'HMAC-SHA256' but actual is '%v'", hashMethod)
 		return
 	}
 
@@ -95,7 +95,7 @@ func (app *App) ParseSignedRequest(signedRequest string) (res Result, err error)
 	expectedSig := hash.Sum(nil)
 
 	if !hmac.Equal(sig, expectedSig) {
-		err = fmt.Errorf("bad signed request signiture")
+		err = fmt.Errorf("facebook: bad signed request signiture")
 		return
 	}
 
@@ -119,7 +119,7 @@ func (app *App) ParseCode(code string) (token string, err error) {
 // See https://developers.facebook.com/docs/facebook-login/access-tokens#extending
 func (app *App) ParseCodeInfo(code, machineID string) (token string, expires int, newMachineID string, err error) {
 	if code == "" {
-		err = fmt.Errorf("code is empty")
+		err = fmt.Errorf("facebook: code is empty")
 		return
 	}
 
@@ -132,7 +132,7 @@ func (app *App) ParseCodeInfo(code, machineID string) (token string, expires int
 	})
 
 	if err != nil {
-		err = fmt.Errorf("fail to parse facebook response with error %v", err)
+		err = fmt.Errorf("facebook: fail to parse facebook response with error %v", err)
 		return
 	}
 
@@ -207,7 +207,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 // Return the code retrieved from facebook.
 func (app *App) GetCode(accessToken string) (code string, err error) {
 	if accessToken == "" {
-		err = fmt.Errorf("long lived accessToken is empty")
+		err = fmt.Errorf("facebook: long lived accessToken is empty")
 		return
 	}
 
@@ -220,7 +220,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	})
 
 	if err != nil {
-		err = fmt.Errorf("fail to get code from facebook with error %v", err)
+		err = fmt.Errorf("facebook: fail to get code from facebook with error %v", err)
 		return
 	}
 
@@ -269,7 +269,7 @@ func (app *App) SessionFromSignedRequest(signedRequest string) (session *Session
 
 	if err != nil {
 		// no code? no way to continue.
-		err = fmt.Errorf("cannot find 'oauth_token' and 'code'; unable to continue")
+		err = fmt.Errorf("facebook: cannot find 'oauth_token' and 'code'; unable to continue")
 		return
 	}
 

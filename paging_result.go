@@ -35,7 +35,7 @@ type pagingNavigator struct {
 func newPagingResult(session *Session, res Result) (*PagingResult, error) {
 	// quick check whether Result is a paging response.
 	if _, ok := res["data"]; !ok {
-		return nil, fmt.Errorf("current Result is not a paging response")
+		return nil, fmt.Errorf("facebook: current Result is not a paging response")
 	}
 
 	pr := &PagingResult{

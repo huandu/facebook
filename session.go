@@ -167,7 +167,7 @@ func (session *Session) User() (id string, err error) {
 	}
 
 	if session.accessToken == "" && session.HttpClient == nil {
-		err = fmt.Errorf("access token is not set")
+		err = fmt.Errorf("facebook: access token is not set")
 		return
 	}
 
@@ -191,7 +191,7 @@ func (session *Session) User() (id string, err error) {
 // Returns nil if access token is valid.
 func (session *Session) Validate() (err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
-		err = fmt.Errorf("access token is not set")
+		err = fmt.Errorf("facebook: access token is not set")
 		return
 	}
 
@@ -203,7 +203,7 @@ func (session *Session) Validate() (err error) {
 	}
 
 	if f := result.Get("id"); f == nil {
-		err = fmt.Errorf("invalid access token")
+		err = fmt.Errorf("facebook: invalid access token %s", session.accessToken)
 		return
 	}
 
@@ -215,19 +215,19 @@ func (session *Session) Validate() (err error) {
 // See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/#checktoken
 func (session *Session) Inspect() (result Result, err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
-		err = fmt.Errorf("access token is not set")
+		err = fmt.Errorf("facebook: access token is not set")
 		return
 	}
 
 	if session.app == nil {
-		err = fmt.Errorf("cannot inspect access token without binding an app")
+		err = fmt.Errorf("facebook: cannot inspect access token without binding an app")
 		return
 	}
 
 	appAccessToken := session.app.AppAccessToken()
 
 	if appAccessToken == "" {
-		err = fmt.Errorf("app access token is not set")
+		err = fmt.Errorf("facebook: app access token is not set")
 		return
 	}
 
@@ -243,7 +243,7 @@ func (session *Session) Inspect() (result Result, err error) {
 	// facebook stores everything, including error, inside result["data"].
 	// make sure that result["data"] exists and doesn't contain error.
 	if _, ok := result["data"]; !ok {
-		err = fmt.Errorf("facebook inspect api returns unexpected result")
+		err = fmt.Errorf("facebook: facebook inspect api returns unexpected result")
 		return
 	}
 
@@ -291,7 +291,7 @@ func (session *Session) AppsecretProof() string {
 // Returns error if there is no App associated with this Session.
 func (session *Session) EnableAppsecretProof(enabled bool) error {
 	if session.app == nil {
-		return fmt.Errorf("cannot change appsecret proof status without an associated App")
+		return fmt.Errorf("facebook: cannot change appsecret proof status without an associated App")
 	}
 
 	if session.enableAppsecretProof != enabled {
@@ -466,7 +466,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 	mime, err := params.Encode(buf)
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot encode POST params. %v", err)
+		return nil, fmt.Errorf("facebook: cannot encode POST params; %v", err)
 	}
 
 	request, err := http.NewRequest("POST", uri, buf)
@@ -492,7 +492,7 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 	mime, err := params.Encode(buf)
 
 	if err != nil {
-		return nil, fmt.Errorf("cannot encode POST params. %v", err)
+		return nil, fmt.Errorf("facebook: cannot encode POST params; %v", err)
 	}
 
 	request, err := http.NewRequest("POST", urlStr, buf)
@@ -509,7 +509,7 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 	}
 
 	if len(data) == 0 {
-		return nil, fmt.Errorf("empty response from facebook")
+		return nil, fmt.Errorf("facebook: empty response from facebook")
 	}
 
 	// facebook may return a query string.
@@ -548,7 +548,7 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 	}
 
 	if err != nil {
-		err = fmt.Errorf("cannot reach facebook server. %v", err)
+		err = fmt.Errorf("facebook: cannot reach facebook server; %v", err)
 		return
 	}
 
@@ -557,7 +557,7 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 	response.Body.Close()
 
 	if err != nil {
-		err = fmt.Errorf("cannot read facebook response. %v", err)
+		err = fmt.Errorf("facebook: cannot read facebook response; %v", err)
 	}
 
 	data = buf.Bytes()
