@@ -7,6 +7,8 @@
 
 package facebook
 
+import "fmt"
+
 // Error represents Facebook API error.
 type Error struct {
 	Message      string
@@ -21,5 +23,5 @@ type Error struct {
 
 // Error returns error string.
 func (e *Error) Error() string {
-	return e.Message
+	return fmt.Sprintf("message: %s, error_user_title: %s, error_user_msg: %s", e.Message, e.UserTitle, e.UserMessage)
 }
