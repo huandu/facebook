@@ -9,9 +9,11 @@ API documentation can be found on [godoc](http://godoc.org/github.com/huandu/fac
 
 Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply it.
 
-## Get It ##
+## Install ##
 
-Use `go get -u github.com/huandu/facebook` to get or update it.
+If `go mod` is enabled, install this package with `go get github.com/huandu/facebook/v2`. If not, call `go get -u github.com/huandu/facebook` to get latest master branch version.
+
+Note that, since go1.14, [incompatible versions are omitted](https://golang.org/doc/go1.14#incompatible-versions) unless specified explicitly. Therefore, it's highly recommended to upgrade the import path to `github.com/huandu/facebook/v2` when possible to avoid any potential dependency error.
 
 ## Usage ##
 
