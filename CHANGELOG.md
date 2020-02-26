@@ -1,5 +1,13 @@
 # Change Log #
 
+## v2.5.2 ##
+
+* `[FIX]` Update `go.mod` import path from `github.com/huandu/facebook` to `github.com/huandu/facebook/v2`. Since go1.14, incompatible versions are omitted by default.
+
+## v2.5.1 ##
+
+* `[FIX]` [#150](https://github.com/huandu/facebook/pull/150) Add additional error messages to help debug issues. Thanks [@sothychan](https://github.com/sothychan).
+
 ## v2.5.0 ##
 
 * `[NEW]` [#147](https://github.com/huandu/facebook/issue/147) `MakeParams` is aware of struct field tag `"facebook"` and `"json"` now. It works quite similar to `json.Marshal` except that it makes any data to `Params` instead of JSON string. Thank [@samber](https://github.com/samber) for your input.
