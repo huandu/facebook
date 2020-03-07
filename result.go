@@ -89,8 +89,8 @@ type UsageInfo struct {
 // RateLimiting is the rate limiting header for business use cases.
 type RateLimiting struct {
 	CallCount                   int    `json:"call_count"`                      // Percentage of calls made for this business ad account.
-	TotalTime                   int    `json:"total_time"`                      // Percentage of the total CPU time that has been used.
-	TotalCPUTime                int    `json:"total_cputime"`                   // Percentage of the total time that has been used.
+	TotalTime                   int    `json:"total_time"`                      // Percentage of the total time that has been used.
+	TotalCPUTime                int    `json:"total_cputime"`                   // Percentage of the total CPU time that has been used.
 	Type                        string `json:"type"`                            // Type of rate limit logic being applied.
 	EstimatedTimeToRegainAccess int    `json:"estimated_time_to_regain_access"` // Time in minutes to resume calls.
 }
