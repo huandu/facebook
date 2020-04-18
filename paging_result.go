@@ -22,8 +22,8 @@ type PagingResult struct {
 }
 
 type pagingData struct {
-	Data      []Result `facebook:",required"`
-	Paging    *pagingNavigator
+	Data      []Result         `facebook:",required"`
+	Paging    *pagingNavigator `facebook:"paging"`
 	UsageInfo *UsageInfo
 }
 
@@ -33,16 +33,21 @@ type pagingNavigator struct {
 }
 
 func newPagingResult(session *Session, res Result) (*PagingResult, error) {
+	var flattenedResult Result
 	// quick check whether Result is a paging response.
 	if _, ok := res["data"]; !ok {
-		return nil, fmt.Errorf("facebook: current Result is not a paging response")
+		var err error
+		flattenedResult, err = flattenInnerResult(res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	pr := &PagingResult{
 		session: session,
 	}
 	paging := &pr.paging
-	err := res.Decode(paging)
+	err := flattenedResult.Decode(paging)
 
 	if err != nil {
 		return nil, err
@@ -54,6 +59,45 @@ func newPagingResult(session *Session, res Result) (*PagingResult, error) {
 	}
 
 	return pr, nil
+}
+
+func flattenInnerResult(res Result) (Result, error) {
+	flattenedResult := res
+	// check also if a secondary data layer is available
+	// for example res = {"groups": ["data": [{"name": "test", "id": "6"}], "paging": {...}]}
+	nonIDKey, ok := findNonIDKey(res)
+	if !ok {
+		return res, fmt.Errorf("facebook: current Result is not a nested result")
+	}
+
+	innerResult, ok := res[nonIDKey].(map[string]interface{})
+	if !ok {
+		return res, fmt.Errorf("facebook: could not parse inner result")
+	}
+
+	data, dataExists := innerResult["data"]
+	if !dataExists {
+		return res, fmt.Errorf("facebook: current Result doesn't have an inner data section")
+	}
+
+	paging, pagingExists := innerResult["paging"]
+	if !pagingExists {
+		return res, fmt.Errorf("facebook: current Result is not a paging response")
+	}
+
+	flattenedResult["data"] = data
+	flattenedResult["paging"] = paging
+	return flattenedResult, nil
+}
+
+func findNonIDKey(res Result) (string, bool) {
+	for key := range res {
+		if key != "id" && key != "__usage__" {
+			return key, true
+		}
+	}
+
+	return "", false
 }
 
 // Data gets current data.
