@@ -26,7 +26,7 @@ package main
 
 import (
     "fmt"
-    fb "github.com/huandu/facebook"
+    fb "github.com/huandu/facebook/v2"
 )
 
 func main() {
