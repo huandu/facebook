@@ -1,4 +1,4 @@
-# A Facebook Graph API SDK In Golang #
+# A Facebook Graph API SDK In Golang
 
 [![Build Status](https://travis-ci.org/huandu/facebook.svg?branch=master)](https://travis-ci.org/huandu/facebook)
 [![GoDoc](https://godoc.org/github.com/huandu/facebook?status.svg)](https://godoc.org/github.com/huandu/facebook)
@@ -9,15 +9,15 @@ API documentation can be found on [godoc](http://godoc.org/github.com/huandu/fac
 
 Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply it.
 
-## Install ##
+## Install
 
 If `go mod` is enabled, install this package with `go get github.com/huandu/facebook/v2`. If not, call `go get -u github.com/huandu/facebook` to get latest master branch version.
 
 Note that, since go1.14, [incompatible versions are omitted](https://golang.org/doc/go1.14#incompatible-versions) unless specified explicitly. Therefore, it's highly recommended to upgrade the import path to `github.com/huandu/facebook/v2` when possible to avoid any potential dependency error.
 
-## Usage ##
+## Usage
 
-### Quick start ###
+### Quick start
 
 Here is a sample that reads my Facebook first name by uid.
 
@@ -70,7 +70,7 @@ var tm time.Time
 res.DecodeField("create_time", &tm)
 ```
 
-### Read a graph `user` object with a valid access token ###
+### Read a graph `user` object with a valid access token
 
 ```go
 res, err := fb.Get("/me/feed", fb.Params{
@@ -116,7 +116,7 @@ for _, item := range items {
 }
 ```
 
-### Use `App` and `Session` ###
+### Use `App` and `Session`
 
 It's recommended to use `App` and `Session` in a production app. They provide more control over all API calls. They can also make code clearer and more concise.
 
@@ -143,7 +143,8 @@ err := session.Validate()
 res, _ := session.Get("/me/feed", nil)
 ```
 
-By default all requests are sent to Facebook servers. If you wish to override API base URL for unit-testing purposes - just set respective `Session` field:
+By default all requests are sent to Facebook servers. If you wish to override API base URL for unit-testing purposes - just set respective `Session` field.
+
 ```go
 testSrv := httptest.NewServer(someMux)
 session.BaseURL = testSrv.URL + "/"
@@ -161,7 +162,7 @@ session.RFC3339Timestamps = true
 Setting either of these to true will cause `date_format=Y-m-d\TH:i:sP` to be sent as a parameter on every request. The format string is a PHP `date()` representation of RFC3339.
 More info is available in [this issue](https://github.com/huandu/facebook/issues/95).
 
-### Use `paging` field in response. ###
+### Use `paging` field in response
 
 Some Graph API responses use a special JSON structure to provide paging information. Use `Result.Paging()` to walk through all data in such results.
 
@@ -192,7 +193,7 @@ for {
 
 ```
 
-### Read Graph API response and decode result into a struct ###
+### Read Graph API response and decode result into a struct
 
 The Facebook Graph API always uses snake case keys in API response.
 This package can automatically convert from snake case to Go's camel-case-style style struct field names.
@@ -201,7 +202,7 @@ For instance, to decode following JSON response...
 
 ```json
 {
-    "foo_bar": "player"
+  "foo_bar": "player"
 }
 ```
 
@@ -239,7 +240,7 @@ res, _ := session.Get("/me/feed", nil)
 res.DecodeField("data.0", &feed) // read latest feed
 ```
 
-### Send a batch request ###
+### Send a batch request
 
 ```go
 params1 := Params{
@@ -270,7 +271,7 @@ res.DecodeField("id", &id)
 contentType := batchResult1.Header.Get("Content-Type")
 ```
 
-### Using with Google App Engine ###
+### Using with Google App Engine
 
 Google App Engine provides the `appengine/urlfetch` package as the standard HTTP client package.
 For this reason, the default client in `net/http` won't work.
@@ -294,7 +295,7 @@ session.HttpClient = urlfetch.Client(context)
 res, err := session.Get("/me", nil)
 ```
 
-### Select Graph API version ###
+### Select Graph API version
 
 See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand Facebook versioning strategy.
 
@@ -311,7 +312,7 @@ session := &fb.Session{}
 session.Version = "v3.0" // overwrite global default.
 ```
 
-### Enable `appsecret_proof` ###
+### Enable `appsecret_proof`
 
 Facebook can verify Graph API Calls with `appsecret_proof`. It's a feature to make Graph API call more secure. See [Securing Graph API Requests](https://developers.facebook.com/docs/graph-api/securing-requests) to know more about it.
 
@@ -329,7 +330,7 @@ session.Get("/me", nil)
 session.EnableAppsecretProof(false)
 ```
 
-### Debugging API Requests ###
+### Debugging API Requests
 
 Facebook has introduced a way to debug Graph API calls. See [Debugging API Requests](https://developers.facebook.com/docs/graph-api/using-graph-api/debugging) for more details.
 
@@ -347,7 +348,7 @@ fmt.Println("http headers:", debugInfo.Header)
 fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
 ```
 
-### Monitoring API usage info ###
+### Monitoring API usage info
 
 Call `Result#UsageInfo` to get a `UsageInfo` struct containing both app and page level rate limit information from the result. More information about rate limiting can be found [here](https://developers.facebook.com/docs/graph-api/overview/rate-limiting).
 
@@ -361,7 +362,7 @@ fmt.Println("Ad account rate limiting information:", usageInfo.AdAccount)
 fmt.Println("Business use case usage information:", usageInfo.BusinessUseCase)
 ```
 
-### Work with package `golang.org/x/oauth2` ##
+### Work with package `golang.org/x/oauth2`
 
 The `golang.org/x/oauth2` package can handle the Facebook OAuth2 authentication process and access token quite well. This package can work with it by setting `Session#HttpClient` to OAuth2's client.
 
@@ -369,7 +370,7 @@ The `golang.org/x/oauth2` package can handle the Facebook OAuth2 authentication 
 import (
     "golang.org/x/oauth2"
     oauth2fb "golang.org/x/oauth2/facebook"
-    fb "github.com/huandu/facebook"
+    fb "github.com/huandu/facebook/v2"
 )
 
 // Get Facebook access token.
@@ -395,7 +396,7 @@ session := &fb.Session{
 res, _ := session.Get("/me", nil)
 ```
 
-### Control timeout and cancelation with `Context` ###
+### Control timeout and cancelation with `Context`
 
 The `Session` accept a `Context`.
 
@@ -412,15 +413,15 @@ result, err := session.WithContext(ctx).Get("/me", nil)
 
 See [this Go blog post about context](https://blog.golang.org/context) for more details about how to use `Context`.
 
-## Change Log ##
+## Change Log
 
 See [CHANGELOG.md](CHANGELOG.md).
 
-## Out of Scope ##
+## Out of Scope
 
 1. No OAuth integration. This package only provides APIs to parse/verify access token and code generated in OAuth 2.0 authentication process.
 2. No old RESTful API and FQL support. Such APIs are deprecated for years. Forget about them.
 
-## License ##
+## License
 
 This package is licensed under the MIT license. See LICENSE for details.
