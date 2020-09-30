@@ -7,11 +7,11 @@ This is a Go package that fully supports the [Facebook Graph API](https://develo
 
 API documentation can be found on [godoc](http://godoc.org/github.com/huandu/facebook).
 
-Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply it.
+Feel free to create an issue or send me a pull request if you have any "how-to" question or bug or suggestion when using this package. I'll try my best to reply to it.
 
 ## Install
 
-If `go mod` is enabled, install this package with `go get github.com/huandu/facebook/v2`. If not, call `go get -u github.com/huandu/facebook` to get latest master branch version.
+If `go mod` is enabled, install this package with `go get github.com/huandu/facebook/v2`. If not, call `go get -u github.com/huandu/facebook` to get the latest master branch version.
 
 Note that, since go1.14, [incompatible versions are omitted](https://golang.org/doc/go1.14#incompatible-versions) unless specified explicitly. Therefore, it's highly recommended to upgrade the import path to `github.com/huandu/facebook/v2` when possible to avoid any potential dependency error.
 
@@ -124,11 +124,11 @@ It's recommended to use `App` and `Session` in a production app. They provide mo
 // Create a global App var to hold app id and secret.
 var globalApp = fb.New("your-app-id", "your-app-secret")
 
-// Facebook asks for a valid redirect uri when parsing signed request.
-// It's a new enforced policy starting as of late 2013.
+// Facebook asks for a valid redirect URI when parsing the signed request.
+// It's a newly enforced policy starting as of late 2013.
 globalApp.RedirectUri = "http://your.site/canvas/url/"
 
-// Here comes a client with a Facebook signed request string in query string.
+// Here comes a client with a Facebook signed request string in the query string.
 // This will return a new session from a signed request.
 session, _ := globalApp.SessionFromSignedRequest(signedRequest)
 
@@ -136,21 +136,21 @@ session, _ := globalApp.SessionFromSignedRequest(signedRequest)
 // this will return a session created directly from the token.
 session := globalApp.Session(token)
 
-// This validates the access token by ensuring that the current user ID is properly returned. err is nil if token is valid.
+// This validates the access token by ensuring that the current user ID is properly returned. err is nil if the token is valid.
 err := session.Validate()
 
-// Use the new session to send an API request with access token.
+// Use the new session to send an API request with the access token.
 res, _ := session.Get("/me/feed", nil)
 ```
 
-By default all requests are sent to Facebook servers. If you wish to override API base URL for unit-testing purposes - just set respective `Session` field.
+By default, all requests are sent to Facebook servers. If you wish to override the API base URL for unit-testing purposes - just set the respective `Session` field.
 
 ```go
 testSrv := httptest.NewServer(someMux)
 session.BaseURL = testSrv.URL + "/"
 ```
 
-Facebook returns most timestamps in a ISO9601 format which can't be natively parsed by Go's `encoding/json`.
+Facebook returns most timestamps in an ISO9601 format which can't be natively parsed by Go's `encoding/json`.
 Setting `RFC3339Timestamps` `true` on the `Session` or at the global level will cause proper RFC3339 timestamps to be requested from Facebook.
 RFC3339 is what `encoding/json` natively expects.
 
@@ -193,12 +193,12 @@ for {
 
 ```
 
-### Read Graph API response and decode result into a struct
+### Read Graph API response and decode result in a struct
 
 The Facebook Graph API always uses snake case keys in API response.
 This package can automatically convert from snake case to Go's camel-case-style style struct field names.
 
-For instance, to decode following JSON response...
+For instance, to decode the following JSON response...
 
 ```json
 {
@@ -206,7 +206,7 @@ For instance, to decode following JSON response...
 }
 ```
 
-One can use following struct.
+One can use the following struct.
 
 ```go
 type Data struct {
@@ -216,7 +216,7 @@ type Data struct {
 
 The decoding of each struct field can be customized by the format string stored under the `facebook` key or the "json" key in the struct field's tag. The `facebook` key is recommended as it's specifically designed for this package.
 
-Following is a sample shows all possible field tags.
+Following is a sample that shows all possible field tags.
 
 ```go
 // define a Facebook feed object.
@@ -283,7 +283,7 @@ import (
     "appengine/urlfetch"
 )
 
-// suppose it's the appengine context initialized somewhere.
+// suppose it's the AppEngine context initialized somewhere.
 var context appengine.Context
 
 // default Session object uses http.DefaultClient which is not allowed to use
@@ -291,20 +291,20 @@ var context appengine.Context
 seesion := globalApp.Session("a-access-token")
 session.HttpClient = urlfetch.Client(context)
 
-// now, session uses appengine http client now.
+// now, the session uses AppEngine HTTP client now.
 res, err := session.Get("/me", nil)
 ```
 
 ### Select Graph API version
 
-See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand Facebook versioning strategy.
+See [Platform Versioning](https://developers.facebook.com/docs/apps/versions) to understand the Facebook versioning strategy.
 
 ```go
-// this package uses default version which is controlled by Facebook app setting.
-// change following global variable to specific a global default version.
+// This package uses the default version which is controlled by the Facebook app setting.
+// change following global variable to specify a global default version.
 fb.Version = "v3.0"
 
-// starting with Graph API v2.0; it's not allowed to get user information without access token.
+// starting with Graph API v2.0; it's not allowed to get useful information without an access token.
 fb.Api("huan.du", GET, nil)
 
 // it's possible to specify version per session.
@@ -334,7 +334,7 @@ session.EnableAppsecretProof(false)
 
 Facebook has introduced a way to debug Graph API calls. See [Debugging API Requests](https://developers.facebook.com/docs/graph-api/using-graph-api/debugging) for more details.
 
-This package provides both a package level and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally; or use `Session#SetDebug` to change debug mode for one session.
+This package provides both a package level and per session debug flag. Set `Debug` to a `DEBUG_*` constant to change debug mode globally, or use `Session#SetDebug` to change debug mode for one session.
 
 When debug mode is turned on, use `Result#DebugInfo` to get `DebugInfo` struct from the result.
 
@@ -350,7 +350,7 @@ fmt.Println("facebook api version:", debugInfo.FacebookApiVersion)
 
 ### Monitoring API usage info
 
-Call `Result#UsageInfo` to get a `UsageInfo` struct containing both app and page level rate limit information from the result. More information about rate limiting can be found [here](https://developers.facebook.com/docs/graph-api/overview/rate-limiting).
+Call `Result#UsageInfo` to get a `UsageInfo` struct containing both app and page-level rate limit information from the result. More information about rate limiting can be found [here](https://developers.facebook.com/docs/graph-api/overview/rate-limiting).
 
 ```go
 res, _ := fb.Get("/me", fb.Params{"access_token": "xxx"})
