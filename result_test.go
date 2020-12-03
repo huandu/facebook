@@ -1179,3 +1179,22 @@ func TestDecodeSliceOfStruct(t *testing.T) {
 		t.Fatalf("invalid decoded result. [expected:%#v] [actual:%#v]", *expected, r)
 	}
 }
+
+func TestMakeResultError(t *testing.T) {
+	jsonBytes := []byte("invalid")
+	res, err := MakeResult(jsonBytes)
+
+	if res != nil {
+		t.Fatalf("res must be nil. [res:%v]", res)
+	}
+
+	if e, ok := err.(*UnmarshalError); !ok {
+		t.Fatalf("err must be an UnmarshalError. [err:%T %v]", err, err)
+	} else if !reflect.DeepEqual(e.Payload, jsonBytes) {
+		if e.Payload == nil {
+			t.Fatalf("missing payload. [e:%v]", e)
+		}
+
+		t.Fatalf("payload is not correct. [expected:%v] [actual:%v]", string(jsonBytes), string(e.Payload))
+	}
+}

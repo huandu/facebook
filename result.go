@@ -182,20 +182,31 @@ func makeResult(jsonBytes []byte, res interface{}) error {
 				err = makeResult(jsonBytes, &errRes)
 
 				if err != nil {
-					return err
+					return &UnmarshalError{
+						Payload: jsonBytes,
+						Message: "facebook: fail to parse facebook response",
+						Err:     err,
+					}
 				}
 
 				err = errRes.Err()
 
 				if err == nil {
-					err = fmt.Errorf("facebook: cannot format facebook response; expect an array but get an object")
+					err = &UnmarshalError{
+						Payload: jsonBytes,
+						Message: "facebook: fail to parse facebook response; expect an array but get an object",
+					}
 				}
 
 				return err
 			}
 		}
 
-		return fmt.Errorf("facebook: cannot format facebook response. %v", err)
+		return &UnmarshalError{
+			Payload: jsonBytes,
+			Message: "facebook: fail to parse facebook response",
+			Err:     err,
+		}
 	}
 
 	return nil

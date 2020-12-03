@@ -86,6 +86,13 @@ if err != nil {
         return
     }
 
+    // err can be an unmarshal error when Facebook API returns a message which is not JSON.
+    if e, ok := err.(*UnmarshalError); ok {
+        fmt.Printf("facebook error. [message:%v] [err:%v] [payload:%v]",
+            e.Message, e.Err, string(e.Payload))
+        return
+    }
+
     return
 }
 
