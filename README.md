@@ -103,9 +103,8 @@ fmt.Println("My latest feed story is:", res.Get("data.0.story"))
 ### Read a graph `search` for page and decode slice of maps
 
 ```go
-res, _ := fb.Get("/search", fb.Params{
+res, _ := fb.Get("/pages/search", fb.Params{
         "access_token": "a-valid-access-token",
-        "type":         "page",
         "q":            "nightlife,singapore",
     })
 
