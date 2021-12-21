@@ -769,7 +769,7 @@ func TestPagingResult(t *testing.T) {
 		t.Fatalf("should have no more post. %v", *paging.paging.Paging)
 	}
 
-	noMore, err = paging.Next()
+	_, err = paging.Next()
 
 	if err != nil {
 		t.Fatalf("cannot get paging information. [e:%v]", err)
@@ -781,7 +781,7 @@ func TestPagingResult(t *testing.T) {
 		t.Fatalf("expect to have only 2 post. [len:%v]", len(data))
 	}
 
-	noMore, err = paging.Next()
+	_, err = paging.Next()
 
 	if err != nil {
 		t.Fatalf("cannot get paging information. [e:%v]", err)
