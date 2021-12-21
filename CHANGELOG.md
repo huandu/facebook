@@ -1,5 +1,11 @@
 # Change Log
 
+## v2.5.5
+
+- `[FIX]` [#176](https://github.com/huandu/facebook/issue/176) Fix a bug that the `UsageInfo` in `PageResult` is not initialized in the first page. Thanks [@uginroot](https://github.com/uginroot).
+
+Note that the tag `v2.5.4` was tagged on a wrong branch. I deleted it to avoid potential issues.
+
 ## v2.5.3
 
 - `[NEW]` [#163](https://github.com/huandu/facebook/issue/163) Add a new type `UnmarshalError` to hold error details when `json.Decoder` fails to parse Facebook API response. Thanks [@stlimtat](https://github.com/stlimtat).
