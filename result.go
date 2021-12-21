@@ -637,7 +637,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			n := val.Int()
 
-			if n < math.MinInt8 || n > math.MaxInt64 {
+			if n < math.MinInt8 || n > math.MaxInt8 {
 				return fmt.Errorf("facebook: field '%v' value exceeds the range of int8", fullName)
 			}
 

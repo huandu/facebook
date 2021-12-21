@@ -86,7 +86,6 @@ func camelCaseToUnderScore(str string) string {
 
 			if len(str) == 0 || r0 == '_' {
 				buf.WriteRune(unicode.ToLower(r0))
-				break
 			}
 
 		default:
