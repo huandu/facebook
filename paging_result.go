@@ -48,6 +48,8 @@ func newPagingResult(session *Session, res Result) (*PagingResult, error) {
 		return nil, err
 	}
 
+	paging.UsageInfo = res.UsageInfo()
+
 	if paging.Paging != nil {
 		pr.previous = paging.Paging.Previous
 		pr.next = paging.Paging.Next
