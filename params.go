@@ -175,7 +175,7 @@ func isEmptyValue(v reflect.Value) bool {
 //
 // Encode may panic if Params contains values that cannot be marshalled to json string.
 func (params Params) Encode(writer io.Writer) (mime string, err error) {
-	if params == nil || len(params) == 0 {
+	if len(params) == 0 {
 		mime = mimeFormURLEncoded
 		return
 	}

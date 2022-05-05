@@ -114,6 +114,10 @@ func (pr *PagingResult) navigate(url *string) (noMore bool, err error) {
 	params := Params{}
 	pr.session.prepareParams(params)
 
+	// Per #182, access_token is always useless.
+	// As we may need to keep other params, do a manual delete here.
+	delete(params, "access_token")
+
 	if len(params) == 0 {
 		pagingURL = *url
 	} else {
