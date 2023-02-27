@@ -59,8 +59,9 @@ type Session struct {
 	app         *App
 	id          string
 
-	enableAppsecretProof bool   // add "appsecret_proof" parameter in every facebook API call.
-	appsecretProof       string // pre-calculated "appsecret_proof" value.
+	enableAppsecretProof   bool   // add "appsecret_proof" parameter in every facebook API call.
+	appsecretProof         string // pre-calculated "appsecret_proof" value.
+	useAuthorizationHeader bool   // pass accessToken in headers instead of query params
 
 	debug DebugMode // using facebook debugging api in every request.
 
@@ -268,6 +269,11 @@ func (session *Session) SetAccessToken(token string) {
 	}
 }
 
+// UseAuthorizationHeader pass accessToken in authorization header instead of query params.
+func (session *Session) UseAuthorizationHeader() {
+	session.useAuthorizationHeader = true
+}
+
 // AppsecretProof checks appsecret proof is enabled or not.
 func (session *Session) AppsecretProof() string {
 	if !session.enableAppsecretProof {
@@ -429,8 +435,11 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 }
 
 func (session *Session) prepareParams(params Params) {
-	if _, ok := params["access_token"]; !ok && session.accessToken != "" {
-		params["access_token"] = session.accessToken
+
+	if !session.useAuthorizationHeader {
+		if _, ok := params["access_token"]; !ok && session.accessToken != "" {
+			params["access_token"] = session.accessToken
+		}
 	}
 
 	if session.enableAppsecretProof && session.accessToken != "" && session.app != nil {
@@ -539,6 +548,10 @@ func (session *Session) sendOauthRequest(uri string, params Params) (Result, err
 func (session *Session) sendRequest(request *http.Request) (response *http.Response, data []byte, err error) {
 	if session.context != nil {
 		request = request.WithContext(session.context)
+	}
+
+	if session.useAuthorizationHeader {
+		request.Header.Set("Authorization", "Bearer "+session.accessToken)
 	}
 
 	if session.HttpClient == nil {
