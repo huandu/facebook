@@ -132,9 +132,10 @@ func (session *Session) Batch(batchParams Params, params ...Params) ([]Result, e
 
 // Request makes an arbitrary HTTP request.
 // It expects server responses a facebook Graph API response.
-//     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
-//     res, err := session.Request(request)
-//     fmt.Println(res["gender"])  // get "male"
+//
+//	request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
+//	res, err := session.Request(request)
+//	fmt.Println(res["gender"])  // get "male"
 func (session *Session) Request(request *http.Request) (res Result, err error) {
 	var response *http.Response
 	var data []byte
@@ -269,7 +270,7 @@ func (session *Session) SetAccessToken(token string) {
 	}
 }
 
-// UseAuthorizationHeader pass accessToken in authorization header instead of query params.
+// UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string.
 func (session *Session) UseAuthorizationHeader() {
 	session.useAuthorizationHeader = true
 }

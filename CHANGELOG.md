@@ -1,5 +1,9 @@
 # Change Log
 
+## v2.6.0
+
+- `[NEW]` [#205](https://github.com/huandu/facebook/pull/205) Add an option called `UseAuthorizationHeader()` in `Session` to pass `access_token` in HTTP `Authorization` header instead of query string. Thanks [@sbellity](https://github.com/sbellity) for your PR.
+
 ## v2.5.5
 
 - `[FIX]` [#176](https://github.com/huandu/facebook/issue/176) Fix a bug that the `UsageInfo` in `PageResult` is not initialized in the first page. Thanks [@uginroot](https://github.com/uginroot).
