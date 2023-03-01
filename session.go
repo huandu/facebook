@@ -47,6 +47,15 @@ var (
 	regexpIsVideoPost = regexp.MustCompile(`\/videos$`)
 )
 
+// AuthorizationType defines the authorization types that facebook API supports
+// Currently Bearer and OAuth potential types
+type AuthorizationType string
+
+const (
+	Bearer = "Bearer"
+	OAuth  = "OAuth"
+)
+
 // Session holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
@@ -62,6 +71,8 @@ type Session struct {
 	enableAppsecretProof   bool   // add "appsecret_proof" parameter in every facebook API call.
 	appsecretProof         string // pre-calculated "appsecret_proof" value.
 	useAuthorizationHeader bool   // pass accessToken in headers instead of query params
+
+	authorizationHeaderType AuthorizationType // pass as a prefix of authorization header value token
 
 	debug DebugMode // using facebook debugging api in every request.
 
@@ -270,9 +281,16 @@ func (session *Session) SetAccessToken(token string) {
 	}
 }
 
-// UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string.
+// UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Set bearer as default Authorization header type
 func (session *Session) UseAuthorizationHeader() {
 	session.useAuthorizationHeader = true
+	session.authorizationHeaderType = Bearer
+}
+
+// UseAuthorizationHeaderWith passes `access_token` in HTTP Authorization header instead of query string. Sets input Authorization header type
+func (session *Session) UseAuthorizationHeaderWith(authorizationHeaderType AuthorizationType) {
+	session.useAuthorizationHeader = true
+	session.authorizationHeaderType = authorizationHeaderType
 }
 
 // AppsecretProof checks appsecret proof is enabled or not.
@@ -552,7 +570,12 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 	}
 
 	if session.useAuthorizationHeader {
-		request.Header.Set("Authorization", "Bearer "+session.accessToken)
+		if session.authorizationHeaderType == OAuth {
+			request.Header.Set("Authorization", fmt.Sprintf("%s %s", OAuth, session.accessToken))
+		} else {
+			request.Header.Set("Authorization", fmt.Sprintf("%s %s", Bearer, session.accessToken))
+		}
+
 	}
 
 	if session.HttpClient == nil {
