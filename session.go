@@ -283,11 +283,13 @@ func (session *Session) SetAccessToken(token string) {
 // UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Set bearer as default Authorization header type
 func (session *Session) UseAuthorizationHeader() {
 	session.useAuthorizationHeader = true
+	session.useOAuthAuthorizationHeader = false
 }
 
 // UseOAuthAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Set Oauth as default Authorization header type
 func (session *Session) UseOAuthAuthorizationHeader() {
 	session.useOAuthAuthorizationHeader = true
+	session.useAuthorizationHeader = false
 }
 
 // AppsecretProof checks appsecret proof is enabled or not.
