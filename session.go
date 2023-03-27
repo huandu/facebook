@@ -47,13 +47,13 @@ var (
 	regexpIsVideoPost = regexp.MustCompile(`\/videos$`)
 )
 
-// AuthorizationType defines the authorization types that facebook API supports
+// authorizationType defines the authorization types that facebook API supports
 // Currently Bearer and OAuth potential types
-type AuthorizationType string
+type authorizationType string
 
 const (
-	Bearer = "Bearer"
-	OAuth  = "OAuth"
+	Bearer authorizationType = "Bearer"
+	OAuth  authorizationType = "OAuth"
 )
 
 // Session holds a facebook session with an access token.
@@ -68,11 +68,10 @@ type Session struct {
 	app         *App
 	id          string
 
-	enableAppsecretProof   bool   // add "appsecret_proof" parameter in every facebook API call.
-	appsecretProof         string // pre-calculated "appsecret_proof" value.
-	useAuthorizationHeader bool   // pass accessToken in headers instead of query params
-
-	authorizationHeaderType AuthorizationType // pass as a prefix of authorization header value token
+	enableAppsecretProof        bool   // add "appsecret_proof" parameter in every facebook API call.
+	appsecretProof              string // pre-calculated "appsecret_proof" value.
+	useAuthorizationHeader      bool   // pass accessToken in headers instead of query params
+	useOAuthAuthorizationHeader bool   // pass accessToken in headers using OAuth rather than Bearer
 
 	debug DebugMode // using facebook debugging api in every request.
 
@@ -284,13 +283,11 @@ func (session *Session) SetAccessToken(token string) {
 // UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Set bearer as default Authorization header type
 func (session *Session) UseAuthorizationHeader() {
 	session.useAuthorizationHeader = true
-	session.authorizationHeaderType = Bearer
 }
 
-// UseAuthorizationHeaderWith passes `access_token` in HTTP Authorization header instead of query string. Sets input Authorization header type
-func (session *Session) UseAuthorizationHeaderWith(authorizationHeaderType AuthorizationType) {
-	session.useAuthorizationHeader = true
-	session.authorizationHeaderType = authorizationHeaderType
+// UseOAuthAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Set Oauth as default Authorization header type
+func (session *Session) UseOAuthAuthorizationHeader() {
+	session.useOAuthAuthorizationHeader = true
 }
 
 // AppsecretProof checks appsecret proof is enabled or not.
@@ -455,7 +452,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 
 func (session *Session) prepareParams(params Params) {
 
-	if !session.useAuthorizationHeader {
+	if !session.useAuthorizationHeader || !session.useOAuthAuthorizationHeader {
 		if _, ok := params["access_token"]; !ok && session.accessToken != "" {
 			params["access_token"] = session.accessToken
 		}
@@ -570,12 +567,11 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 	}
 
 	if session.useAuthorizationHeader {
-		if session.authorizationHeaderType == OAuth {
-			request.Header.Set("Authorization", fmt.Sprintf("%s %s", OAuth, session.accessToken))
-		} else {
-			request.Header.Set("Authorization", fmt.Sprintf("%s %s", Bearer, session.accessToken))
-		}
+		request.Header.Set("Authorization", fmt.Sprintf("%s %s", Bearer, session.accessToken))
+	}
 
+	if session.useOAuthAuthorizationHeader {
+		request.Header.Set("Authorization", fmt.Sprintf("%s %s", OAuth, session.accessToken))
 	}
 
 	if session.HttpClient == nil {
