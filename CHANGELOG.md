@@ -1,18 +1,22 @@
 # Change Log
 
+## v2.7.0
+
+- `[NEW]` [#211](https://github.com/huandu/facebook/pull/211) Make session on app configurable. Thank [Spazzy757](https://github.com/Spazzy757) for your PR.
+
 ## v2.6.0
 
-- `[NEW]` [#205](https://github.com/huandu/facebook/pull/205) Add an option called `UseAuthorizationHeader()` in `Session` to pass `access_token` in HTTP `Authorization` header instead of query string. Thanks [@sbellity](https://github.com/sbellity) for your PR.
+- `[NEW]` [#205](https://github.com/huandu/facebook/pull/205) Add an option called `UseAuthorizationHeader()` in `Session` to pass `access_token` in HTTP `Authorization` header instead of query string. Thank [@sbellity](https://github.com/sbellity) for your PR.
 
 ## v2.5.5
 
-- `[FIX]` [#176](https://github.com/huandu/facebook/issue/176) Fix a bug that the `UsageInfo` in `PageResult` is not initialized in the first page. Thanks [@uginroot](https://github.com/uginroot).
+- `[FIX]` [#176](https://github.com/huandu/facebook/issue/176) Fix a bug that the `UsageInfo` in `PageResult` is not initialized in the first page. Thank [@uginroot](https://github.com/uginroot).
 
 Note that the tag `v2.5.4` was tagged on a wrong branch. I deleted it to avoid potential issues.
 
 ## v2.5.3
 
-- `[NEW]` [#163](https://github.com/huandu/facebook/issue/163) Add a new type `UnmarshalError` to hold error details when `json.Decoder` fails to parse Facebook API response. Thanks [@stlimtat](https://github.com/stlimtat).
+- `[NEW]` [#163](https://github.com/huandu/facebook/issue/163) Add a new type `UnmarshalError` to hold error details when `json.Decoder` fails to parse Facebook API response. Thanks, [@stlimtat](https://github.com/stlimtat).
 
 ## v2.5.2
 
@@ -20,7 +24,7 @@ Note that the tag `v2.5.4` was tagged on a wrong branch. I deleted it to avoid p
 
 ## v2.5.1
 
-- `[FIX]` [#150](https://github.com/huandu/facebook/pull/150) Add additional error messages to help debug issues. Thanks [@sothychan](https://github.com/sothychan).
+- `[FIX]` [#150](https://github.com/huandu/facebook/pull/150) Add additional error messages to help debug issues. Thanks, [@sothychan](https://github.com/sothychan).
 
 ## v2.5.0
 
@@ -29,7 +33,7 @@ Note that the tag `v2.5.4` was tagged on a wrong branch. I deleted it to avoid p
 
 ## v2.4.0
 
-- `[NEW]` [#126](https://github.com/huandu/facebook/pull/126) [#128](https://github.com/huandu/facebook/pull/128) Support v3.3 rate limiting header `x-business-use-case-usage`, `x-ad-account-usage` and `X-FB-Ads-Insights-Throttle` in `UsageInfo`. Use it in any `Result` by calling `Result#UsageInfo()`. It's also available in `PagingResult` by calling `PagingResult#UsageInfo()`. Thanks [@OwlLaboratory](https://github.com/OwlLaboratory) for raising this change for me. And Thanks
+- `[NEW]` [#126](https://github.com/huandu/facebook/pull/126) [#128](https://github.com/huandu/facebook/pull/128) Support v3.3 rate limiting header `x-business-use-case-usage`, `x-ad-account-usage` and `X-FB-Ads-Insights-Throttle` in `UsageInfo`. Use it in any `Result` by calling `Result#UsageInfo()`. It's also available in `PagingResult` by calling `PagingResult#UsageInfo()`. Thank [@OwlLaboratory](https://github.com/OwlLaboratory) for raising this change for me. And Thanks
   [@AlphaB](https://github.com/AlphaB) for your PR.
 
 ## v2.3.3
