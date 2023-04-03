@@ -30,6 +30,10 @@ type App struct {
 	// Enable appsecret proof in every API call to facebook.
 	// Facebook document: https://developers.facebook.com/docs/graph-api/securing-requests
 	EnableAppsecretProof bool
+
+	// The session to send request when parsing tokens or code.
+	// If it's not set, default session will be used.
+	session *Session
 }
 
 // New creates a new App and sets app id and secret.
@@ -37,12 +41,18 @@ func New(appID, appSecret string) *App {
 	return &App{
 		AppId:     appID,
 		AppSecret: appSecret,
+		session:   defaultSession,
 	}
 }
 
 // AppAccessToken gets application access token, useful for gathering public information about users and applications.
 func (app *App) AppAccessToken() string {
 	return app.AppId + "|" + app.AppSecret
+}
+
+// SetSession is used to overwrite the default session used by the app
+func (app *App) SetSession(s *Session) {
+	app.session = s
 }
 
 // ParseSignedRequest parses signed request.
@@ -124,7 +134,7 @@ func (app *App) ParseCodeInfo(code, machineID string) (token string, expires int
 	}
 
 	var res Result
-	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
+	res, err = app.session.sendOauthRequest("/oauth/access_token", Params{
 		"client_id":     app.AppId,
 		"redirect_uri":  app.RedirectUri,
 		"client_secret": app.AppSecret,
@@ -172,7 +182,7 @@ func (app *App) ExchangeToken(accessToken string) (token string, expires int, er
 	}
 
 	var res Result
-	res, err = defaultSession.sendOauthRequest("/oauth/access_token", Params{
+	res, err = app.session.sendOauthRequest("/oauth/access_token", Params{
 		"grant_type":        "fb_exchange_token",
 		"client_id":         app.AppId,
 		"client_secret":     app.AppSecret,
@@ -212,7 +222,7 @@ func (app *App) GetCode(accessToken string) (code string, err error) {
 	}
 
 	var res Result
-	res, err = defaultSession.sendOauthRequest("/oauth/client_code", Params{
+	res, err = app.session.sendOauthRequest("/oauth/client_code", Params{
 		"client_id":     app.AppId,
 		"client_secret": app.AppSecret,
 		"redirect_uri":  app.RedirectUri,
