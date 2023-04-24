@@ -1,0 +1,42 @@
+omenzado a ejecutarse, puedes ver una gráfica de visualización del progreso de dicha ejecución, así como la actividad de cada paso, en GitHub.
+
+En GitHub.com, navega a la página principal del repositorio.
+
+Debajo del nombre del repositorio, haga clic en Acciones.
+
+Navegar al repositorio
+
+En la barra lateral izquierda, da clic en el flujo de trabajo que quieras ver.
+
+Captura de pantalla de los resultados del flujo de trabajo
+
+Debajo de "Ejecuciones de flujo de trabajo", da clic en el nombre de la ejecución que quieres ver.
+
+Captura de pantalla de las ejecuciones del flujo de trabajo
+
+En Trabajos o en el gráfico de visualización, seleccione el trabajo que quiera ver.
+
+Selección del trabajo
+
+Vea los resultados de cada paso.
+
+Captura de pantalla de los detalles de la ejecución del flujo de trabajo
+
+Pasos siguientes
+GitHub Actions puede ayudarte a automatizar casi cualquier aspecto de tu s procesos de desarrollo de aplicaciones. ¿Ya está listo para comenzar? Aquí tienes algunos recursos útiles para que tomes tus siguientes pasos con GitHub Actions:
+
+Para obtener flujos de trabajo de integración continua (CI) para compilar y probar el código, consulta "Automatización de compilaciones y pruebas".
+Para compilar y publicar paquetes, consulta "Paquetes de publicación".
+Para implementar proyectos, consulta "Implementación".
+Para automatizar tareas y procesos en GitHub, consulta "Gestión de problemas y solicitudes de incorporación de cambios".
+Para ver ejemplos que demuestren características más complejas de GitHub Actions, incluidos muchos de los casos de uso anteriores, consulta "Ejemplos". Para ver ejemplos detallados que explican cómo probar el código en un ejecutor, accede a la CLI de GitHub y usa características avanzadas, como la simultaneidad y las matrices de prueba.
+Contactando con el soporte técnico
+Si necesitas ayuda con lo que sea relacionado con la configuración de flujo de trabajo, tal como la sintaxis, los ejecutores hospedados en GitHub, o la creación de acciones, busca un tema existente o inicia uno nuevo en la categoría de GitHub Actions y GitHub Packages de GitHub Community.
+
+Si tienes algún tipo de retroalimentación o solicitudes de características para GitHub Actions, compártelas en el Discusiones de la comunidad de GitHub para Acciones de GitHub.
+
+Contacta a Soporte técnico de GitHub para cualquiera de los siguientes, que tu tipo de uso o el tipo de uso que pretendes tener caiga en las siguientes categorías de limitación:
+
+Si crees que tu cuenta se ha restringido de manera incorrecta
+Si encuentras un error inesperado al ejecutar una de tus acciones.
+Si llegas a una situación en donde el comportamiento existente contradice a aquél que se espera, pero no siempre se documenta

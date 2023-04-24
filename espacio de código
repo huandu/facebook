@@ -1,0 +1,101 @@
+.
+
+Introducción
+En esta guía, creará un espacio de código a partir de un repositorio de plantillas y explorará algunas de las características esenciales disponibles dentro del espacio de código. Trabajará en la versión de navegador de Visual Studio Code, que inicialmente es el editor predeterminado para GitHub Codespaces. Después de probar este inicio rápido, puede usar Codespaces en otros editores y puede cambiar el editor predeterminado. Los enlaces se proporcionan al final de esta guía.
+
+A partir de este inicio rápido, aprenderá cómo crear un espacio de código, conectarse a un puerto reenviado para ver su aplicación en ejecución, publicar su espacio de código en un nuevo repositorio y personalizar su configuración con extensiones.
+
+Para obtener más información sobre cómo funcionan exactamente los espacios de código de GitHub, consulte la guía complementaria " Inmersión profunda en los espacios de código de GitHub ".
+
+Creando tu espacio de código
+Vaya al repositorio de plantillas de github/haikus-for-codespaces .
+
+Haga clic en Usar esta plantilla , luego haga clic en Abrir en un espacio de código .
+
+Captura de pantalla del botón "Usar esta plantilla" y el menú desplegable ampliado para mostrar la opción "Abrir en un espacio de códigos".
+
+Ejecutando la aplicación
+Una vez que se crea su espacio de códigos, el repositorio de plantillas se clonará automáticamente en él. Ahora puede ejecutar la aplicación y ejecutarla en un navegador.
+
+Cuando el terminal esté disponible, ingrese el comando npm run dev. Este ejemplo usa un proyecto Node.js y este comando ejecuta el script etiquetado como "dev" en el package.jsonarchivo, que inicia la aplicación web definida en el repositorio de muestra.
+
+Captura de pantalla de la Terminal en VS Code con el comando "npm run dev" ingresado.
+
+Si está siguiendo junto con un tipo de aplicación diferente, ingrese el comando de inicio correspondiente para ese proyecto.
+
+Cuando se inicia su aplicación, el espacio de códigos reconoce el puerto en el que se está ejecutando la aplicación y muestra un mensaje emergente para informarle que el puerto se ha reenviado.
+
+Captura de pantalla del mensaje emergente: "Su aplicación que se ejecuta en el puerto 3000 está disponible".  Debajo hay un botón verde con la etiqueta "Abrir en el navegador".
+
+Haga clic en Abrir en el navegador para ver su aplicación en ejecución en una nueva pestaña.
+
+Edite la aplicación y vea los cambios
+Vuelva a su espacio de códigos y abra el haikus.jsonarchivo haciendo clic en él en el Explorador.
+
+Edita el textcampo del primer haiku para personalizar la aplicación con tu propio haiku.
+
+Vuelva a la pestaña de la aplicación en ejecución en su navegador y actualice para ver sus cambios.
+
+Si ha cerrado la pestaña del navegador, haga clic en la pestaña Puertos en VS Code, desplace el cursor sobre el valor de Dirección local para el puerto en ejecución y haga clic en el icono Abrir en el navegador .
+
+Captura de pantalla del panel "Puertos".  La pestaña "Puertos" y un ícono de globo terráqueo, que abre el puerto reenviado en un navegador, están resaltados con contornos naranjas.
+
+Comprometer y empujar sus cambios
+Ahora que ha realizado algunos cambios, puede usar el terminal integrado o la vista de código fuente para publicar su trabajo en un nuevo repositorio.
+
+En la Barra de actividad, haga clic en la vista Control de código fuente .
+Captura de pantalla de la barra de actividad de VS Code con el botón de control de fuente resaltado con un contorno naranja.
+
+Para organizar sus cambios, haga clic en + junto al haikus.jsonarchivo o junto a Cambios si ha cambiado varios archivos y desea organizarlos todos.
+
+Captura de pantalla de la barra lateral de control de código fuente en VS Code.  El botón Preparar todos los cambios, que es un signo más, está resaltado con un contorno naranja.
+
+Para confirmar los cambios por etapas, escriba un mensaje de confirmación que describa el cambio que ha realizado y luego haga clic en Confirmar .
+
+Captura de pantalla de la barra lateral "Control de fuente".  Un mensaje de confirmación, con "Cambiar texto y estilos de haiku" ingresado, y el botón "Confirmar" están resaltados con un contorno naranja.
+
+Haga clic en Publicar sucursal .
+
+En el menú desplegable "Nombre del repositorio", escriba un nombre para su nuevo repositorio, luego seleccione Publicar en el repositorio privado de GitHub o Publicar en el repositorio público de GitHub .
+
+Captura de pantalla del menú desplegable del nombre del repositorio en VS Code.  Se muestran dos opciones, para publicar en un repositorio privado o público.
+
+El propietario del nuevo repositorio será la cuenta de GitHub con la que creaste el espacio de código.
+
+En la ventana emergente que aparece en la esquina inferior derecha del editor, haga clic en Abrir en GitHub para ver el nuevo repositorio en GitHub.com. En el nuevo repositorio, vea el haikus.jsonarchivo y verifique que el cambio que realizó en su espacio de código se haya enviado correctamente al repositorio.
+
+Captura de pantalla de un mensaje de confirmación de un repositorio publicado con éxito, que muestra el botón "Abrir en GitHub".
+
+Personalización con una extensión
+Cuando se conecta a un espacio de códigos mediante el navegador o la aplicación de escritorio de Visual Studio Code, puede acceder a Visual Studio Code Marketplace directamente desde el editor. Para este ejemplo, instalará una extensión de VS Code que modifica el tema, pero puede instalar cualquier extensión que sea útil para su flujo de trabajo.
+
+En la barra de actividad, haga clic en el icono Extensiones.
+
+Captura de pantalla de la barra de actividad.  El ícono Extensiones está resaltado con un contorno naranja.
+
+En la barra de búsqueda, escriba fairyflossy haga clic en Instalar .
+
+Captura de pantalla de la barra lateral "Extensiones: Marketplace".  Se ingresa "fairyfloss" en el cuadro de búsqueda y, debajo, se muestra la extensión "fairyfloss", con un botón "Instalar".
+
+Seleccione el fairyflosstema seleccionándolo de la lista.
+
+Captura de pantalla del menú desplegable "Seleccionar tema de color", con el tema "fairyfloss" seleccionado.
+
+Acerca de la sincronización de ajustes
+Puede habilitar Settings Sync para sincronizar extensiones y otras configuraciones entre dispositivos e instancias de VS Code. Cuando habilita Settings Sync en una instancia de VS Code, como la aplicación de escritorio VS Code en su computadora portátil, su configuración para esa instancia se almacena en la nube. Desde la nube, la configuración se extrae en todos los espacios de código nuevos en el punto de creación y se sincroniza continuamente con cualquier espacio de código existente en el que la Sincronización de configuración esté habilitada.
+
+Si la Sincronización de configuración está habilitada de forma predeterminada en un espacio de código depende de su configuración existente y de si abre el espacio de código en el navegador o en la aplicación de escritorio de VS Code. Para obtener más información, consulte " Personalizar los espacios de código de GitHub para su cuenta ".
+
+Próximos pasos
+Ha creado, personalizado y ejecutado con éxito su primera aplicación dentro de un espacio de código, ¡pero hay mucho más por explorar! Estos son algunos recursos útiles para dar los próximos pasos con GitHub Codespaces.
+
+" Inmersión profunda en GitHub Codespaces ": este inicio rápido presentó algunas de las características de GitHub Codespaces. La inmersión profunda analiza estas áreas desde un punto de vista técnico.
+" Agregar una configuración de contenedor de desarrollo a su repositorio ": estas guías brindan información sobre cómo configurar su repositorio para usar GitHub Codespaces con idiomas específicos.
+" Introducción a los contenedores de desarrollo ": esta guía proporciona detalles sobre cómo crear una configuración personalizada para Codespaces para su proyecto.
+Otras lecturas
+" Habilitación de los espacios de código de GitHub para su organización "
+" Uso de espacios de código de GitHub en código de Visual Studio "
+" Uso de espacios de código de GitHub en su IDE de JetBrains "
+" Uso de espacios de código de GitHub con la CLI de GitHub "
+" Configuración de su editor predeterminado para GitHub Codespaces ".
+" Administrar el costo de GitHub Codespaces en su organización "

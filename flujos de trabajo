@@ -1,0 +1,47 @@
+Acciones de GitHub/Uso de flujos de trabajo/Uso de flujos de trabajo de inicio
+Utilizar flujos de trabajo iniciales
+In this article
+Acerca de los flujos de trabajo iniciales
+Utilizar flujos de trabajo iniciales
+Información adicional
+GitHub proporciona flujos de trabajo iniciales para varios lenguajes y herramientas.
+
+Acerca de los flujos de trabajo iniciales
+GitHub ofrece flujos de trabajo iniciales para diversos lenguajes y herramientas. Cuando configuras flujos de trabajo en tu repositorio, GitHub analiza el código en tu repositorio y recomienda flujos de trabajo con base en el lenguaje y marco de trabajo de este. Por ejemplo, si usas Node.js, GitHub sugerirá un archivo de flujo de trabajo de inicio que instale tus paquetes de Node.js y ejecute tus pruebas. Puedes buscar y filtrar para encontrar los flujos de trabajo de inicio pertinentes.
+
+GitHub proporciona flujos de trabajo de inicio listos para usar para las siguientes categorías generales:
+
+Implementación (CD) . Para más información, vea "Acerca de la implementación continua". : Seguridad. Para más información, consulta "Configuración de code scanning para un repositorio".
+Integración continua (CI) . Para más información, vea "Acerca de la integración continua".
+Automatización. Los flujos de trabajo de inicio de automatización ofrecen soluciones para automatizar flujos de trabajo, como evaluar las solicitudes de incorporación de cambios y aplicar una etiqueta basada en las rutas modificadas en la solicitud de incorporación de cambios, o bien saludar a los usuarios que colaboran por primera vez en el repositorio.
+También puedes crear tu propio flujo de trabajo inicial para compartirlo con tu organziación. Estos flujos de trabajo iniciales se mostrarán junto con que proporciona GitHub. Para obtener más información, consulte "Creación de flujos de trabajo de inicio para la organización".
+
+Utilizar flujos de trabajo iniciales
+Cualquiera con permiso de escritura en un repositorio puede configurar flujos de trabajo iniciales de GitHub Actions para IC/DC u otras automatizaciones.
+
+En GitHub.com, navega a la página principal del repositorio. 1. En el nombre del repositorio, haga clic en  Acciones.
+Pestaña Acciones en la navegación del repositorio principal
+
+Si ya tiene un flujo de trabajo en su repositorio, haga clic en New workflow (Nuevo flujo de trabajo).
+
+La página "Elegir un flujo de trabajo" muestra una selección de flujos de trabajo de inicio recomendados. Busca el flujo de trabajo de inicio que quieres usar y haz clic en Configurar. Para ayudarte a encontrar el flujo de trabajo de inicio que quieres, puede buscar palabras clave o filtrar por categoría.
+
+Configuración de este flujo de trabajo
+
+Si el flujo de trabajo inicial contiene comentarios que detallen pasos de configuración adicional, sigue estos pasos. Muchos de los flujos de trabajo iniciales tienen guías correspondientes. Para obtener más información, consulta las guías de GitHub Actions.
+
+Algunos flujos de trabajo iniciales utilizan secretos. Por ejemplo, ${{ secrets.npm_token }}. Si el flujo de trabajo inicial utiliza un secreto, almacena el valor descrito en el nombre del secreto como un secreto en tu repositorio. Para obtener más información, vea "Secretos cifrados".
+
+Opcionalmente, haz cambios adicionales. Por ejemplo, puede que quiera cambiar el valor de on para que este cambie cuando se ejecute el flujo de trabajo.
+
+Haga clic en Start commit (Iniciar confirmación).
+
+Escribe un mensaje de confirmación y decide si lo quieres confirmar directamente en la rama predeterminada o si quieres abrir una solicitud de cambios.
+
+Información adicional
+"Acerca de la integración continua"
+"Administración de ejecuciones de flujos de trabajo"
+"Acerca de la supervisión y la solución de problemas"
+"Información sobre GitHub Actions"
+"Administración de la facturación para GitHub Actions"
+Did this doc help you?
