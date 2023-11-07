@@ -15,6 +15,7 @@
 package facebook
 
 import (
+	"context"
 	"net/http"
 )
 
@@ -67,39 +68,44 @@ type Method string
 // no need to encode keys or values in params manually. Params can be nil.
 //
 // If you want to get
-//     https://graph.facebook.com/huandu?fields=name,username
+//
+//	https://graph.facebook.com/huandu?fields=name,username
+//
 // Api should be called as following
-//     Api("/huandu", GET, Params{"fields": "name,username"})
+//
+//	Api("/huandu", GET, Params{"fields": "name,username"})
+//
 // or in a simplified way
-//     Get("/huandu", Params{"fields": "name,username"})
+//
+//	Get("/huandu", Params{"fields": "name,username"})
 //
 // Api is a wrapper of Session.Api(). It's designed for graph api that doesn't require
 // app id, app secret and access token. It can be called in multiple goroutines.
 //
 // If app id, app secret or access token is required in graph api, caller should
 // create a new facebook session through App instance instead.
-func Api(path string, method Method, params Params) (Result, error) {
-	return defaultSession.Api(path, method, params)
+func Api(ctx context.Context, path string, method Method, params Params) (Result, error) {
+	return defaultSession.Api(ctx, path, method, params)
 }
 
 // Get is a short hand of Api(path, GET, params).
-func Get(path string, params Params) (Result, error) {
-	return Api(path, GET, params)
+func Get(ctx context.Context, path string, params Params) (Result, error) {
+	return Api(ctx, path, GET, params)
 }
 
 // Post is a short hand of Api(path, POST, params).
-func Post(path string, params Params) (Result, error) {
-	return Api(path, POST, params)
+func Post(ctx context.Context, path string, params Params) (Result, error) {
+	return Api(ctx, path, POST, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
-func Delete(path string, params Params) (Result, error) {
-	return Api(path, DELETE, params)
+func Delete(ctx context.Context, path string, params Params) (Result, error) {
+	return Api(ctx, path, DELETE, params)
 }
 
 // Put is a short hand of Api(path, PUT, params).
-func Put(path string, params Params) (Result, error) {
-	return Api(path, PUT, params)
+func Put(ctx context.Context, path string, params Params) (Result, error) {
+	return Api(ctx, path, PUT, params)
 }
 
 // BatchApi makes a batch facebook graph api call with default session.
@@ -108,19 +114,20 @@ func Put(path string, params Params) (Result, error) {
 // except uploading binary data. Use Batch to do so.
 //
 // Note: API response is stored in "body" field of a Result.
-//     results, _ := BatchApi(accessToken, Params{...}, Params{...})
 //
-//     // Use first batch api response.
-//     var res1 *BatchResult
-//     var err error
-//     res1, err = results[0].Batch()
+//	results, _ := BatchApi(accessToken, Params{...}, Params{...})
 //
-//     if err != nil {
-//         // this is not a valid batch api response.
-//     }
+//	// Use first batch api response.
+//	var res1 *BatchResult
+//	var err error
+//	res1, err = results[0].Batch()
 //
-//     // Use BatchResult#Result to get response body content as Result.
-//     res := res1.Result
+//	if err != nil {
+//	    // this is not a valid batch api response.
+//	}
+//
+//	// Use BatchResult#Result to get response body content as Result.
+//	res := res1.Result
 //
 // Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func BatchApi(accessToken string, params ...Params) ([]Result, error) {
@@ -131,28 +138,29 @@ func BatchApi(accessToken string, params ...Params) ([]Result, error) {
 // Batch is designed for more advanced usage including uploading binary files.
 //
 // An uploading files sample
-//     // equivalent to following curl command (borrowed from facebook docs)
-//     //     curl \
-//     //         -F 'access_token=…' \
-//     //         -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"}]' \
-//     //         -F 'file1=@cat.gif' \
-//     //         -F 'file2=@dog.jpg' \
-//     //         https://graph.facebook.com
-//     Batch(Params{
-//         "access_token": "the-access-token",
-//         "file1": File("cat.gif"),
-//         "file2": File("dog.jpg"),
-//     }, Params{
-//         "method": "POST",
-//         "relative_url": "me/photos",
-//         "body": "message=My cat photo",
-//         "attached_files": "file1",
-//     }, Params{
-//         "method": "POST",
-//         "relative_url": "me/photos",
-//         "body": "message=My dog photo",
-//         "attached_files": "file2",
-//     })
+//
+//	// equivalent to following curl command (borrowed from facebook docs)
+//	//     curl \
+//	//         -F 'access_token=…' \
+//	//         -F 'batch=[{"method":"POST","relative_url":"me/photos","body":"message=My cat photo","attached_files":"file1"},{"method":"POST","relative_url":"me/photos","body":"message=My dog photo","attached_files":"file2"}]' \
+//	//         -F 'file1=@cat.gif' \
+//	//         -F 'file2=@dog.jpg' \
+//	//         https://graph.facebook.com
+//	Batch(Params{
+//	    "access_token": "the-access-token",
+//	    "file1": File("cat.gif"),
+//	    "file2": File("dog.jpg"),
+//	}, Params{
+//	    "method": "POST",
+//	    "relative_url": "me/photos",
+//	    "body": "message=My cat photo",
+//	    "attached_files": "file1",
+//	}, Params{
+//	    "method": "POST",
+//	    "relative_url": "me/photos",
+//	    "body": "message=My dog photo",
+//	    "attached_files": "file2",
+//	})
 //
 // Facebook document: https://developers.facebook.com/docs/graph-api/making-multiple-requests
 func Batch(batchParams Params, params ...Params) ([]Result, error) {
@@ -161,9 +169,10 @@ func Batch(batchParams Params, params ...Params) ([]Result, error) {
 
 // Request makes an arbitrary HTTP request with default session.
 // It expects server responses a facebook Graph API response.
-//     request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
-//     res, err := Request(request)
-//     fmt.Println(res["gender"])  // get "male"
+//
+//	request, _ := http.NewRequest("https://graph.facebook.com/538744468", "GET", nil)
+//	res, err := Request(request)
+//	fmt.Println(res["gender"])  // get "male"
 func Request(request *http.Request) (Result, error) {
 	return defaultSession.Request(request)
 }

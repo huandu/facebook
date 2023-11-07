@@ -9,6 +9,7 @@ package facebook
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -736,7 +737,7 @@ func TestPagingResult(t *testing.T) {
 
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
-	res, err := session.Get("/me/posts", Params{
+	res, err := session.Get(context.Background(), "/me/posts", Params{
 		"limit": 2,
 	})
 

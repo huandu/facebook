@@ -82,28 +82,28 @@ type HttpClient interface {
 //
 // Returns facebook graph api call result.
 // If facebook returns error in response, returns error details in res and set err.
-func (session *Session) Api(path string, method Method, params Params) (Result, error) {
-	return session.graph(path, method, params)
+func (session *Session) Api(ctx context.Context, path string, method Method, params Params) (Result, error) {
+	return session.graph(ctx, path, method, params)
 }
 
 // Get is a short hand of Api(path, GET, params).
-func (session *Session) Get(path string, params Params) (Result, error) {
-	return session.Api(path, GET, params)
+func (session *Session) Get(ctx context.Context, path string, params Params) (Result, error) {
+	return session.Api(ctx, path, GET, params)
 }
 
 // Post is a short hand of Api(path, POST, params).
-func (session *Session) Post(path string, params Params) (Result, error) {
-	return session.Api(path, POST, params)
+func (session *Session) Post(ctx context.Context, path string, params Params) (Result, error) {
+	return session.Api(ctx, path, POST, params)
 }
 
 // Delete is a short hand of Api(path, DELETE, params).
-func (session *Session) Delete(path string, params Params) (Result, error) {
-	return session.Api(path, DELETE, params)
+func (session *Session) Delete(ctx context.Context, path string, params Params) (Result, error) {
+	return session.Api(ctx, path, DELETE, params)
 }
 
 // Put is a short hand of Api(path, PUT, params).
-func (session *Session) Put(path string, params Params) (Result, error) {
-	return session.Api(path, PUT, params)
+func (session *Session) Put(ctx context.Context, path string, params Params) (Result, error) {
+	return session.Api(ctx, path, PUT, params)
 }
 
 // BatchApi makes a batch call. Each params represent a single facebook graph api call.
@@ -162,7 +162,7 @@ func (session *Session) Request(request *http.Request) (res Result, err error) {
 // Returns error if access token is not set or invalid.
 //
 // It's a standard way to validate a facebook access token.
-func (session *Session) User() (id string, err error) {
+func (session *Session) User(ctx context.Context) (id string, err error) {
 	if session.id != "" {
 		id = session.id
 		return
@@ -174,7 +174,7 @@ func (session *Session) User() (id string, err error) {
 	}
 
 	var result Result
-	result, err = session.Api("/me", GET, Params{"fields": "id"})
+	result, err = session.Api(ctx, "/me", GET, Params{"fields": "id"})
 
 	if err != nil {
 		return
@@ -191,14 +191,14 @@ func (session *Session) User() (id string, err error) {
 
 // Validate validates Session access token.
 // Returns nil if access token is valid.
-func (session *Session) Validate() (err error) {
+func (session *Session) Validate(ctx context.Context) (err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
 		err = fmt.Errorf("facebook: access token is not set")
 		return
 	}
 
 	var result Result
-	result, err = session.Api("/me", GET, Params{"fields": "id"})
+	result, err = session.Api(ctx, "/me", GET, Params{"fields": "id"})
 
 	if err != nil {
 		return
@@ -215,7 +215,7 @@ func (session *Session) Validate() (err error) {
 // Inspect Session access token.
 // Returns JSON array containing data about the inspected token.
 // See https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/#checktoken
-func (session *Session) Inspect() (result Result, err error) {
+func (session *Session) Inspect(ctx context.Context) (result Result, err error) {
 	if session.accessToken == "" && session.HttpClient == nil {
 		err = fmt.Errorf("facebook: access token is not set")
 		return
@@ -233,7 +233,7 @@ func (session *Session) Inspect() (result Result, err error) {
 		return
 	}
 
-	result, err = session.Api("/debug_token", GET, Params{
+	result, err = session.Api(ctx, "/debug_token", GET, Params{
 		"input_token":  session.accessToken,
 		"access_token": appAccessToken,
 	})
@@ -335,7 +335,7 @@ func (session *Session) SetDebug(debug DebugMode) DebugMode {
 	return old
 }
 
-func (session *Session) graph(path string, method Method, params Params) (res Result, err error) {
+func (session *Session) graph(ctx context.Context, path string, method Method, params Params) (res Result, err error) {
 	var graphURL string
 
 	if params == nil {
@@ -400,13 +400,13 @@ func (session *Session) graph(path string, method Method, params Params) (res Re
 	var response *http.Response
 
 	if method == GET {
-		response, err = session.sendGetRequest(graphURL, &res)
+		response, err = session.sendGetRequest(ctx, graphURL, &res)
 	} else {
 		if method != POST {
 			params["method"] = method
 		}
 
-		response, err = session.sendPostRequest(graphURL, params, &res)
+		response, err = session.sendPostRequest(ctx, graphURL, params, &res)
 	}
 
 	if response != nil {
@@ -431,7 +431,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 
 	var res []Result
 	graphURL := session.getURL("graph", "", nil)
-	_, err := session.sendPostRequest(graphURL, batchParams, &res)
+	_, err := session.sendPostRequest(context.Background(), graphURL, batchParams, &res)
 	return res, err
 }
 
@@ -454,8 +454,8 @@ func (session *Session) prepareParams(params Params) {
 	}
 }
 
-func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Response, error) {
-	request, err := http.NewRequest("GET", uri, nil)
+func (session *Session) sendGetRequest(ctx context.Context, uri string, res interface{}) (*http.Response, error) {
+	request, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
 
 	if err != nil {
 		return nil, err
@@ -471,7 +471,7 @@ func (session *Session) sendGetRequest(uri string, res interface{}) (*http.Respo
 	return response, err
 }
 
-func (session *Session) sendPostRequest(uri string, params Params, res interface{}) (*http.Response, error) {
+func (session *Session) sendPostRequest(ctx context.Context, uri string, params Params, res interface{}) (*http.Response, error) {
 	buf := &bytes.Buffer{}
 	mime, err := params.Encode(buf)
 
@@ -479,7 +479,7 @@ func (session *Session) sendPostRequest(uri string, params Params, res interface
 		return nil, fmt.Errorf("facebook: cannot encode POST params; %v", err)
 	}
 
-	request, err := http.NewRequest("POST", uri, buf)
+	request, err := http.NewRequestWithContext(ctx, "POST", uri, buf)
 
 	if err != nil {
 		return nil, err

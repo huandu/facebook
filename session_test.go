@@ -25,7 +25,7 @@ func TestSession(t *testing.T) {
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 
 	test := func(t *testing.T, session *Session) {
-		id, err := session.User()
+		id, err := session.User(context.Background())
 
 		if err != nil {
 			t.Fatalf("cannot get current user id. [e:%v]", err)
@@ -33,7 +33,7 @@ func TestSession(t *testing.T) {
 
 		t.Logf("current user id is %v", id)
 
-		result, e := session.Api("/me", GET, Params{
+		result, e := session.Api(context.Background(), "/me", GET, Params{
 			"fields": "id,email,website",
 		})
 
@@ -86,7 +86,7 @@ func TestSession(t *testing.T) {
 		app.EnableAppsecretProof = true
 		session := app.Session(FB_TEST_VALID_ACCESS_TOKEN)
 
-		_, e := session.Api("/me", GET, Params{
+		_, e := session.Api(context.Background(), "/me", GET, Params{
 			"fields": "id",
 		})
 
@@ -109,7 +109,7 @@ func TestUploadingBinary(t *testing.T) {
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 
-	result, e := session.Api("/317426148998929/photos", POST, Params{
+	result, e := session.Api(context.Background(), "/317426148998929/photos", POST, Params{
 		"caption":   "Test photo from https://github.com/huandu/facebook",
 		"source":    Data("attachment.jpg", reader),
 		"published": true,
@@ -184,7 +184,7 @@ func TestGraphDebuggingAPI(t *testing.T) {
 
 		// test app must not grant "read_friends" permission.
 		// otherwise there is no way to get a warning from facebook.
-		res, _ := session.Get("/me/friends", nil)
+		res, _ := session.Get(context.Background(), "/me/friends", nil)
 
 		if res == nil {
 			t.Fatalf("res must not be nil.")
@@ -258,7 +258,7 @@ func TestInspectValidToken(t *testing.T) {
 	}
 
 	session := testGlobalApp.Session(FB_TEST_VALID_ACCESS_TOKEN)
-	result, err := session.Inspect()
+	result, err := session.Inspect(context.Background())
 
 	if err != nil {
 		t.Fatalf("cannot inspect a valid access token. [e:%v]", err)
@@ -279,7 +279,7 @@ func TestInspectValidToken(t *testing.T) {
 func TestInspectInvalidToken(t *testing.T) {
 	invalidToken := "CAACZA38ZAD8CoBAe2bDC6EdThnni3b56scyshKINjZARoC9ZAuEUTgYUkYnKdimqfA2ZAXcd2wLd7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB3AAvLtwoWNhsxM76mK0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
 	session := testGlobalApp.Session(invalidToken)
-	result, err := session.Inspect()
+	result, err := session.Inspect(context.Background())
 
 	if err == nil {
 		t.Fatalf("facebook should indicate it's an invalid token. why not? [result:%v]", result)
@@ -324,7 +324,7 @@ func TestSessionCancelationWithContext(t *testing.T) {
 
 	cancel()
 	newSession.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
-	_, err := newSession.Inspect()
+	_, err := newSession.Inspect(context.Background())
 
 	if err == nil {
 		t.Fatalf("http request must fail as cancelled.")
@@ -337,7 +337,7 @@ func TestInspectAppAccessToken(t *testing.T) {
 	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
 	session := app.Session(app.AppAccessToken())
 
-	_, err := session.Inspect()
+	_, err := session.Inspect(context.Background())
 
 	if err != nil {
 		t.Fatalf("fail to inspect app access token. [e:%v]", err)
@@ -361,7 +361,7 @@ func TestSessionWithCustomBaseUrl(t *testing.T) {
 		Version: "v3.0",
 		BaseURL: srv.URL + "/",
 	}
-	_, err := session.Get("/me", nil)
+	_, err := session.Get(context.Background(), "/me", nil)
 	if err != nil {
 		t.Fatalf("request to custom base URL failed: %v", err)
 	}
@@ -378,7 +378,7 @@ func TestSessionGetWithQueryString(t *testing.T) {
 	session := &Session{}
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 
-	id, err := session.User()
+	id, err := session.User(context.Background())
 
 	if err != nil {
 		t.Fatalf("cannot get current user id. [e:%v]", err)
@@ -386,7 +386,7 @@ func TestSessionGetWithQueryString(t *testing.T) {
 
 	t.Logf("current user id is %v", id)
 
-	result, e := session.Api("me?fields=name,email", GET, Params{
+	result, e := session.Api(context.Background(), "me?fields=name,email", GET, Params{
 		"fields": "id,name",
 	})
 

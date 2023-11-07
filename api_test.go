@@ -8,6 +8,7 @@
 package facebook
 
 import (
+	"context"
 	"testing"
 )
 
@@ -19,7 +20,7 @@ func TestApiGetUserInfoV2(t *testing.T) {
 
 	// It's not allowed to get user info by name. So I get "me" with access token instead.
 	if FB_TEST_VALID_ACCESS_TOKEN != "" {
-		me, err := Api("me", GET, Params{
+		me, err := Api(context.Background(), "me", GET, Params{
 			"access_token": FB_TEST_VALID_ACCESS_TOKEN,
 		})
 
@@ -131,7 +132,7 @@ func TestBatchApiGetInfo(t *testing.T) {
 }
 
 func TestGraphError(t *testing.T) {
-	res, err := Get("/me", Params{
+	res, err := Get(context.Background(), "/me", Params{
 		"access_token": "fake",
 	})
 
@@ -153,7 +154,7 @@ func TestGetAdaccounts(t *testing.T) {
 		t.Skipf("skip this case as we don't have a valid access token.")
 	}
 
-	result, e := Get("/v3.1/me/adaccounts", Params{
+	result, e := Get(context.Background(), "/v3.1/me/adaccounts", Params{
 		"fields":       "id,name,currency",
 		"access_token": FB_TEST_VALID_ACCESS_TOKEN,
 	})
