@@ -1,8 +1,12 @@
 # Change Log
 
+## v2.7.1
+
+- `[FIX]` [#232](https://github.com/huandu/facebook/issues/232) Fix incorrect error wrapping. Thanks, [@AnatolyRugalev](https://github.com/AnatolyRugalev).
+
 ## v2.7.0
 
-- `[NEW]` [#211](https://github.com/huandu/facebook/pull/211) Make session on app configurable. Thank [Spazzy757](https://github.com/Spazzy757) for your PR.
+- `[NEW]` [#211](https://github.com/huandu/facebook/pull/211) Make session on app configurable. Thank [@Spazzy757](https://github.com/Spazzy757) for your PR.
 
 ## v2.6.0
 

@@ -328,19 +328,19 @@ func getValueField(value reflect.Value, fields []string) reflect.Value {
 //
 // Examples:
 //
-//     type Foo struct {
-//         // "id" must exist in response. note the leading comma.
-//         Id string `facebook:",required"`
+//	type Foo struct {
+//	    // "id" must exist in response. note the leading comma.
+//	    Id string `facebook:",required"`
 //
-//         // use "name" as field name in response.
-//         TheName string `facebook:"name"`
+//	    // use "name" as field name in response.
+//	    TheName string `facebook:"name"`
 //
-//         // the "json" key also works as expected.
-//         Key string `json:"my_key"`
+//	    // the "json" key also works as expected.
+//	    Key string `json:"my_key"`
 //
-//         // if both "facebook" and "json" key are set, the "facebook" key is used.
-//         Value string `facebook:"value" json:"shadowed"`
-//     }
+//	    // if both "facebook" and "json" key are set, the "facebook" key is used.
+//	    Value string `facebook:"value" json:"shadowed"`
+//	}
 //
 // To change default behavior, set a struct tag `facebook:",required"` to fields
 // should not be missing.
@@ -388,12 +388,13 @@ func (res Result) DecodeField(field string, v interface{}) error {
 // Err returns an error if Result is a Graph API error.
 //
 // The returned error can be converted to Error by type assertion.
-//     err := res.Err()
-//     if err != nil {
-//         if e, ok := err.(*Error); ok {
-//             // read more details in e.Message, e.Code and e.Type
-//         }
-//     }
+//
+//	err := res.Err()
+//	if err != nil {
+//	    if e, ok := err.(*Error); ok {
+//	        // read more details in e.Message, e.Code and e.Type
+//	    }
+//	}
 //
 // For more information about Graph API Errors, see
 // https://developers.facebook.com/docs/reference/api/errors/
@@ -420,13 +421,14 @@ func (res Result) Err() error {
 //
 // Facebook uses following JSON structure to response paging information.
 // If "data" doesn't present in Result, Paging will return error.
-//     {
-//         "data": [...],
-//         "paging": {
-//             "previous": "https://graph.facebook.com/...",
-//             "next": "https://graph.facebook.com/..."
-//         }
-//     }
+//
+//	{
+//	    "data": [...],
+//	    "paging": {
+//	        "previous": "https://graph.facebook.com/...",
+//	        "next": "https://graph.facebook.com/..."
+//	    }
+//	}
 func (res Result) Paging(session *Session) (*PagingResult, error) {
 	return newPagingResult(session, res)
 }
@@ -614,7 +616,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		data, err := json.Marshal(val.Interface())
 
 		if err != nil {
-			return fmt.Errorf("facebook: fail to marshal value for field '%v' with error %v", fullName, err)
+			return fmt.Errorf("facebook: fail to marshal value for field '%v' with error %w", fullName, err)
 		}
 
 		return unmarshaler.UnmarshalJSON(data)
