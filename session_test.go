@@ -11,8 +11,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -399,4 +401,29 @@ func TestSessionGetWithQueryString(t *testing.T) {
 	}
 
 	t.Logf("my extended info is: %v", result)
+}
+
+func TestSessionGetFailingWithoutExposingAccessToken(t *testing.T) {
+	var accessToken = "CAACZA38ZAD8CoBAe2bDC6EdThnni3b56scyshKINjZARoC9ZAuEUTgYUkYnKdimqfA2ZAXcd2wLd7Rr8jLmMXTY9vqAhQGqObZBIUz1WwbqVoCsB3AAvLtwoWNhsxM76mK0eiJSLXHZCdPVpyhmtojvzXA7f69Bm6b5WZBBXia8iOpPZAUHTGp1UQLFMt47c7RqJTrYIl3VfAR0deN82GMFL2"
+	session := &Session{}
+	session.SetAccessToken(accessToken)
+	session.HttpClient = &http.Client{
+		Transport: alwaysFailRoundTripper{},
+	}
+
+	_, err := session.Get("/me", nil)
+	if err == nil {
+		t.Fatalf("request should fail")
+	}
+	if strings.Contains(err.Error(), accessToken) {
+		t.Errorf("error message should not contain access token")
+	}
+}
+
+type alwaysFailRoundTripper struct{}
+
+var _ http.RoundTripper = alwaysFailRoundTripper{}
+
+func (a alwaysFailRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("request failed since alwaysFailRoundTripper is used")
 }
