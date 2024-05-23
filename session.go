@@ -562,7 +562,22 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 	}
 
 	if err != nil {
-		err = fmt.Errorf("facebook: cannot reach facebook server; %w", err)
+		originalErr := err
+		err = fmt.Errorf("facebook: cannot reach facebook server; %w", originalErr)
+		netUrlErr, ok := originalErr.(*url.Error)
+		// *url.Error can contain access_token in the URL, so we need to exclude it.
+		if !ok || netUrlErr.URL == "" {
+			return
+		}
+		q := request.URL.Query()
+		if !q.Has("access_token") {
+			return
+		}
+		q.Del("access_token")
+		url := *request.URL
+		url.RawQuery = q.Encode()
+		netUrlErr.URL = url.String()
+		err = fmt.Errorf("facebook: cannot reach facebook server; %w", netUrlErr)
 		return
 	}
 
