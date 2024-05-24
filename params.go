@@ -282,6 +282,8 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 				return
 			}
 
+			defer file.Close() 
+
 			_, err = io.Copy(dst, file)
 
 			if err != nil {
