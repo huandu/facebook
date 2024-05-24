@@ -47,6 +47,15 @@ var (
 	regexpIsVideoPost = regexp.MustCompile(`\/videos$`)
 )
 
+// authorizationType defines the authorization types that facebook API supports
+// Currently Bearer and OAuth potential types
+type authorizationType string
+
+const (
+	Bearer authorizationType = "Bearer"
+	OAuth  authorizationType = "OAuth"
+)
+
 // Session holds a facebook session with an access token.
 // Session should be created by App.Session or App.SessionFromSignedRequest.
 type Session struct {
@@ -59,9 +68,10 @@ type Session struct {
 	app         *App
 	id          string
 
-	enableAppsecretProof   bool   // add "appsecret_proof" parameter in every facebook API call.
-	appsecretProof         string // pre-calculated "appsecret_proof" value.
-	useAuthorizationHeader bool   // pass accessToken in headers instead of query params
+	enableAppsecretProof        bool   // add "appsecret_proof" parameter in every facebook API call.
+	appsecretProof              string // pre-calculated "appsecret_proof" value.
+	useAuthorizationHeader      bool   // pass accessToken in headers instead of query params
+	useOAuthAuthorizationHeader bool   // pass accessToken in headers using OAuth rather than Bearer
 
 	debug DebugMode // using facebook debugging api in every request.
 
@@ -270,9 +280,16 @@ func (session *Session) SetAccessToken(token string) {
 	}
 }
 
-// UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string.
+// UseAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Sets bearer as Prefix of Authorization header value
 func (session *Session) UseAuthorizationHeader() {
 	session.useAuthorizationHeader = true
+	session.useOAuthAuthorizationHeader = false
+}
+
+// UseOAuthAuthorizationHeader passes `access_token` in HTTP Authorization header instead of query string. Set Oauth as Prefix of Authorization header value
+func (session *Session) UseOAuthAuthorizationHeader() {
+	session.useOAuthAuthorizationHeader = true
+	session.useAuthorizationHeader = false
 }
 
 // AppsecretProof checks appsecret proof is enabled or not.
@@ -437,7 +454,7 @@ func (session *Session) graphBatch(batchParams Params, params ...Params) ([]Resu
 
 func (session *Session) prepareParams(params Params) {
 
-	if !session.useAuthorizationHeader {
+	if !session.useAuthorizationHeader || !session.useOAuthAuthorizationHeader {
 		if _, ok := params["access_token"]; !ok && session.accessToken != "" {
 			params["access_token"] = session.accessToken
 		}
@@ -552,7 +569,11 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 	}
 
 	if session.useAuthorizationHeader {
-		request.Header.Set("Authorization", "Bearer "+session.accessToken)
+		request.Header.Set("Authorization", fmt.Sprintf("%s %s", Bearer, session.accessToken))
+	}
+
+	if session.useOAuthAuthorizationHeader {
+		request.Header.Set("Authorization", fmt.Sprintf("%s %s", OAuth, session.accessToken))
 	}
 
 	if session.HttpClient == nil {
