@@ -41,6 +41,7 @@ var (
 		"graph":       "https://graph.facebook.com/",
 		"graph_video": "https://graph-video.facebook.com/",
 		"www":         "https://www.facebook.com/",
+		"instagram":   "https://graph.instagram.com/",
 	}
 
 	// checks whether it's a video post.
@@ -54,6 +55,7 @@ type Session struct {
 	Version           string // facebook versioning.
 	RFC3339Timestamps bool   // set to true to send date_format=Y-m-d\TH:i:sP on every request which will cause RFC3339 style timestamps to be returned
 	BaseURL           string // set to override API base URL - trailing slash is required, e.g. http://127.0.0.1:53453/
+	Instagram         bool   // set the session explicity to Instagram, see https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/migration-guide#step-2--update-your-code
 
 	accessToken string // facebook access token. can be empty.
 	app         *App
@@ -608,6 +610,9 @@ func (session *Session) getURL(name, path string, params Params) string {
 	baseURL := domainMap[name]
 	if session.BaseURL != "" {
 		baseURL = session.BaseURL
+	} else if session.Instagram && name == "graph" {
+		// see https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/migration-guide#step-2--update-your-code
+		baseURL = domainMap["instagram"]
 	}
 	buf.WriteString(baseURL)
 
