@@ -1,9 +1,9 @@
 // A facebook graph api client in go.
-// https://github.com/huandu/facebook/
+// https://github.com/runnart/facebook/
 //
 // Copyright 2012, Huan Du
 // Licensed under the MIT license
-// https://github.com/huandu/facebook/blob/master/LICENSE
+// https://github.com/runnart/facebook/blob/master/LICENSE
 
 package facebook
 
@@ -112,7 +112,7 @@ func TestUploadingBinary(t *testing.T) {
 	session.SetAccessToken(FB_TEST_VALID_ACCESS_TOKEN)
 
 	result, e := session.Api("/317426148998929/photos", POST, Params{
-		"caption":   "Test photo from https://github.com/huandu/facebook",
+		"caption":   "Test photo from https://github.com/runnart/facebook",
 		"source":    Data("attachment.jpg", reader),
 		"published": true,
 	})

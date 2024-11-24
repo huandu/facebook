@@ -1,9 +1,9 @@
 // A facebook graph api client in go.
-// https://github.com/huandu/facebook/
+// https://github.com/runnart/facebook/
 //
 // Copyright 2012, Huan Du
 // Licensed under the MIT license
-// https://github.com/huandu/facebook/blob/master/LICENSE
+// https://github.com/runnart/facebook/blob/master/LICENSE
 
 package facebook
 

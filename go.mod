@@ -1,3 +1,3 @@
-module github.com/huandu/facebook/v2
+module github.com/runnart/facebook/v2
 
-go 1.13
+go 1.22.0
