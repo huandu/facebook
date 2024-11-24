@@ -9,8 +9,9 @@ package facebook
 
 // Constants for test cases.
 const (
-	FB_TEST_APP_ID     = "169186383097898"
-	FB_TEST_APP_SECRET = "b2e4262c306caa3c7f5215d2d099b319"
+	FB_TEST_APP_ID       = "169186383097898"
+	FB_TEST_APP_SECRET   = "b2e4262c306caa3c7f5215d2d099b319"
+	FB_TEST_REDIRECT_URI = "http://localhost:8080/"
 
 	// remeber to change it to a valid token to run test
 	FB_TEST_VALID_ACCESS_TOKEN = ""
@@ -110,6 +111,6 @@ var (
 )
 
 func init() {
-	testGlobalApp = New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
+	testGlobalApp = New(FB_TEST_APP_ID, FB_TEST_APP_SECRET, FB_TEST_REDIRECT_URI)
 	testGlobalApp.EnableAppsecretProof = true
 }

@@ -37,11 +37,12 @@ type App struct {
 }
 
 // New creates a new App and sets app id and secret.
-func New(appID, appSecret string) *App {
+func New(appID, appSecret, redirectURI string) *App {
 	return &App{
-		AppId:     appID,
-		AppSecret: appSecret,
-		session:   defaultSession,
+		AppId:       appID,
+		AppSecret:   appSecret,
+		RedirectUri: redirectURI,
+		session:     defaultSession,
 	}
 }
 

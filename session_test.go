@@ -84,7 +84,7 @@ func TestSession(t *testing.T) {
 
 	// Session with appsecret proof enabled.
 	if FB_TEST_VALID_ACCESS_TOKEN != "" {
-		app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
+		app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET, FB_TEST_REDIRECT_URI)
 		app.EnableAppsecretProof = true
 		session := app.Session(FB_TEST_VALID_ACCESS_TOKEN)
 
@@ -336,7 +336,7 @@ func TestSessionCancelationWithContext(t *testing.T) {
 }
 
 func TestInspectAppAccessToken(t *testing.T) {
-	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
+	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET, FB_TEST_REDIRECT_URI)
 	session := app.Session(app.AppAccessToken())
 
 	_, err := session.Inspect()

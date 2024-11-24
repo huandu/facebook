@@ -17,7 +17,7 @@ func TestApiParseSignedRequest(t *testing.T) {
 		return
 	}
 
-	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET)
+	app := New(FB_TEST_APP_ID, FB_TEST_APP_SECRET, FB_TEST_REDIRECT_URI)
 	res, err := app.ParseSignedRequest(FB_TEST_VALID_SIGNED_REQUEST)
 
 	if err != nil {
