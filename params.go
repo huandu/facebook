@@ -90,6 +90,11 @@ func makeParams(value reflect.Value) (params Params) {
 
 	for i := 0; i < num; i++ {
 		sf := t.Field(i)
+
+		// Ignore field if it's not exported
+		if !sf.IsExported() {
+			continue
+		}
 		tag := sf.Tag
 		name := ""
 		omitEmpty := false
@@ -282,7 +287,7 @@ func (params Params) encodeMultipartForm(writer io.Writer) (mime string, err err
 				return
 			}
 
-			defer file.Close() 
+			defer file.Close()
 
 			_, err = io.Copy(dst, file)
 
