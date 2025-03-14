@@ -81,7 +81,7 @@ type DebugInfo struct {
 type UsageInfo struct {
 	App             RateLimiting         `json:"app"`               // HTTP header X-App-Usage.
 	Page            RateLimiting         `json:"page"`              // HTTP header X-Page-Usage.
-	AdAccount       RateLimiting         `json:"ad_account"`        // HTTP header X-Ad-Account-Usage.
+	AdAccount       AdAccountUsage       `json:"ad_account"`        // HTTP header X-Ad-Account-Usage.
 	AdsInsights     AdsInsightsThrottle  `json:"ads_insights"`      // HTTP header x-fb-ads-insights-throttle
 	BusinessUseCase BusinessUseCaseUsage `json:"business_use_case"` // HTTP header x-business-use-case-usage.
 }
@@ -97,13 +97,16 @@ type RateLimiting struct {
 
 // AdsInsightsThrottle is the rate limiting header for Ads Insights API.
 type AdsInsightsThrottle struct {
-	AppIDUtilPCT float64 `json:"app_id_util_pct"` // The percentage of allocated capacity for the associated app_id has consumed.
-	AccIDUtilPCT float64 `json:"acc_id_util_pct"` // The percentage of allocated capacity for the associated ad account_id has consumed.
+	AppIDUtilPCT     float64 `json:"app_id_util_pct"`     // The percentage of allocated capacity for the associated app_id has consumed.
+	AccIDUtilPCT     float64 `json:"acc_id_util_pct"`     // The percentage of allocated capacity for the associated ad account_id has consumed.
+	AdsAPIAccessTier string  `json:"ads_api_access_tier"` // Tiers allows your app to access the Marketing API. standard_access enables lower rate limiting.
 }
 
 // AdAccountUsage is the rate limiting header for Ads API.
 type AdAccountUsage struct {
-	AccIDUtilPCT float64 `json:"acc_id_util_pct"` // Percentage of calls made for this ad account.
+	AccIDUtilPCT      float64 `json:"acc_id_util_pct"`     // Percentage of calls made for this ad account.
+	ResetTimeDuration int64   `json:"reset_time_duration"` // Time duration (in seconds) it takes to reset the current rate limit to 0.
+	AdsAPIAccessTier  string  `json:"ads_api_access_tier"` // Tiers allows your app to access the Marketing API. standard_access enables lower rate limiting.
 }
 
 // BusinessUseCaseUsage is the business use case usage data.
