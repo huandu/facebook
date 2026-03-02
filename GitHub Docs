@@ -1,0 +1,181 @@
+Skip to main content
+We publish frequent updates to our documentation, and translation of this page may still be in progress. For the most current information, please visit the English documentation.
+GitHub Docs
+Acciones de GitHub/Más información sobre las Acciones de GitHub/Descripción de Acciones de GitHub
+Entender las GitHub Actions
+In this article
+Información general
+Los componentes de las GitHub Actions
+Crear un flujo de trabajo de ejemplo
+Entender el archivo de flujo de trabajo
+Visualización de la actividad de una ejecución de flujo de trabajo
+Pasos siguientes
+Contactando con el soporte técnico
+Aprende lo básico de las GitHub Actions, incluyendo los conceptos nucleares y la terminología esencial.
+
+Información general
+GitHub Actions es una plataforma de integración y despliegue continuos (IC/DC) que te permite automatizar tu mapa de compilación, pruebas y despliegue. Puedes crear flujos de trabajo y crear y probar cada solicitud de cambios en tu repositorio o desplegar solicitudes de cambios fusionadas a producción.
+
+GitHub Actions va más allá de solo DevOps y te permite ejecutar flujos de trabajo cuando otros eventos suceden en tu repositorio. Por ejemplo, puedes ejecutar un flujo de trabajo para que agregue automáticamente las etiquetas adecuadas cada que alguien cree una propuesta nueva en tu repositorio.
+
+GitHub proporciona máquinas virtuales Linux, Windows y macOS para que ejecutes tus flujos de trabajo o puedes hospedar tus propios ejecutores auto-hospedados en tu propio centro de datos o infraestructura en la nube.
+
+Los componentes de las GitHub Actions
+Puede configurar un flujo de trabajo de GitHub Actions que se desencadene cuando se produzca un evento en el repositorio, por ejemplo, la apertura de una solicitud de incorporación de cambios o la creación de una incidencia. El flujo de trabajo contiene uno o varios trabajos que se pueden ejecutar en orden secuencial o en paralelo. Cada trabajo se ejecutará dentro de su propio ejecutor de máquina virtual o dentro de un contenedor, y tendrá uno o varios pasos que pueden ejecutar un script que defina, o bien una acción, que es una extensión reutilizable que puede simplificar el flujo de trabajo.
+
+Introducción al flujo de trabajo
+
+Workflows
+Un flujo de trabajo es un proceso automatizado configurable que ejecutará uno o más jobs. Los flujos de trabajo se definen mediante un archivo de YAML que se verifica en tu repositorio y se ejecutará cuando lo active un evento dentro de este o puede activarse manualmente o en una programación definida.
+
+Los flujos de trabajo se definen en el directorio .github/workflows de un repositorio y un repositorio puede tener varios flujos de trabajo, cada uno de los cuales puede realizar un conjunto diferente de tareas. Por ejemplo, puedes tener un flujo de trabajo para crear y probar las solicitudes de cambio, otro para desplegar tu aplicación cada que se cree un lanzamiento y todavía otro más que agregue una etiqueta cada que alguien abra una propuesta nueva.
+
+Puedes hacer referencia a un flujo de trabajo dentro de otro; consulta "Reutilización de flujos de trabajo".
+
+Para más información sobre los flujos de trabajo, vea "Uso de flujos de trabajo".
+
+Eventos
+Un evento es una actividad específica en un repositorio, la cual activa una ejecución de flujo de trabajo. Por ejemplo, la actividad puede originarse desde GitHub cuando alguien crea una solicitud de cambios, abre una propuesta o sube una confirmación a un repositorio. También puedes desencadenar una ejecución de flujo de trabajo según una programación, mediante la publicación en una API de REST o manualmente.
+
+Para obtener una lista completa de eventos que se pueden usar para desencadenar flujos de trabajo, vea Eventos que desencadenan flujos de trabajo.
+
+Trabajos
+Un trabajo es un conjunto de pasos en un flujo de trabajo que se ejecutan en el mismo ejecutor. Cada paso puede ser un script de shell o una acción que se ejecutarán. Los pasos se ejecutarán en orden y serán dependientes uno del otro. Ya que cada paso se ejecuta en el mismo ejecutor, puedes compartir datos de un paso a otro. Por ejemplo, puedes tener un paso que compile tu aplicación, seguido de otro que pruebe la aplicación que se compiló.
+
+Puedes configurar las dependencias de un job con otros jobs; predeterminadamente, los jobs no tienen dependencias y se ejecutan en paralelo entre ellos. Cuando un job lleva una dependencia a otro job, este esperará a que el job dependiente se complete antes de que pueda ejecutarse. Por ejemplo, puedes tener jobs de compilación múltiple para arquitecturas diferentes que no tengan dependencias y un job de empaquetado que sea dependiente de estos jobs. Los jobs de compilación se ejecutarán en paralelo y, cuando se hayan completado con éxito, se ejecutará el job de empaquetado.
+
+Para más información sobre los trabajos, vea "Uso de trabajos".
+
+Acciones
+Una acción es una aplicación personalizada para la plataforma de GitHub Actions que realiza una tarea compleja pero que se repite frecuentemente. Utiliza una acción para ayudarte a reducir la cantidad de código repetitivo que escribes en tus archivos de flujo de trabajo. Una acción puede extraer tu repositorio de git desde GitHub, configurar la cadena de herramientas correcta para tu ambiente de compilación o configurar la autenticación en tu proveedor de servicios en la nube.
+
+Puedes escribir tus propias acciones o puedes encontrar acciones para utilizar en tus flujos de trabajo dentro de GitHub Marketplace.
+
+Para más información, vea "Creación de acciones".
+
+Ejecutores
+Un ejecutor es un servidor que ejecuta tus flujos de trabajo cuando se activan. Cada ejecutor puede ejecutar un job individual a la vez. GitHub proporciona ejecutores de Ubuntu Linux, Microsoft Windows y macOS para ejecutar tus flujos de trabajo; cada flujo de trabajo se ejecuta en una máquina virtual nueva y recién aprovisionada. GitHub también ofrece ejecutor más grande, que están disponibles en configuraciones más grandes. Para obtener más información, consulta "Uso de ejecutor más grande". Si necesita otro sistema operativo o una configuración de hardware específica, puede hospedar ejecutores propios. Para más información sobre los ejecutores autohospedados, consulta "Hospedaje de ejecutores propios".
+
+Crear un flujo de trabajo de ejemplo
+Las GitHub Actions utilizan la sintaxis de YAML para definir el flujo de trabajo. Cada flujo de trabajo se almacena como un archivo YAML independiente en el repositorio de código, en un directorio denominado .github/workflows.
+
+Puedes crear un flujo de trabajo de ejemplo en tu repositorio que active automáticamente una serie de comandos cada que se suba código. En este flujo de trabajo GitHub Actions extrae el código insertado, instala el marco de pruebas de bats y ejecuta un comando básico para generar la versión de los bats: bats -v.
+
+En el repositorio, cree el directorio .github/workflows/ para almacenar los archivos de flujo de trabajo.
+
+En el directorio .github/workflows/, cree un archivo denominado learn-github-actions.yml y agregue el código siguiente.
+
+YAML
+name: learn-github-actions
+run-name: ${{ github.actor }} is learning GitHub Actions
+on: [push]
+jobs:
+  check-bats-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: npm install -g bats
+      - run: bats -v
+Confirma estos cambios y cárgalos a tu repositorio de GitHub.
+
+Tu archivo de flujo de trabajo de GitHub Actions nuevo estará ahora instalado en tu repositorio y se ejecutará automáticamente cada que alguien suba un cambio a éste. Para ver los detalles sobre el historial de ejecución de un flujo de trabajo, consulta «Visualización de la actividad de una ejecución de flujo de trabajo».
+
+Entender el archivo de flujo de trabajo
+Para ayudarte a entender cómo se utiliza la sintaxis de YAML para crear un flujo de trabajo, esta sección explica cada línea del ejemplo de la introducción:
+
+name: learn-github-actions
+Opcional - El nombre del flujo de trabajo como aparece en la pestaña "Acciones" del repositorio de GitHub.
+run-name: ${{ github.actor }} is learning GitHub Actions
+Opcional: el nombre de las ejecuciones de flujo de trabajo generadas a partir del flujo de trabajo, que aparecerá en la lista de ejecuciones de flujo de trabajo en la pestaña "Acciones" del repositorio. En este ejemplo se usa una expresión con el contexto github para mostrar el nombre de usuario del actor que desencadenó la ejecución del flujo de trabajo. Para más información, vea "Sintaxis de flujo de trabajo para GitHub Actions".
+
+on: [push]
+Especifica el activador de este flujo de trabajo. En este ejemplo se usa el evento push, de forma que se desencadena una ejecución de flujo de trabajo cada vez que alguien inserta un cambio en el repositorio o combina una solicitud de incorporación de cambios. Esto se desencadena mediante una inserción en cada rama; para obtener ejemplos de una sintaxis que solo se ejecuta en inserciones en ramas, rutas o etiquetas concretas, consulta «Sintaxis de flujo de trabajo para GitHub Actions».
+jobs:
+Agrupa todos los trabajos que se ejecutan en el flujo de trabajo learn-github-actions.
+check-bats-version:
+Define un trabajo denominado check-bats-version. Las llaves hijas definirán las propiedades del job.
+  runs-on: ubuntu-latest
+Configura el job para que se ejecute en la versión más reciente de un ejecutor Ubuntu Linux. Esto significa que el job se ejecutará en una máquina virtual nueva que se hospede en GitHub. Para obtener ejemplos de sintaxis con otros ejecutores, consulta «Sintaxis de flujo de trabajo para GitHub Actions».
+  steps:
+Agrupa todos los pasos que se ejecutan en el trabajo check-bats-version. Cada elemento anidado debajo de esta sección es una acción o script de shell por separado.
+    - uses: actions/checkout@v3
+La palabra clave uses especifica que este paso ejecutará v3 de la acción actions/checkout. Esta es una acción que comprueba tu repositorio en el ejecutor, lo cual te permite ejecutar scripts u otras acciones contra tu código (tales como herramientas de compilación y prueba). Debes utilizar la acción de verificación en cualquier momento en el que tu flujo de trabajo se ejecute contra el código del repositorio.
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '14'
+Este paso usa la acción actions/setup-node@v3 para instalar la versión especificada de Node.js (en este ejemplo se usa v14). Esto coloca los comandos node y npm en PATH.
+    - run: npm install -g bats
+La palabra clave run indica al trabajo que ejecute un comando en el ejecutor. En este caso, se usa npm para instalar el paquete de pruebas de software bats.
+    - run: bats -v
+Por último, ejecutará el comando bats con un parámetro que genera la versión del software.
+Visualizar el archivo de flujo de trabajo
+En este diagrama, puedes ver el archivo de flujo de trabajo que acabas de crear, así como la forma en que los componentes de GitHub Actions se organizan en una jerarquía. Cada paso ejecuta una acción o script de shell simples. Los pasos 1 y 2 ejecutan acciones, mientras que los pasos 3 y 4 ejecutan scripts de shell. A fin de buscar más acciones precompiladas para los flujos de trabajo, vea "Búsqueda y personalización de acciones".
+
+Introducción al flujo de trabajo
+
+Visualización de la actividad de una ejecución de flujo de trabajo
+Cuando se desencadena el flujo de trabajo, se crea una ejecución de flujo de trabajo que ejecuta el flujo de trabajo. Una vez que el flujo de trabajo haya comenzado a ejecutarse, puedes ver una gráfica de visualización del progreso de dicha ejecución, así como la actividad de cada paso, en GitHub.
+
+En GitHub.com, navega a la página principal del repositorio.
+
+Debajo del nombre del repositorio, haga clic en Acciones.
+
+Navegar al repositorio
+
+En la barra lateral izquierda, da clic en el flujo de trabajo que quieras ver.
+
+Captura de pantalla de los resultados del flujo de trabajo
+
+Debajo de "Ejecuciones de flujo de trabajo", da clic en el nombre de la ejecución que quieres ver.
+
+Captura de pantalla de las ejecuciones del flujo de trabajo
+
+En Trabajos o en el gráfico de visualización, seleccione el trabajo que quiera ver.
+
+Selección del trabajo
+
+Vea los resultados de cada paso.
+
+Captura de pantalla de los detalles de la ejecución del flujo de trabajo
+
+Pasos siguientes
+GitHub Actions puede ayudarte a automatizar casi cualquier aspecto de tu s procesos de desarrollo de aplicaciones. ¿Ya está listo para comenzar? Aquí tienes algunos recursos útiles para que tomes tus siguientes pasos con GitHub Actions:
+
+Para obtener flujos de trabajo de integración continua (CI) para compilar y probar el código, consulta "Automatización de compilaciones y pruebas".
+Para compilar y publicar paquetes, consulta "Paquetes de publicación".
+Para implementar proyectos, consulta "Implementación".
+Para automatizar tareas y procesos en GitHub, consulta "Gestión de problemas y solicitudes de incorporación de cambios".
+Para ver ejemplos que demuestren características más complejas de GitHub Actions, incluidos muchos de los casos de uso anteriores, consulta "Ejemplos". Para ver ejemplos detallados que explican cómo probar el código en un ejecutor, accede a la CLI de GitHub y usa características avanzadas, como la simultaneidad y las matrices de prueba.
+Contactando con el soporte técnico
+Si necesitas ayuda con lo que sea relacionado con la configuración de flujo de trabajo, tal como la sintaxis, los ejecutores hospedados en GitHub, o la creación de acciones, busca un tema existente o inicia uno nuevo en la categoría de GitHub Actions y GitHub Packages de GitHub Community.
+
+Si tienes algún tipo de retroalimentación o solicitudes de características para GitHub Actions, compártelas en el Discusiones de la comunidad de GitHub para Acciones de GitHub.
+
+Contacta a Soporte técnico de GitHub para cualquiera de los siguientes, que tu tipo de uso o el tipo de uso que pretendes tener caiga en las siguientes categorías de limitación:
+
+Si crees que tu cuenta se ha restringido de manera incorrecta
+Si encuentras un error inesperado al ejecutar una de tus acciones.
+Si llegas a una situación en donde el comportamiento existente contradice a aquél que se espera, pero no siempre se documenta
+Did this doc help you?
+
+Privacy policy
+Still need help?
+Ask the GitHub community
+Contact support
+© 2023 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+Developer API
+Training
+Blog
+About
+
+Entender las GitHub Actions - GitHub Docs
