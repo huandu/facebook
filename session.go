@@ -567,15 +567,21 @@ func (session *Session) sendRequest(request *http.Request) (response *http.Respo
 		originalErr := err
 		err = fmt.Errorf("facebook: cannot reach facebook server; %w", originalErr)
 		netUrlErr, ok := originalErr.(*url.Error)
-		// *url.Error can contain access_token in the URL, so we need to exclude it.
+		// *url.Error can contain credentials in the URL, so we need to exclude them.
 		if !ok || netUrlErr.URL == "" {
 			return
 		}
 		q := request.URL.Query()
-		if !q.Has("access_token") {
+		redacted := false
+		for _, key := range []string{"access_token", "input_token"} {
+			if q.Has(key) {
+				q.Del(key)
+				redacted = true
+			}
+		}
+		if !redacted {
 			return
 		}
-		q.Del("access_token")
 		url := *request.URL
 		url.RawQuery = q.Encode()
 		netUrlErr.URL = url.String()

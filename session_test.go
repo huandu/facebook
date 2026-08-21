@@ -420,6 +420,27 @@ func TestSessionGetFailingWithoutExposingAccessToken(t *testing.T) {
 	}
 }
 
+func TestSessionInspectFailingWithoutExposingTokens(t *testing.T) {
+	const userAccessToken = "USER-TOKEN-SECRET-abcdef"
+	app := New("APP-ID", "APP-SECRET")
+	session := app.Session(userAccessToken)
+	session.HttpClient = &http.Client{
+		Transport: alwaysFailRoundTripper{},
+	}
+
+	_, err := session.Inspect()
+	if err == nil {
+		t.Fatalf("request should fail")
+	}
+
+	errorMessage := err.Error()
+	for _, token := range []string{userAccessToken, app.AppAccessToken()} {
+		if strings.Contains(errorMessage, token) {
+			t.Errorf("error message should not contain token %q: %s", token, errorMessage)
+		}
+	}
+}
+
 type alwaysFailRoundTripper struct{}
 
 var _ http.RoundTripper = alwaysFailRoundTripper{}
